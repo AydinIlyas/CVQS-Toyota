@@ -1,10 +1,12 @@
 package com.toyota.errorloginservice.dto;
 
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 public class TTVehicleDefectDTO {
+    @NotNull
     private String type;
     private byte[] defectImage;
 

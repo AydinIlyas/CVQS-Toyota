@@ -4,7 +4,7 @@ import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 
 public interface TTVehicleDefectService {
-    boolean addDefect(Long vehicleId, TTVehicleDefectDTO defectDTO);
-    boolean deleteDefect(Long defectId);
+    void addDefect(Long vehicleId, TTVehicleDefectDTO defectDTO);
+    void deleteDefect(Long defectId);
 
 }

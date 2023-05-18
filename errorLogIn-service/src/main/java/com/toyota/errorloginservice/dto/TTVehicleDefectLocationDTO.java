@@ -2,33 +2,35 @@ package com.toyota.errorloginservice.dto;
 
 import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
 
 public class TTVehicleDefectLocationDTO {
-
-    private int x_Axis;
-    private int y_Axis;
+    @NotNull
+    private Integer x_Axis;
+    @NotNull
+    private Integer y_Axis;
 
     public TTVehicleDefectLocationDTO() {
     }
 
-    public TTVehicleDefectLocationDTO(int x_Axis, int y_Axis) {
+    public TTVehicleDefectLocationDTO(Integer x_Axis, Integer y_Axis) {
         this.x_Axis = x_Axis;
         this.y_Axis = y_Axis;
     }
 
-    public int getX_Axis() {
+    public Integer getX_Axis() {
         return x_Axis;
     }
 
-    public void setX_Axis(int x_Axis) {
+    public void setX_Axis(Integer x_Axis) {
         this.x_Axis = x_Axis;
     }
 
-    public int getY_Axis() {
+    public Integer getY_Axis() {
         return y_Axis;
     }
 
-    public void setY_Axis(int y_Axis) {
+    public void setY_Axis(Integer y_Axis) {
         this.y_Axis = y_Axis;
     }
 }

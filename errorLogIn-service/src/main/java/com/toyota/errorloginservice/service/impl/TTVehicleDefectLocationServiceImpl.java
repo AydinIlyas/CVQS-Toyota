@@ -5,6 +5,7 @@ import com.toyota.errorloginservice.dao.TTVehicleDefectRepository;
 import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
 import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
+import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectLocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,26 +26,21 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
      * @return
      */
     @Override
-    public boolean add(Long defectId, TTVehicleDefectLocationDTO defectLocationDTO) {
-        Optional<TTVehicleDefect> optionalDefect=defectRepository.findById(defectId);
+    public void add(Long defectId, TTVehicleDefectLocationDTO defectLocationDTO) {
+        Optional<TTVehicleDefect> optionalDefect = defectRepository.findById(defectId);
 
-        if(optionalDefect.isEmpty())
-        {
-            return false;
+        if (optionalDefect.isPresent()) {
+            TTVehicleDefectLocation location = TTVehicleDefectLocation.builder()
+                    .x_Axis(defectLocationDTO.getX_Axis())
+                    .y_Axis(defectLocationDTO.getY_Axis())
+                    .build();
+            TTVehicleDefect defect = optionalDefect.get();
+            defect.getLocation().add(location);
+            location.setTt_vehicle_defect(defect);
+            TTVehicleDefect saved = defectRepository.save(defect);
+        } else {
+            throw new EntityNotFoundException("There is no defect with id: " + defectId);
         }
-        TTVehicleDefectLocation location=TTVehicleDefectLocation.builder()
-                .x_Axis(defectLocationDTO.getX_Axis())
-                .y_Axis(defectLocationDTO.getY_Axis())
-                .build();
-        TTVehicleDefect defect=optionalDefect.get();
-        defect.getLocation().add(location);
-        location.setTt_vehicle_defect(defect);
-        TTVehicleDefect saved= defectRepository.save(defect);
-        if (saved==null)
-        {
-            return false;
-        }
-        return true;
 
     }
 
@@ -54,14 +50,14 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
      */
     @Override
     @Transactional
-    public boolean delete(Long locationId){
-        Optional<TTVehicleDefectLocation> optionalLocation=defectLocationRepository.findById(locationId);
-        if(optionalLocation.isEmpty())
-        {
-            return false;
+    public void delete(Long locationId) {
+        Optional<TTVehicleDefectLocation> optionalLocation = defectLocationRepository.findById(locationId);
+        if (optionalLocation.isPresent()) {
+            TTVehicleDefectLocation location = optionalLocation.get();
+            location.setDeleted(true);
         }
-        TTVehicleDefectLocation location=optionalLocation.get();
-        location.setDeleted(true);
-        return true;
+        else{
+            throw new EntityNotFoundException("Location with id "+locationId+"couldn't be found");
+        }
     }
 }

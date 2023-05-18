@@ -4,6 +4,7 @@ import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.dto.TTVehicleResponse;
 import com.toyota.errorloginservice.dto.TTVehicleResponse;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class TTVehicleController {
 
 
     @PostMapping("/addVehicle")
-    public ResponseEntity<TTVehicleResponse> addVehicle(@RequestBody TTVehicleDTO ttVehicleDTO)
+    public ResponseEntity<TTVehicleResponse> addVehicle(@RequestBody @Valid TTVehicleDTO ttVehicleDTO)
     {
         TTVehicleResponse response=ttVehicleService.addVehicle(ttVehicleDTO);
 

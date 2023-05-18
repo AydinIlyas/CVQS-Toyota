@@ -3,6 +3,7 @@ package com.toyota.errorloginservice.resource;
 import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectLocationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,29 +17,17 @@ import javax.swing.text.html.parser.Entity;
 public class TTVehicleDefectLocationController {
     private final TTVehicleDefectLocationService defectLocationService;
     @PostMapping("/add")
-    private ResponseEntity<TTVehicleDefect> addLocation(@RequestParam Long defectId,
-                                                        @RequestBody TTVehicleDefectLocationDTO location)
+    private ResponseEntity<String> addLocation(@RequestParam Long defectId,
+                                                        @RequestBody @Valid TTVehicleDefectLocationDTO location)
     {
-        boolean success=defectLocationService.add(defectId,location);
-        if(success)
-        {
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        }
-        else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        defectLocationService.add(defectId,location);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Created Location Successfully!");
     }
     @PutMapping("/delete")
-    private ResponseEntity<Entity> deleteLocation(@RequestBody Long locationId)
+    private ResponseEntity<String> deleteLocation(@RequestBody Long locationId)
     {
-        boolean success=defectLocationService.delete(locationId);
-        if(success)
-        {
-            return ResponseEntity.status(HttpStatus.OK).build();
-        }
-        else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        defectLocationService.delete(locationId);
+        return ResponseEntity.status(HttpStatus.OK).body("Deleted Location Successfully");
     }
 
 

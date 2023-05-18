@@ -6,6 +6,7 @@ import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.dto.TTVehicleResponse;
+import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -52,18 +53,20 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     public TTVehicleResponse deleteVehicle(Long vehicleId) {
         Optional<TTVehicle> optionalTTVehicle = ttVehicleRepository.findById(vehicleId);
 
-        if (optionalTTVehicle.isEmpty()) {
-            return null;
+        if (optionalTTVehicle.isPresent()) {
+            TTVehicle ttVehicle = optionalTTVehicle.get();
+            List<TTVehicleDefect> defect = ttVehicle.getDefect();
+            defect.forEach(d -> {
+                d.getLocation().forEach(l -> l.setDeleted(true));
+                d.setDeleted(true);
+            });
+            ttVehicle.setDeleted(true);
+            TTVehicleResponse response = convertToResponse(ttVehicle);
+            return response;
         }
-        TTVehicle ttVehicle = optionalTTVehicle.get();
-        List<TTVehicleDefect> defect = ttVehicle.getDefect();
-        defect.forEach(d -> {
-            d.getLocation().forEach(l -> l.setDeleted(true));
-            d.setDeleted(true);
-        });
-        ttVehicle.setDeleted(true);
-        TTVehicleResponse response=convertToResponse(ttVehicle);
-        return response;
+        else{
+            throw new EntityNotFoundException("Vehicle does with id "+vehicleId+" does not exist.");
+        }
     }
 
     private TTVehicleResponse convertToResponse(TTVehicle ttVehicle)
