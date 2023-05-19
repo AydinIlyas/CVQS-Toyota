@@ -9,6 +9,8 @@ import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     private final TTVehicleDefectRepository ttVehicleDefectRepository;
     private final TTVehicleRepository ttVehicleRepository;
+    private Logger logger= LogManager.getLogger(TTVehicleDefectServiceImpl.class);
 
     /**
      * @param vehicleId
@@ -37,8 +40,10 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             ttVehicle.getDefect().add(defect);
             defect.setTt_vehicle(ttVehicle);
             TTVehicle saved = ttVehicleRepository.save(ttVehicle);
+            logger.info("Created defect successfully");
         }
         else{
+            logger.warn("Vehicle with id {} couldn't found!",vehicleId);
             throw new EntityNotFoundException("There is no Vehicle with the id: "+vehicleId);
         }
 
@@ -56,8 +61,10 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             List<TTVehicleDefectLocation> locations = defect.getLocation();
             locations.forEach(l -> l.setDeleted(true));
             defect.setDeleted(true);
+            logger.info("Soft deleted defect successfully!");
         }
         else{
+            logger.warn("Defect couldn't found! Id: {}",defectId);
             throw new EntityNotFoundException("Defect with id "+defectId+"could'nt found!");
         };
     }

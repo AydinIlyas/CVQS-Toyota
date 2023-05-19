@@ -9,6 +9,8 @@ import com.toyota.errorloginservice.dto.TTVehicleResponse;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class TTVehicleServiceImpl implements TTVehicleService {
     private final TTVehicleRepository ttVehicleRepository;
     private final ModelMapper modelMapper;
+    private final Logger logger= LogManager.getLogger(TTVehicleService.class);
     @Override
     public List<TTVehicleResponse> getAll() {
 
@@ -29,6 +32,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
         return ttVehicles.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+
     }
 
     @Override
@@ -40,6 +44,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
         TTVehicle saved=ttVehicleRepository.save(ttVehicle);
         if(saved!=null)
         {
+            logger.info("Successfully added Vehicle!");
             return modelMapper.map(saved,TTVehicleResponse.class);
         }
         return null;
@@ -62,9 +67,12 @@ public class TTVehicleServiceImpl implements TTVehicleService {
             });
             ttVehicle.setDeleted(true);
             TTVehicleResponse response = convertToResponse(ttVehicle);
+            logger.info("Soft Deleted Vehicle with id: {}",vehicleId);
             return response;
         }
         else{
+            logger.warn("Vehicle with the id {} does not exits",vehicleId);
+
             throw new EntityNotFoundException("Vehicle does with id "+vehicleId+" does not exist.");
         }
     }

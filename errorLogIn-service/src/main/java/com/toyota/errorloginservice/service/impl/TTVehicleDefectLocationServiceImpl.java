@@ -8,6 +8,8 @@ import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectLocationService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import java.util.Optional;
 public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocationService {
     private final TTVehicleDefectLocationRepository defectLocationRepository;
     private final TTVehicleDefectRepository defectRepository;
+    private final Logger logger= LogManager.getLogger(TTVehicleDefectLocationServiceImpl.class);
 
 
     /**
@@ -38,7 +41,9 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
             defect.getLocation().add(location);
             location.setTt_vehicle_defect(defect);
             TTVehicleDefect saved = defectRepository.save(defect);
+            logger.info("Successfully added Location to defect with id {}",defectId);
         } else {
+            logger.warn("There is no defect with id: {}",defectId);
             throw new EntityNotFoundException("There is no defect with id: " + defectId);
         }
 
@@ -55,8 +60,10 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
         if (optionalLocation.isPresent()) {
             TTVehicleDefectLocation location = optionalLocation.get();
             location.setDeleted(true);
+            logger.info("Deleted location successfully from defect with id: {}",location.getTt_vehicle_defect().getId());
         }
         else{
+            logger.warn("Delete failed! Location couldn't found! Id: {}",locationId);
             throw new EntityNotFoundException("Location with id "+locationId+"couldn't be found");
         }
     }
