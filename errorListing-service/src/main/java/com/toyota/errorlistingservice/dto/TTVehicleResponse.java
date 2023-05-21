@@ -1,20 +1,24 @@
 package com.toyota.errorlistingservice.dto;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-public class TTVehicleDTO {
+public class TTVehicleResponse {
     private String name;
     private LocalDate introductionDate;
 
     private String color;
 
-    public TTVehicleDTO() {
+    private List<TTVehicleDefectResponse> defect=new ArrayList<>();
+    public TTVehicleResponse() {
     }
 
-    public TTVehicleDTO(String name, LocalDate introductionDate, String color) {
+    public TTVehicleResponse(String name, LocalDate introductionDate, String color, List<TTVehicleDefectResponse> defect) {
         this.name = name;
         this.introductionDate = introductionDate;
         this.color = color;
+        this.defect = defect;
     }
 
     public String getName() {
@@ -39,5 +43,13 @@ public class TTVehicleDTO {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public List<TTVehicleDefectResponse> getDefect() {
+        return defect;
+    }
+
+    public void setDefect(List<TTVehicleDefectResponse> defect) {
+        this.defect = defect;
     }
 }
