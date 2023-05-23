@@ -1,0 +1,50 @@
+eureka:
+  client:
+    service:
+      defaultZone: http://localhost:8761/eureka
+
+logging:
+  level:
+    root: info
+    org.springframework.cloud.gateway.route.RouteDefinitionLocatore: info
+    org.springframework.cloud.gateway: trace
+
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: error-ttVehicle
+          uri: lb://error-login-service
+          predicates:
+            - Path=/ttvehicle/**
+        - id: error-ttDefect
+          uri: lb://error-login-service
+          predicates:
+            - Path=/ttvehicleDefect/**
+        - id: error-location
+          uri: lb://error-login-service
+          predicates:
+            - Path=/defectLocation/**
+        - id: error-list
+          uri: lb://error-listing-service
+          predicates:
+            - Path=/errors/**
+        - id: terminal-service
+          uri: lb://terminal-service
+          predicates:
+            - Path=/terminal/**
+#        - id: user-management-service
+#          uri: lb://user-management-service
+#        - id: verification-authorization-service
+#          uri: lb://verification-authorization-service
+#spring.cloud.gateway.routes[0].predicates[2]=Path=/ttvehicle/deleteVehicle
+#spring.cloud.gateway.routes[1].id=error-ttDefect
+#spring.cloud.gateway.routes[1].uri=lb://error-login-service
+#spring.cloud.gateway.routes[1].predicates[0]=Path=/ttvehicleDefect
+#spring.cloud.gateway.routes[2].id=error-Location
+#spring.cloud.gateway.routes[2].uri=lb://error-login-service
+#spring.cloud.gateway.routes[2].predicates[0]=Path=/defectLocation
+
