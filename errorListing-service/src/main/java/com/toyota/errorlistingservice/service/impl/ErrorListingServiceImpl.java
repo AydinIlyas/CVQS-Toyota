@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 public class ErrorListingServiceImpl implements ErrorListingService {
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     /**
      * @param sort
@@ -30,8 +30,8 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     @Override
     public List<TTVehicleResponse> getAll(String sort, String direction, Integer page,
                                           Integer size, String attribute, String desiredValue) {
-        List<TTVehicleResponse> entities = webClient.get()
-                .uri("http://localhost:8080/ttvehicle/getAll")
+        List<TTVehicleResponse> entities = webClientBuilder.build().get()
+                .uri("http://error-login-service/ttvehicle/getAll")
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<TTVehicleResponse>>() {
                 })
