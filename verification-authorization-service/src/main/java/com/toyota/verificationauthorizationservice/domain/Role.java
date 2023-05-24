@@ -1,9 +1,12 @@
-package com.toyota.usermanagementservice.domain;
+package com.toyota.verificationauthorizationservice.domain;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name="Roles")
@@ -26,4 +29,10 @@ public class Role {
             inverseJoinColumns = @JoinColumn(name="permission_id")
     )
     private Set<Permission> permissions;
+
+    public Set<GrantedAuthority> getPermissions() {
+        return permissions.stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+                .collect(Collectors.toSet());
+    }
 }

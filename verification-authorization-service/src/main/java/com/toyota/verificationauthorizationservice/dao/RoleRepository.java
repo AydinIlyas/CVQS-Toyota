@@ -1,6 +1,7 @@
-package com.toyota.usermanagementservice.dao;
+package com.toyota.verificationauthorizationservice.dao;
 
-import com.toyota.usermanagementservice.domain.Role;
+
+import com.toyota.verificationauthorizationservice.domain.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RoleRepository extends JpaRepository<Role,Long> {

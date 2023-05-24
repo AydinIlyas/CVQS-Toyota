@@ -1,4 +1,4 @@
-package com.toyota.usermanagementservice.domain;
+package com.toyota.verificationauthorizationservice.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
