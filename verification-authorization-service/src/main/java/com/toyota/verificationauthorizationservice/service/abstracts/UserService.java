@@ -7,4 +7,5 @@ import org.springframework.http.ResponseEntity;
 public interface UserService {
     AuthenticationResponse register(AuthenticationRequest request);
     AuthenticationResponse login(AuthenticationRequest request);
+    boolean verify(String authHeader);
 }

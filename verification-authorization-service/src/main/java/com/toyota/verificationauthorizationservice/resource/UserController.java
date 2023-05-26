@@ -5,10 +5,7 @@ import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -28,4 +25,15 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/verify")
+    public boolean verify()
+    {
+        int a=10;
+        if(a+1==11)
+        {
+            return true;
+        }
+        return false;
+//        return userService.verify(authHeader);
+    }
 }
