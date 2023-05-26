@@ -3,9 +3,13 @@ package com.toyota.verificationauthorizationservice.resource;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,14 +30,8 @@ public class UserController {
     }
 
     @GetMapping("/verify")
-    public boolean verify()
+    public Set<String> verify(HttpServletRequest request)
     {
-        int a=10;
-        if(a+1==11)
-        {
-            return true;
-        }
-        return false;
-//        return userService.verify(authHeader);
+        return userService.verify(request);
     }
 }

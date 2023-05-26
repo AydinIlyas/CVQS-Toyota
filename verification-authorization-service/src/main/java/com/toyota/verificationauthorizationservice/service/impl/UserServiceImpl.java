@@ -8,9 +8,11 @@ import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,9 +21,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.net.http.HttpHeaders;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,15 +85,25 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public boolean verify(String authHeader) {
+    public Set<String> verify(HttpServletRequest request) {
+        String authHeader=extractToken(request);
         String username=jwtService.extractUsername(authHeader);
-        UserDetails userDetails=userDetailsService.loadUserByUsername(username);
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        userDetails.getUsername(),
-                        userDetails.getPassword()
-                )
-        );
-        return true;
+        Optional<User> optionalUser=userRepository.findByUsername(username);
+        if(optionalUser.isPresent())
+        {
+            User user=optionalUser.get();
+            Collection<? extends GrantedAuthority> authorities=user.getAuthorities();
+            Set<String> permissions=authorities.stream()
+                    .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+            return permissions;
+        }
+        return null;
+    }
+    private String extractToken(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+        return null;
     }
 }

@@ -2,10 +2,12 @@ package com.toyota.verificationauthorizationservice.service.abstracts;
 
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Set;
 
 public interface UserService {
     AuthenticationResponse register(AuthenticationRequest request);
     AuthenticationResponse login(AuthenticationRequest request);
-    boolean verify(String authHeader);
+    Set<String> verify(HttpServletRequest request);
 }
