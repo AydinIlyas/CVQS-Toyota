@@ -40,6 +40,10 @@ spring:
           uri: lb://verification-authorization-service
           predicates:
             - Path=/auth/**
+        - id:  user-management-service
+          uri: lb://user-management-service
+          predicates:
+            - Path=/user-management/**
 #        - id: user-management-service
 #          uri: lb://user-management-service
 #        - id: verification-authorization-service

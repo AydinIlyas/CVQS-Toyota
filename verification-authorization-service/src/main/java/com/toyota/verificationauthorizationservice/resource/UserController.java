@@ -2,6 +2,7 @@ package com.toyota.verificationauthorizationservice.resource;
 
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
+import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,11 @@ import java.util.Set;
 public class UserController {
     private final UserService userService;
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody AuthenticationRequest request)
+    public Boolean register(@RequestBody RegisterRequest request)
     {
         AuthenticationResponse response=userService.register(request);
-        return ResponseEntity.ok(response);
+        if(response==null)return false;
+        else return true;
     }
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request)

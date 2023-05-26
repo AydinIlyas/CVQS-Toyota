@@ -6,6 +6,7 @@ import com.toyota.verificationauthorizationservice.domain.Role;
 import com.toyota.verificationauthorizationservice.domain.User;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
+import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,8 +43,8 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public AuthenticationResponse register(AuthenticationRequest request) {
-        Optional<Role> role=roleRepository.findByName("USER");
+    public AuthenticationResponse register(RegisterRequest request) {
+        if(request.getRoles().size()<1)return null;
         User user=User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -54,7 +55,15 @@ public class UserServiceImpl implements UserService {
             set=new HashSet<>();
             user.setRoles(set);
         }
-        set.add(role.get());
+        for(String role: request.getRoles())
+        {
+            Optional<Role> roleOptional=roleRepository.findByName(role);
+            if(roleOptional.isPresent())
+            {
+                set.add(roleOptional.get());
+            }
+        }
+        if(set.size()<1)return null;
         userRepository.save(user);
         var jwtToken=jwtService.generateToken(user);
         return AuthenticationResponse.builder()

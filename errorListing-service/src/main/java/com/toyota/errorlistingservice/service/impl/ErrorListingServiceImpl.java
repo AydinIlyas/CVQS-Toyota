@@ -2,6 +2,7 @@ package com.toyota.errorlistingservice.service.impl;
 
 import com.toyota.errorlistingservice.dto.TTVehicleResponse;
 import com.toyota.errorlistingservice.service.abstracts.ErrorListingService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -28,10 +29,12 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @return
      */
     @Override
-    public List<TTVehicleResponse> getAll(String sort, String direction, Integer page,
+    public List<TTVehicleResponse> getAll(HttpServletRequest request,String sort, String direction, Integer page,
                                           Integer size, String attribute, String desiredValue) {
+        String authHeader=extractToken(request);
         List<TTVehicleResponse> entities = webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicle/getAll")
+                .headers(h->h.setBearerAuth(authHeader))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<TTVehicleResponse>>() {
                 })
@@ -45,7 +48,13 @@ public class ErrorListingServiceImpl implements ErrorListingService {
         }
         return getPage(entities, page, size);
     }
-
+    private String extractToken(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+        return null;
+    }
     private void sortEntities(List<TTVehicleResponse> entities, String sort, String direction) {
         Comparator<TTVehicleResponse> comparator;
         if (sort.equals("name")) {
@@ -107,3 +116,4 @@ public class ErrorListingServiceImpl implements ErrorListingService {
         return entities;
     }
 }
+
