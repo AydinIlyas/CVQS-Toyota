@@ -1,9 +1,11 @@
 package com.toyota.errorloginservice.dto;
 
-import com.toyota.errorloginservice.domain.TTVehicleDefect;
-import jakarta.persistence.ManyToOne;
+
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * DTO for tt_vehicle_defect_location used as input.
+ */
 public class TTVehicleDefectLocationDTO {
     @NotNull
     private Integer x_Axis;

@@ -1,10 +1,12 @@
 package com.toyota.errorloginservice.dto;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
 import java.time.LocalDate;
 
+/**
+ * DTO for tt_vehicle used as input.
+ */
 public class TTVehicleDTO {
     @NotNull(message="Name cannot be null!")
     private String name;

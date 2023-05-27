@@ -6,8 +6,11 @@ import lombok.*;
 
 import java.util.List;
 
+/**
+ * TTVehicleDefect represents tt_vehicle_defect entity in database.
+ */
 @Entity
-@Table(name="TT_Vehicle_Defect")
+@Table(name="tt_vehicle_defect")
 @Getter
 @Setter
 @AllArgsConstructor

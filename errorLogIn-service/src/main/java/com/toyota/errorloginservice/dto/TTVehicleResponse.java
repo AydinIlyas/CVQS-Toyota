@@ -6,6 +6,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Response DTO for tt_vehicle used as response.
+ */
 public class TTVehicleResponse {
     private String name;
     private LocalDate introductionDate;

@@ -5,6 +5,10 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
+/**
+ * DTO for tt_vehicle_defect used as input.
+ */
+
 public class TTVehicleDefectDTO {
     @NotNull
     private String type;

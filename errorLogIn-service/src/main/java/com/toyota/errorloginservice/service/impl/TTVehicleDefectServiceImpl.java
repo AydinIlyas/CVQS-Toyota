@@ -17,15 +17,21 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service class for managing tt_vehicle_defect data.
+ */
 @Service
 @RequiredArgsConstructor
 public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     private final TTVehicleDefectRepository ttVehicleDefectRepository;
     private final TTVehicleRepository ttVehicleRepository;
-    private Logger logger= LogManager.getLogger(TTVehicleDefectServiceImpl.class);
+    private final Logger logger= LogManager.getLogger(TTVehicleDefectServiceImpl.class);
+
 
     /**
-     * @param vehicleId
+     * Adds a defect to the vehicle if present.
+     * @param vehicleId Vehicle id of the vehicle which has the defect.
+     * @param defectDTO Defect object which will added to the vehicle.
      */
     @Override
     public void addDefect(Long vehicleId, TTVehicleDefectDTO defectDTO) {
@@ -39,7 +45,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             TTVehicle ttVehicle = optionalTTVehicle.get();
             ttVehicle.getDefect().add(defect);
             defect.setTt_vehicle(ttVehicle);
-            TTVehicle saved = ttVehicleRepository.save(ttVehicle);
+            ttVehicleRepository.save(ttVehicle);
             logger.info("Created defect successfully");
         }
         else{
@@ -50,7 +56,8 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     }
 
     /**
-     * @param defectId
+     * Soft deletes defect and associated locations, if present.
+     * @param defectId Defect id of the defect which will be deleted.
      */
     @Override
     @Transactional
@@ -65,8 +72,8 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
         }
         else{
             logger.warn("Defect couldn't found! Id: {}",defectId);
-            throw new EntityNotFoundException("Defect with id "+defectId+"could'nt found!");
-        };
+            throw new EntityNotFoundException("Defect with id "+defectId+"couldn't found!");
+        }
     }
 
 }

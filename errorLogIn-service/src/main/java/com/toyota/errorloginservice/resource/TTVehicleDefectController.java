@@ -1,7 +1,6 @@
 package com.toyota.errorloginservice.resource;
 
 
-import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import jakarta.validation.Valid;
@@ -10,24 +9,38 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.parser.Entity;
 
+/**
+ * Controller for handling tt_vehicle_defect related requests.
+ */
 @RestController
 @RequestMapping("/ttvehicleDefect")
 @RequiredArgsConstructor
 public class TTVehicleDefectController {
     private final TTVehicleDefectService ttVehicleDefectService;
+
+    /**
+     * Adding defect to tt_vehicle
+     * @param vehicleId Vehicle id of the vehicle which has the defect.
+     * @param defectDTO The defect of the vehicle.
+     * @return ResponseEntity with a message if it was successfully or not
+     */
     @PostMapping("/add")
-    public ResponseEntity<String> addDefect(@RequestParam Long id, @RequestBody @Valid TTVehicleDefectDTO defectDTO)
+    public ResponseEntity<String> addDefect(@RequestParam Long vehicleId, @RequestBody @Valid TTVehicleDefectDTO defectDTO)
     {
-        ttVehicleDefectService.addDefect(id,defectDTO);
+        ttVehicleDefectService.addDefect(vehicleId,defectDTO);
         return ResponseEntity.status(HttpStatus.OK).body("Created Defect Successfully!");
     }
 
+    /**
+     * Soft deletes defect and all associated locations.
+     * @param defectId Defect id of the defect that should be deleted.
+     * @return ResponseEntity with String message.
+     */
     @PutMapping("/delete")
-    public ResponseEntity<String> deleteDefect(@RequestBody Long id)
+    public ResponseEntity<String> deleteDefect(@RequestBody Long defectId)
     {
-        ttVehicleDefectService.deleteDefect(id);
+        ttVehicleDefectService.deleteDefect(defectId);
         return ResponseEntity.status(HttpStatus.OK).body("Deleted Defect Successfully!");
     }
 

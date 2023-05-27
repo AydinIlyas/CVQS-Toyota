@@ -15,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+/**
+ * Service class for managing tt_vehicle_defect_location data.
+ */
 @Service
 @RequiredArgsConstructor
 public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocationService {
@@ -24,9 +27,10 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
 
 
     /**
-     * @param defectId
-     * @param defectLocationDTO
-     * @return
+     * Adding location to defect. First it checks if defect exists. If not it throws an EntityNotFoundException.
+     * Else it adds it to the defect and saves it to the database.
+     * @param defectId Defect id where the location should be added.
+     * @param defectLocationDTO Location object which will be added.
      */
     @Override
     public void add(Long defectId, TTVehicleDefectLocationDTO defectLocationDTO) {
@@ -40,7 +44,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
             TTVehicleDefect defect = optionalDefect.get();
             defect.getLocation().add(location);
             location.setTt_vehicle_defect(defect);
-            TTVehicleDefect saved = defectRepository.save(defect);
+            defectRepository.save(defect);
             logger.info("Successfully added Location to defect with id {}",defectId);
         } else {
             logger.warn("There is no defect with id: {}",defectId);
@@ -50,8 +54,9 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
     }
 
     /**
-     * @param locationId
-     * @return
+     * Soft deletes the location. First, it is checked whether a location exists.
+     * Then it will be soft deleted if it exists.
+     * @param locationId Location id of the entity which will be deleted.
      */
     @Override
     @Transactional

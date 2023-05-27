@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * TTVehicle class represents a tt_vehicle entity in database.
+ */
 @Entity
-@Table(name="TT_Vehicle")
+@Table(name="tt_vehicle")
 @Getter
 @Setter
 @AllArgsConstructor

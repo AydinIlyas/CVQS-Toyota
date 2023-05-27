@@ -4,8 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * TTVehicleDefectLocation represents tt_vehicle_defect_location entity from database.
+ */
 @Entity
-@Table(name="TT_Vehicle_Defect_Location")
+@Table(name="tt_vehicle_defect_location")
 @Getter
 @Setter
 @NoArgsConstructor

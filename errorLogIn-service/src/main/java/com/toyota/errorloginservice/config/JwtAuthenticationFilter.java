@@ -1,15 +1,18 @@
 package com.toyota.errorloginservice.config;
 
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 import java.io.IOException;
 import java.util.Set;
@@ -18,6 +21,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final WebClient.Builder webClientBuilder;
+    private final Logger logger = LogManager.getLogger(JwtAuthenticationFilter.class);
+
     /**
      * @param request
      * @param response
@@ -26,34 +31,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @throws IOException
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        String authHeader=extractToken(request);
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+        String authHeader = extractToken(request);
         try {
-            String verificationUrl = "http://verification-authorization-service//auth/verify"; // Replace with your verification microservice URL
-
-            Set<String> permissions=webClientBuilder.build().get().uri(verificationUrl)
-                    .headers(h->h.setBearerAuth(authHeader))
+            String verificationUrl = "http://verification-authorization-service//auth/verify";
+            if(authHeader==null)
+            {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"NO BEARER TOKEN FOUND");
+                return;
+            }
+            Set<String> permissions = webClientBuilder.build().get().uri(verificationUrl)
+                    .headers(h -> h.setBearerAuth(authHeader))
                     .retrieve()
-                            .bodyToMono(Set.class)
-                                    .block();
-
-            // 3. If the verification is successful, proceed with the request
-            if(permissions.contains("OPERATOR"))
-            filterChain.doFilter(request, response);
-            else{
-                throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
+                    .bodyToMono(Set.class)
+                    .block();
+            if(permissions==null)
+            {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"NO PERMISSIONS FOUND");
+                return;
             }
-        } catch (HttpClientErrorException ex) {
-            // 4. Handle cases where the verification microservice returns an error (e.g., invalid token)
-            if (ex.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            if (permissions.contains("OPERATOR")) {
+                logger.info("Login Successfully");
+                filterChain.doFilter(request, response);
             } else {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                logger.info("User Not Authorized");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "USER NOT AUTHORIZED");
             }
+        } catch (WebClientException ex) {
+            logger.info("User Not Found");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "USER DOES NOT EXIST");
         }
-
     }
 
     private String extractToken(HttpServletRequest request) {
