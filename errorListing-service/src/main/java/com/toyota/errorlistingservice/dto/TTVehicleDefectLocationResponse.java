@@ -1,5 +1,8 @@
 package com.toyota.errorlistingservice.dto;
 
+/**
+ * DTO class for receiving the data from errorLogin-service and displaying it as response.
+ */
 public class TTVehicleDefectLocationResponse {
 
     private Integer x_Axis;

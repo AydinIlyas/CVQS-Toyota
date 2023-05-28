@@ -11,11 +11,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * Controller class for handling requests related to list vehicles.
+ */
 @RestController
 @RequestMapping("/errors")
 @RequiredArgsConstructor
 public class ErrorController {
     private final ErrorListingServiceImpl service;
+
+    /**
+     * Calls function for collecting all errors.
+     * @param request Request
+     * @param sort Determines which field is sorted by.
+     * @param direction Determines the direction in which to sort (asc/desc).
+     * @param page Determines which page it should show.
+     * @param size Determines how many objects should in one page.
+     * @param attribute Determines what field you are looking for.
+     * @param desired The string you are looking for.
+     * @return List of vehicles.
+     */
     @GetMapping("/getAll")
     public List<TTVehicleResponse> getAll(HttpServletRequest request,
                                           @RequestParam(required = false) String sort,

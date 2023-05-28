@@ -2,6 +2,9 @@ package com.toyota.errorlistingservice.dto;
 
 import java.util.List;
 
+/**
+ * DTO class for receiving the data from errorLogin-service and displaying it as response.
+ */
 public class TTVehicleDefectResponse {
 
     private String type;

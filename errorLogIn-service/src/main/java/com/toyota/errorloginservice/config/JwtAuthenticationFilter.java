@@ -52,15 +52,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"NO PERMISSIONS FOUND");
                 return;
             }
-            if (permissions.contains("OPERATOR")) {
-                logger.info("Login Successfully");
+            if (permissions.contains("OPERATOR")||permissions.contains("LEADER")) {
+                logger.info("USER AUTHORIZED");
                 filterChain.doFilter(request, response);
             } else {
-                logger.info("User Not Authorized");
+                logger.warn("USER NOT AUTHORIZED");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "USER NOT AUTHORIZED");
             }
         } catch (WebClientException ex) {
-            logger.info("User Not Found");
+            logger.warn("USER NOT FOUND");
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "USER DOES NOT EXIST");
         }
     }

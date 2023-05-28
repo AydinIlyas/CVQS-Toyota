@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DTO class for receiving the data from errorLogin-service and displaying it as response.
+ */
 public class TTVehicleResponse {
     private String name;
     private LocalDate introductionDate;

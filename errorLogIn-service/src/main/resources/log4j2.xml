@@ -11,7 +11,7 @@
 <!--        </File>-->
     </Appenders>
     <Loggers>
-        <Logger name="com.toyota" level="debug" additivity="false">
+        <Logger name="com.toyota.errorloginservice" level="debug" additivity="false">
 <!--            <AppenderRef ref="LogToFile"/>-->
             <AppenderRef ref="LogToConsole"/>
         </Logger>
