@@ -12,11 +12,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Controller for handling authentication related requests.
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+    /**
+     * Calls UserService registering function.
+     * @param request Request for registering.
+     * @return Boolean
+     */
     @PostMapping("/register")
     public Boolean register(@RequestBody RegisterRequest request)
     {
@@ -24,6 +33,12 @@ public class UserController {
         if(response==null)return false;
         else return true;
     }
+
+    /**
+     * Calls user service login function.
+     * @param request Login Request
+     * @return ResponseEntity of token
+     */
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request)
     {
@@ -31,6 +46,11 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Verifies user bearer token
+     * @param request Request
+     * @return Set of permissions of the user
+     */
     @GetMapping("/verify")
     public Set<String> verify(HttpServletRequest request)
     {

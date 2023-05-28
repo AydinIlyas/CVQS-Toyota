@@ -9,6 +9,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Domain for User entity
+ */
 @Entity
 @Table(name="usersAuth")
 @Getter

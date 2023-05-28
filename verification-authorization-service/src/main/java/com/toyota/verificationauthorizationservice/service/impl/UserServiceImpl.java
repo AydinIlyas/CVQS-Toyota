@@ -7,21 +7,19 @@ import com.toyota.verificationauthorizationservice.domain.User;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
+import com.toyota.verificationauthorizationservice.exception.NoRolesException;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.net.http.HttpHeaders;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -35,45 +33,47 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final UserDetailsService userDetailsService;
     private final RoleRepository roleRepository;
+    private final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
     /**
-     * @param request
-     * @return
+     * Checks if a role is assigned and adds user.
+     *
+     * @param request Register Request
+     * @return Token
      */
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
-        if(request.getRoles().size()<1)return null;
-        User user=User.builder()
+        if (request.getRoles().size() < 1) {
+            logger.warn("NO ROLE FOUND FOR REGISTRATION!");
+            throw new NoRolesException("NO ROLE FOUND FOR REGISTRATION");
+        }
+        User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
-        Set<Role> set=user.getRoles();
-        if(set==null)
-        {
-            set=new HashSet<>();
-            user.setRoles(set);
-        }
-        for(String role: request.getRoles())
-        {
-            Optional<Role> roleOptional=roleRepository.findByName(role);
-            if(roleOptional.isPresent())
-            {
+        Set<Role> set = new HashSet<>();
+        user.setRoles(set);
+        for (String role : request.getRoles()) {
+            Optional<Role> roleOptional = roleRepository.findByName(role);
+            if (roleOptional.isPresent()) {
                 set.add(roleOptional.get());
             }
         }
-        if(set.size()<1)return null;
+        if (set.size() < 1) return null;
         userRepository.save(user);
-        var jwtToken=jwtService.generateToken(user);
+        var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+                        .token(jwtToken)
+                        .build();
+
     }
 
     /**
-     * @param request
-     * @return
+     * Login
+     *
+     * @param request Login Request
+     * @return Token
      */
     @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
@@ -83,31 +83,34 @@ public class UserServiceImpl implements UserService {
                         request.getPassword()
                 )
         );
-        User user=userRepository.findByUsername(request.getUsername()).orElseThrow();
-        var jwtToken=jwtService.generateToken(user);
+        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+        var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
     }
 
+
     /**
-     * @return
+     * Verification
+     *
+     * @param request HttpServletRequest
+     * @return Set<String> permissions
      */
     @Override
     public Set<String> verify(HttpServletRequest request) {
-        String authHeader=extractToken(request);
-        String username=jwtService.extractUsername(authHeader);
-        Optional<User> optionalUser=userRepository.findByUsername(username);
-        if(optionalUser.isPresent())
-        {
-            User user=optionalUser.get();
-            Collection<? extends GrantedAuthority> authorities=user.getAuthorities();
-            Set<String> permissions=authorities.stream()
+        String authHeader = extractToken(request);
+        String username = jwtService.extractUsername(authHeader);
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+            return authorities.stream()
                     .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
-            return permissions;
         }
         return null;
     }
+
     private String extractToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {

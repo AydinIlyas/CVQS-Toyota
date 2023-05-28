@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Domain for Permission entity
+ */
 @Entity
 @Getter
 @Setter

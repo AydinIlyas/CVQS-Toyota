@@ -19,15 +19,18 @@ import java.util.function.Function;
 public class JwtServiceImpl implements JwtService {
 
     private static final String SECRET_KEY="4E635166546A576E5A7234753778214125442A472D4B6150645367566B587032";
+
     /**
-     * @param jwt
-     * @return
+     * Extracts username
+     * @param jwt Token
+     * @return Username
      */
     @Override
     public String extractUsername(String jwt)
     {
         return extractClaim(jwt,Claims::getSubject);
     }
+
 
     public <T> T extractClaim(String token, Function<Claims,T> claimsResolver)
     {
@@ -36,6 +39,10 @@ public class JwtServiceImpl implements JwtService {
     }
 
 
+    /**
+     * @param token Token
+     * @return Claims
+     */
     private Claims extractAllClaims(String token)
     {
         return Jwts
@@ -53,6 +60,13 @@ public class JwtServiceImpl implements JwtService {
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(),userDetails);
     }
+
+    /**
+     * Generates jwt token
+     * @param extraClaims Extra Claims
+     * @param userDetails User information
+     * @return Token
+     */
     public String generateToken(
             Map<String,Object> extraClaims, UserDetails userDetails
     )
@@ -68,19 +82,31 @@ public class JwtServiceImpl implements JwtService {
     }
 
     /**
-     * @param jwt
-     * @param userDetails
-     * @return
+     * Checks if token is valid
+     * @param jwt Token
+     * @param userDetails User information
+     * @return boolean: if token is valid or not.
      */
     @Override
     public boolean isTokenValid(String jwt, UserDetails userDetails) {
         final String username=extractUsername(jwt);
         return (username.equals(userDetails.getUsername()))&&!isTokenExpired(jwt);
     }
+
+    /**
+     * Checks if token is expired
+     * @param token Token
+     * @return  boolean
+     */
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
+    /**
+     * Extracts expiration date
+     * @param token
+     * @return  Date
+     */
     private Date extractExpiration(String token) {
         return extractClaim(token,Claims::getExpiration);
     }

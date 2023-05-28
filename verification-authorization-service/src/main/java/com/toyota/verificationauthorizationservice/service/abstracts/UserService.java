@@ -7,6 +7,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Set;
 
+/**
+ * Interface for UserService
+ */
 public interface UserService {
     AuthenticationResponse register(RegisterRequest request);
     AuthenticationResponse login(AuthenticationRequest request);
