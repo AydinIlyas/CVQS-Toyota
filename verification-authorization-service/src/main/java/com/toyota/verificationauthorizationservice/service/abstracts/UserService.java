@@ -14,4 +14,8 @@ public interface UserService {
     AuthenticationResponse register(RegisterRequest request);
     AuthenticationResponse login(AuthenticationRequest request);
     Set<String> verify(HttpServletRequest request);
+
+    Boolean delete(String username);
+
+    Boolean updateUsername(String newUsername, String oldUsername);
 }

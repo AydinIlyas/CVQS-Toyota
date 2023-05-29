@@ -21,6 +21,7 @@ public class TTVehicleDefect {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String type;
+    @Lob
     private byte[] defectImage;
 
     private boolean deleted;

@@ -64,8 +64,8 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
-                        .token(jwtToken)
-                        .build();
+                .token(jwtToken)
+                .build();
 
     }
 
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
                         request.getPassword()
                 )
         );
-        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+        User user = userRepository.findByUsernameAndDeletedIsFalse(request.getUsername()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService {
     public Set<String> verify(HttpServletRequest request) {
         String authHeader = extractToken(request);
         String username = jwtService.extractUsername(authHeader);
-        Optional<User> optionalUser = userRepository.findByUsername(username);
+        Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
@@ -109,6 +109,43 @@ public class UserServiceImpl implements UserService {
                     .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         }
         return null;
+    }
+
+    /**
+     * Soft deletes user
+     *
+     * @param username Username of user
+     * @return Boolean
+     */
+    @Override
+    public Boolean delete(String username) {
+        Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
+        if (optionalUser.isPresent()) {
+            User user=optionalUser.get();
+            user.setDeleted(true);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param newUsername
+     * @param oldUsername
+     * @return
+     */
+    @Override
+    public Boolean updateUsername(String newUsername, String oldUsername) {
+        Optional<User> optionalUser=userRepository.findByUsernameAndDeletedIsFalse(oldUsername);
+
+        if(optionalUser.isPresent())
+        {
+            User user=optionalUser.get();
+            user.setUsername(newUsername);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 
     private String extractToken(HttpServletRequest request) {

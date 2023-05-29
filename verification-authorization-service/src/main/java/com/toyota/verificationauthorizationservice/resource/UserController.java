@@ -47,6 +47,19 @@ public class UserController {
     }
 
     /**
+     * Updating username
+     * @param newUsername New username
+     * @param oldUsername Old username for finding entity
+     * @return Boolean
+     */
+    @PutMapping("update/{oldUsername}")
+    public Boolean update(@RequestBody String newUsername,
+                          @PathVariable("oldUsername") String oldUsername)
+    {
+        return userService.updateUsername(newUsername,oldUsername);
+    }
+
+    /**
      * Verifies user bearer token
      * @param request Request
      * @return Set of permissions of the user
@@ -56,4 +69,16 @@ public class UserController {
     {
         return userService.verify(request);
     }
+
+    /**
+     * Soft deletes user
+     * @param username Username of user which will be deleted.
+     * @return Boolean
+     */
+    @PutMapping("/delete")
+    public Boolean delete(@RequestBody String username)
+    {
+        return userService.delete(username);
+    }
+
 }
