@@ -10,13 +10,16 @@ import com.toyota.usermanagementservice.exception.UserNotFoundException;
 import com.toyota.usermanagementservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.swing.text.html.Option;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,8 +30,8 @@ public class UserServiceImpl implements UserService {
     private final WebClient.Builder webClientBuilder;
 
     /**
-     * @param userDTO
-     * @return
+     * @param userDTO User to create
+     * @return boolean
      */
     @Override
     public boolean create(UserDTO userDTO) {
@@ -67,9 +70,13 @@ public class UserServiceImpl implements UserService {
     public UserResponse update(HttpServletRequest request, Long userId, UserDTO userDTO) {
         User user=userRepository.findById(userId)
                 .orElseThrow(()->new UserNotFoundException("USER NOT FOUND! Id: "+userId));
-        if(userDTO.getUsername()!=null||!user.getUsername().equals(userDTO.getUsername()))
+        if(!user.getUsername().equals(userDTO.getUsername()))
         {
             String bearer=extractToken(request);
+            if(bearer==null)
+            {
+                return null;
+            }
             webClientBuilder.build().put()
                     .uri("http://verification-authorization-service/auth/update/{oldUsername}",user.getUsername())
                     .headers(auth->auth.setBearerAuth(bearer))
@@ -78,19 +85,19 @@ public class UserServiceImpl implements UserService {
                     .bodyToMono(Boolean.class).block();
             user.setUsername(userDTO.getUsername());
         }
-        if(userDTO.getEmail()!=null||!user.getEmail().equals(userDTO.getEmail()))
+        if(!user.getEmail().equals(userDTO.getEmail()))
         {
             user.setEmail(userDTO.getEmail());
         }
-        if(userDTO.getFirstname()!=null||!user.getFirstname().equals(userDTO.getFirstname()))
+        if(!user.getFirstname().equals(userDTO.getFirstname()))
         {
             user.setFirstname(userDTO.getFirstname());
         }
-        if(userDTO.getLastname()!=null||!user.getLastname().equals(userDTO.getLastname()))
+        if(!user.getLastname().equals(userDTO.getLastname()))
         {
             user.setLastname(userDTO.getLastname());
         }
-        if(userDTO.getGender()!=null||!user.getGender().equals(userDTO.getGender()))
+        if(!user.getGender().equals(userDTO.getGender()))
         {
             user.setGender(userDTO.getGender());
         }
@@ -127,7 +134,7 @@ public class UserServiceImpl implements UserService {
                 .retrieve()
                 .bodyToMono(Boolean.class)
                 .block();
-        if(deleteFromAuth)
+        if(deleteFromAuth!=null&&deleteFromAuth)
         {
             user.setDeleted(true);
             userRepository.save(user);
@@ -145,19 +152,43 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-//    /**
-//     * @param page
-//     * @param size
-//     * @param attribute
-//     * @param desired
-//     * @param direction
-//     * @param sortField
-//     * @return
-//     */
-//    @Override
-//    public List<UserResponse> getAll(int page, int size, String attribute, String desired, String direction, String sortField) {
-//        userRepository.getList();
-//    }
+    /**
+     * @param filterFirstname
+     * @param filterLastname
+     * @param filterUsername
+     * @param filterEmail
+     * @param page
+     * @param size
+     * @param sortList
+     * @param sortOrder
+     * @return
+     */
+    @Override
+    public Page<UserResponse> getAll(String filterFirstname, String filterLastname,
+                                     String filterUsername, String filterEmail,
+                                     int page, int size, List<String> sortList,
+                                     String sortOrder) {
+        // create Pageable object using the page, size and sort details
+        Pageable pageable = PageRequest.of(page, size, Sort.by(createSortOrder(sortList, sortOrder)));
+        // fetch the page object by additionally passing pageable with the filters
+        Page<User> entities=userRepository.getUsersFiltered(filterFirstname,filterLastname,filterEmail
+                ,filterUsername,pageable);
+        return entities.map(this::convertToResponse);
+
+    }
+    private List<Sort.Order> createSortOrder(List<String> sortList, String sortDirection) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        Sort.Direction direction;
+        for (String sort : sortList) {
+            if (sortDirection != null) {
+                direction = Sort.Direction.fromString(sortDirection);
+            } else {
+                direction = Sort.Direction.DESC;
+            }
+            sorts.add(new Sort.Order(direction, sort));
+        }
+        return sorts;
+    }
 
 
     /**
@@ -170,5 +201,16 @@ public class UserServiceImpl implements UserService {
             return authorizationHeader.substring(7);
         }
         return null;
+    }
+    private UserResponse convertToResponse(User user)
+    {
+        return UserResponse.builder()
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .role(user.getRole())
+                .gender(user.getGender())
+                .build();
     }
 }

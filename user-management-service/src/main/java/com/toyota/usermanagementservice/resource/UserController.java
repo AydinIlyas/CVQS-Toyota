@@ -5,6 +5,8 @@ import com.toyota.usermanagementservice.dto.UserResponse;
 import com.toyota.usermanagementservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,19 +19,22 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-//    @GetMapping("/list")
-//    public List<UserResponse> getAll(
-//            @RequestParam(value="attribute",required = false)String attribute,
-//            @RequestParam(value="page",defaultValue = "0")int page,
-//            @RequestParam(value="size",defaultValue = "5")int size,
-//            @RequestParam(value="desired",required = false)String desired,
-//            @RequestParam(value="direction",defaultValue = "asc")String direction,
-//            @RequestParam(value="sortField",defaultValue = "id")String sortField
-//
-//    )
-//    {
-//        return userService.getAll(page,size,attribute,desired,direction,sortField);
-//    }
+    @GetMapping("/list")
+    public Page<UserResponse> getAll(
+            @RequestParam(defaultValue = "")String filterFirstname,
+            @RequestParam(defaultValue = "")String filterLastname,
+            @RequestParam(defaultValue = "")String filterUsername,
+            @RequestParam(defaultValue = "")String filterEmail,
+            @RequestParam(defaultValue = "0")int page,
+            @RequestParam(defaultValue = "5")int size,
+            @RequestParam(defaultValue = "") List<String> sortList,
+            @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder
+
+    )
+    {
+        return userService.getAll(filterFirstname,filterLastname,filterUsername
+                ,filterEmail,page,size,sortList,sortOrder.toString());
+    }
     @PostMapping("/create")
     public ResponseEntity<String> create(@RequestBody UserDTO userDTO)
     {
