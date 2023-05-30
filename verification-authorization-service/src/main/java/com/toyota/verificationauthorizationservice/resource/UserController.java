@@ -2,13 +2,16 @@ package com.toyota.verificationauthorizationservice.resource;
 
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
+import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.Collection;
 import java.util.Set;
 
@@ -59,6 +62,17 @@ public class UserController {
         return userService.updateUsername(newUsername,oldUsername);
     }
 
+    @PutMapping("/changePassword")
+    public ResponseEntity<Entity> changePassword(HttpServletRequest request,@RequestBody PasswordsDTO passwordsDTO)
+    {
+        boolean success=userService.changePassword(request,passwordsDTO);
+        if(success)
+            return ResponseEntity.status(HttpStatus.OK).build();
+        else{
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
+        }
+    }
+
     /**
      * Verifies user bearer token
      * @param request Request
@@ -80,5 +94,6 @@ public class UserController {
     {
         return userService.delete(username);
     }
+
 
 }

@@ -52,6 +52,15 @@ public class ErrorResponse {
         this.message=message;
         this.path=path;
     }
+    public ErrorResponse(HttpStatus status,Exception e,String path)
+    {
+        this();
+        this.status=status.value();
+        this.error=status.name();
+        this.message=e.getMessage();
+        this.debugMessage=e.getLocalizedMessage();
+        this.path=path;
+    }
     public void addValidationError(List<FieldError> errors)
     {
         if(subErrors==null)

@@ -6,7 +6,9 @@ import com.toyota.verificationauthorizationservice.domain.Role;
 import com.toyota.verificationauthorizationservice.domain.User;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
+import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
+import com.toyota.verificationauthorizationservice.exception.IncorrectPasswordException;
 import com.toyota.verificationauthorizationservice.exception.NoRolesException;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
@@ -121,7 +123,7 @@ public class UserServiceImpl implements UserService {
     public Boolean delete(String username) {
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
         if (optionalUser.isPresent()) {
-            User user=optionalUser.get();
+            User user = optionalUser.get();
             user.setDeleted(true);
             userRepository.save(user);
             return true;
@@ -136,17 +138,50 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Boolean updateUsername(String newUsername, String oldUsername) {
-        Optional<User> optionalUser=userRepository.findByUsernameAndDeletedIsFalse(oldUsername);
+        Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(oldUsername);
 
-        if(optionalUser.isPresent())
-        {
-            User user=optionalUser.get();
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
             user.setUsername(newUsername);
             userRepository.save(user);
+            logger.info("Updated username {} to {}", oldUsername, newUsername);
             return true;
+        } else {
+            logger.warn("User Not Found!");
+
         }
         return false;
     }
+
+    /**
+     * @param request
+     * @param passwordsDTO
+     * @return
+     */
+    @Override
+    public boolean changePassword(HttpServletRequest request, PasswordsDTO passwordsDTO) {
+        String authHeader = extractToken(request);
+        if (authHeader == null) return false;
+        String username = jwtService.extractUsername(authHeader);
+
+        Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if (passwordEncoder.matches(passwordsDTO.getOldPassword(), user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(passwordsDTO.getNewPassword()));
+                userRepository.save(user);
+                logger.info("Password changed successfully!");
+                return true;
+            } else {
+                logger.warn("Incorrect Password!");
+                throw new IncorrectPasswordException("Password is incorrect!");
+            }
+        } else {
+            logger.warn("User Not Found!");
+            return false;
+        }
+    }
+
 
     private String extractToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
