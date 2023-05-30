@@ -15,11 +15,11 @@ public class TTVehicleResponse {
 
     private String color;
 
-    private List<TTVehicleDefect> defect=new ArrayList<>();
+    private List<TTVehicleDefectDTO> defect=new ArrayList<>();
     public TTVehicleResponse() {
     }
 
-    public TTVehicleResponse(String name, LocalDate introductionDate, String color, List<TTVehicleDefect> defect) {
+    public TTVehicleResponse(String name, LocalDate introductionDate, String color, List<TTVehicleDefectDTO> defect) {
         this.name = name;
         this.introductionDate = introductionDate;
         this.color = color;
@@ -50,11 +50,11 @@ public class TTVehicleResponse {
         this.color = color;
     }
 
-    public List<TTVehicleDefect> getDefect() {
+    public List<TTVehicleDefectDTO> getDefect() {
         return defect;
     }
 
-    public void setDefect(List<TTVehicleDefect> defect) {
+    public void setDefect(List<TTVehicleDefectDTO> defect) {
         this.defect = defect;
     }
 }

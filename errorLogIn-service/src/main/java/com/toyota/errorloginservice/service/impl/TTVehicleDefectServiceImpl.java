@@ -40,7 +40,6 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             TTVehicleDefect defect = TTVehicleDefect.builder()
                     .type(defectDTO.getType())
                     .defectImage(defectDTO.getDefectImage())
-                    .location(defectDTO.getLocation())
                     .build();
             TTVehicle ttVehicle = optionalTTVehicle.get();
             ttVehicle.getDefect().add(defect);

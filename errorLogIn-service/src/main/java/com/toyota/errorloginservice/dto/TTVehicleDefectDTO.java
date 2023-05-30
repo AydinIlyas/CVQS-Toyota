@@ -16,12 +16,12 @@ public class TTVehicleDefectDTO {
     @Lob
     private byte[] defectImage;
 
-    private List<TTVehicleDefectLocation> location;
+    private List<TTVehicleDefectLocationDTO> location;
 
     public TTVehicleDefectDTO() {
     }
 
-    public TTVehicleDefectDTO(String type, byte[] defectImage, List<TTVehicleDefectLocation> location) {
+    public TTVehicleDefectDTO(String type, byte[] defectImage, List<TTVehicleDefectLocationDTO> location) {
         this.type = type;
         this.defectImage = defectImage;
         this.location = location;
@@ -43,11 +43,11 @@ public class TTVehicleDefectDTO {
         this.defectImage = defectImage;
     }
 
-    public List<TTVehicleDefectLocation> getLocation() {
+    public List<TTVehicleDefectLocationDTO> getLocation() {
         return location;
     }
 
-    public void setLocation(List<TTVehicleDefectLocation> location) {
+    public void setLocation(List<TTVehicleDefectLocationDTO> location) {
         this.location = location;
     }
 }
