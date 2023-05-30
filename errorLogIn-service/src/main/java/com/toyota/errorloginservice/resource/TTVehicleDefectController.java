@@ -2,7 +2,9 @@ package com.toyota.errorloginservice.resource;
 
 
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
+import com.toyota.errorloginservice.dto.TTVehicleDefectResponse;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,10 +28,10 @@ public class TTVehicleDefectController {
      * @return ResponseEntity with a message if it was successfully or not
      */
     @PostMapping("/add")
-    public ResponseEntity<String> addDefect(@RequestParam Long vehicleId, @RequestBody @Valid TTVehicleDefectDTO defectDTO)
+    public ResponseEntity<TTVehicleDefectResponse> addDefect(HttpServletRequest request, @RequestParam Long vehicleId, @RequestBody @Valid TTVehicleDefectDTO defectDTO)
     {
-        ttVehicleDefectService.addDefect(vehicleId,defectDTO);
-        return ResponseEntity.status(HttpStatus.OK).body("Created Defect Successfully!");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ttVehicleDefectService.addDefect(request,vehicleId,defectDTO));
     }
 
     /**

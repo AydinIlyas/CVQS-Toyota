@@ -6,6 +6,8 @@ import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,4 +23,6 @@ public interface UserService {
     Boolean updateUsername(String newUsername, String oldUsername);
 
     boolean changePassword(HttpServletRequest request,PasswordsDTO passwordsDTO);
+
+    Map<String, String> verifyAndUsername(HttpServletRequest request);
 }

@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -36,16 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         String authHeader = extractToken(request);
         try {
-            String verificationUrl = "http://verification-authorization-service//auth/verify";
+            String verificationUrl = "http://verification-authorization-service/auth/verifyAndUsername";
             if(authHeader==null)
             {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"NO BEARER TOKEN FOUND");
                 return;
             }
-            Set<String> permissions = webClientBuilder.build().get().uri(verificationUrl)
+            Map<String,String> permissions = webClientBuilder.build().get().uri(verificationUrl)
                     .headers(h -> h.setBearerAuth(authHeader))
                     .retrieve()
-                    .bodyToMono(Set.class)
+                    .bodyToMono(Map.class)
                     .block();
             if(permissions==null)
             {
@@ -55,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String endpoint=request.getRequestURI();
             if(endpoint.equals("/ttvehicle/getAll"))
             {
-                if(permissions.contains("LEADER"))
+                if(permissions.containsKey("LEADER"))
                 {
                     logger.info("USER AUTHORIZED");
                     filterChain.doFilter(request, response);
@@ -65,7 +66,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "USER NOT AUTHORIZED");
                 }
             }
-            else if (permissions.contains("OPERATOR")) {
+            else if (permissions.containsKey("OPERATOR")) {
+                if(permissions.containsKey("Username"))
+                request.setAttribute("Username",permissions.get("Username"));
                 logger.info("USER AUTHORIZED");
                 filterChain.doFilter(request, response);
             } else {

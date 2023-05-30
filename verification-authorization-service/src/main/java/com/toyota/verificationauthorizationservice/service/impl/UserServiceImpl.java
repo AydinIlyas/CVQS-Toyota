@@ -22,10 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -180,6 +177,30 @@ public class UserServiceImpl implements UserService {
             logger.warn("User Not Found!");
             return false;
         }
+    }
+
+    /**
+     * @param request
+     * @return
+     */
+    @Override
+    public Map<String, String> verifyAndUsername(HttpServletRequest request) {
+        String authHeader = extractToken(request);
+        String username = jwtService.extractUsername(authHeader);
+        Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+
+            Map<String,String> map=authorities.stream()
+                    .collect(Collectors.toMap(
+                            GrantedAuthority::getAuthority,
+                            GrantedAuthority::getAuthority
+                    ));
+            map.put("Username",username);
+            return map;
+        }
+        return null;
     }
 
 

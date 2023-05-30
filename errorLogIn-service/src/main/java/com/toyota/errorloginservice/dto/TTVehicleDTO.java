@@ -1,43 +1,79 @@
 package com.toyota.errorloginservice.dto;
 
-import jakarta.validation.constraints.NotNull;
+
+
+import com.toyota.errorloginservice.domain.EngineType;
+import com.toyota.errorloginservice.domain.TransmissionType;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * DTO for tt_vehicle used as input.
  */
 public class TTVehicleDTO {
-    @NotNull(message="Name cannot be null!")
-    private String name;
-    @NotNull(message="Introduction date cannot be null")
-    private LocalDate introductionDate;
-
+    private String model;
+    private String vin;
+    private LocalDate yearOfProduction;
+    private EngineType engineType;
+    private TransmissionType transmissionType;
     private String color;
+
+    private List<TTVehicleDefectDTO> defect;
+
+    public TTVehicleDTO(String model, String vin, LocalDate yearOfProduction,
+                        EngineType engineType, TransmissionType transmissionType,
+                        String color, List<TTVehicleDefectDTO> defect) {
+        this.model = model;
+        this.vin = vin;
+        this.yearOfProduction = yearOfProduction;
+        this.engineType = engineType;
+        this.transmissionType = transmissionType;
+        this.color = color;
+        this.defect = defect;
+    }
 
     public TTVehicleDTO() {
     }
 
-    public TTVehicleDTO(String name, LocalDate introductionDate, String color) {
-        this.name = name;
-        this.introductionDate = introductionDate;
-        this.color = color;
+    public String getModel() {
+        return model;
     }
 
-    public String getName() {
-        return name;
+    public void setModel(String model) {
+        this.model = model;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getVin() {
+        return vin;
     }
 
-    public LocalDate getIntroductionDate() {
-        return introductionDate;
+    public void setVin(String vin) {
+        this.vin = vin;
     }
 
-    public void setIntroductionDate(LocalDate introductionDate) {
-        this.introductionDate = introductionDate;
+    public LocalDate getYearOfProduction() {
+        return yearOfProduction;
+    }
+
+    public void setYearOfProduction(LocalDate yearOfProduction) {
+        this.yearOfProduction = yearOfProduction;
+    }
+
+    public EngineType getEngineType() {
+        return engineType;
+    }
+
+    public void setEngineType(EngineType engineType) {
+        this.engineType = engineType;
+    }
+
+    public TransmissionType getTransmissionType() {
+        return transmissionType;
+    }
+
+    public void setTransmissionType(TransmissionType transmissionType) {
+        this.transmissionType = transmissionType;
     }
 
     public String getColor() {
@@ -47,4 +83,14 @@ public class TTVehicleDTO {
     public void setColor(String color) {
         this.color = color;
     }
+
+    public List<TTVehicleDefectDTO> getDefect() {
+        return defect;
+    }
+
+    public void setDefect(List<TTVehicleDefectDTO> defect) {
+        this.defect = defect;
+    }
+
+
 }

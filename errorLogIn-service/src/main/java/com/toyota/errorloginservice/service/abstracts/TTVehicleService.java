@@ -13,4 +13,5 @@ public interface TTVehicleService {
     TTVehicleResponse addVehicle(TTVehicleDTO ttVehicleDTO);
     TTVehicleResponse deleteVehicle(Long vehicleId);
 
+    TTVehicleResponse updateVehicle(Long id,TTVehicleDTO ttVehicleDTO);
 }

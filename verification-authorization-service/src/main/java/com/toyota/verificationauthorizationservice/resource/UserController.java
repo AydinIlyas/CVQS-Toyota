@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.swing.text.html.parser.Entity;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -83,6 +85,18 @@ public class UserController {
     {
         return userService.verify(request);
     }
+
+    /**
+     * Verifies user bearer token
+     * @param request Request
+     * @return Map of permissions and username
+     */
+    @GetMapping("/verifyAndUsername")
+    public Map<String,String> verifyAndUsername(HttpServletRequest request)
+    {
+        return userService.verifyAndUsername(request);
+    }
+
 
     /**
      * Soft deletes user

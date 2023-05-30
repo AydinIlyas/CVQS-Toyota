@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -21,6 +22,13 @@ public class TTVehicleDefect {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String type;
+    private String description;
+    @Enumerated(value=EnumType.STRING)
+    private State state;
+    private LocalDateTime reportTime;
+
+    private String reportedBy;
+
     @Lob
     private byte[] defectImage;
 

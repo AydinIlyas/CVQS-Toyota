@@ -44,6 +44,23 @@ public class TTVehicleController {
     }
 
     /**
+     * Updates Vehicle
+     * @param id ID of vehicle
+     * @param ttVehicleDTO Updated vehicle
+     * @return ResponseEntity<TTVehicleResponse>
+     */
+    @PutMapping("/update/{id}")
+    public ResponseEntity<TTVehicleResponse> updateVehicle(@PathVariable("id") Long id,
+                                                           @RequestBody TTVehicleDTO ttVehicleDTO)
+    {
+        TTVehicleResponse response=ttVehicleService.updateVehicle(id,ttVehicleDTO);
+        if(response==null)
+        {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    /**
      * Soft deletes tt_vehicle and all associated defects and locations from the database.
      * @param vehicleId Vehicle id that should be deleted
      * @return ResponseEntity with the deleted TTVehicleResponse

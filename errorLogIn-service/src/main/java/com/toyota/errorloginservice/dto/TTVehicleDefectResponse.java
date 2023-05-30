@@ -5,16 +5,12 @@ import com.toyota.errorloginservice.domain.State;
 import com.toyota.errorloginservice.domain.TTVehicle;
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * DTO for tt_vehicle_defect used as input.
- */
-
-public class TTVehicleDefectDTO {
+public class TTVehicleDefectResponse {
+    private Long id;
     private String type;
     private String description;
     private State state;
@@ -27,18 +23,29 @@ public class TTVehicleDefectDTO {
 
     private List<TTVehicleDefectLocation> location;
 
-    public TTVehicleDefectDTO() {
+    public TTVehicleDefectResponse() {
     }
 
-    public TTVehicleDefectDTO(String type, String description, State state,
-                              LocalDateTime reportTime,
-                              byte[] defectImage, List<TTVehicleDefectLocation> location) {
+    public TTVehicleDefectResponse(Long id, String type, String description,
+                                   State state, LocalDateTime reportTime,
+                                   String reportedBy, byte[] defectImage,
+                                   List<TTVehicleDefectLocation> location) {
+        this.id = id;
         this.type = type;
         this.description = description;
         this.state = state;
         this.reportTime = reportTime;
+        this.reportedBy = reportedBy;
         this.defectImage = defectImage;
         this.location = location;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getType() {
@@ -70,7 +77,7 @@ public class TTVehicleDefectDTO {
     }
 
     public void setReportTime(LocalDateTime reportTime) {
-        this.reportTime = LocalDateTime.now();
+        this.reportTime = reportTime;
     }
 
     public String getReportedBy() {
@@ -97,4 +104,3 @@ public class TTVehicleDefectDTO {
         this.location = location;
     }
 }
-
