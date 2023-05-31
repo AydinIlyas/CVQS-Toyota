@@ -1,12 +1,7 @@
 package com.toyota.errorloginservice.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.toyota.errorloginservice.domain.State;
-import com.toyota.errorloginservice.domain.TTVehicle;
-import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 
+import com.toyota.errorloginservice.domain.State;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,6 +10,7 @@ import java.util.List;
  */
 
 public class TTVehicleDefectDTO {
+    private Long id;
     private String type;
     private String description;
     private State state;
@@ -25,20 +21,29 @@ public class TTVehicleDefectDTO {
 
     private byte[] defectImage;
 
-    private List<TTVehicleDefectLocation> location;
+    private List<TTVehicleDefectLocationDTO> location;
 
     public TTVehicleDefectDTO() {
     }
 
-    public TTVehicleDefectDTO(String type, String description, State state,
+    public TTVehicleDefectDTO(Long id,String type, String description, State state,
                               LocalDateTime reportTime,
-                              byte[] defectImage, List<TTVehicleDefectLocation> location) {
+                              byte[] defectImage, List<TTVehicleDefectLocationDTO> location) {
+        this.id=id;
         this.type = type;
         this.description = description;
         this.state = state;
         this.reportTime = reportTime;
         this.defectImage = defectImage;
         this.location = location;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getType() {
@@ -89,11 +94,11 @@ public class TTVehicleDefectDTO {
         this.defectImage = defectImage;
     }
 
-    public List<TTVehicleDefectLocation> getLocation() {
+    public List<TTVehicleDefectLocationDTO> getLocation() {
         return location;
     }
 
-    public void setLocation(List<TTVehicleDefectLocation> location) {
+    public void setLocation(List<TTVehicleDefectLocationDTO> location) {
         this.location = location;
     }
 }

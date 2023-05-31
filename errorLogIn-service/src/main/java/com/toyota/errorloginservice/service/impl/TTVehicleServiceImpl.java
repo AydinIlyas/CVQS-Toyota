@@ -5,8 +5,6 @@ import com.toyota.errorloginservice.domain.TTVehicle;
 import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
-import com.toyota.errorloginservice.dto.TTVehicleDefectResponse;
-import com.toyota.errorloginservice.dto.TTVehicleResponse;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -32,11 +29,11 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     private final Logger logger = LogManager.getLogger(TTVehicleService.class);
 
     @Override
-    public List<TTVehicleResponse> getAll() {
+    public List<TTVehicleDTO> getAll() {
 
         List<TTVehicle> ttVehicles = ttVehicleRepository.findAllByDeletedIsFalse();
         return ttVehicles.stream()
-                .map(this::convertAllToResponse)
+                .map(this::convertAllToDTO)
                 .collect(Collectors.toList());
 
     }
@@ -48,11 +45,11 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * @return TTVehicle Response which represents the added vehicle.
      */
     @Override
-    public TTVehicleResponse addVehicle(TTVehicleDTO ttVehicleDTO) {
+    public TTVehicleDTO addVehicle(TTVehicleDTO ttVehicleDTO) {
         TTVehicle ttVehicle = convertToVehicle(ttVehicleDTO);
         TTVehicle saved = ttVehicleRepository.save(ttVehicle);
         logger.info("Successfully added Vehicle!");
-        return modelMapper.map(saved, TTVehicleResponse.class);
+        return modelMapper.map(saved, TTVehicleDTO.class);
     }
 
     /**
@@ -62,7 +59,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * @return TTVehicleResponse
      */
     @Override
-    public TTVehicleResponse updateVehicle(Long id,TTVehicleDTO ttVehicleDTO)
+    public TTVehicleDTO updateVehicle(Long id,TTVehicleDTO ttVehicleDTO)
     {
         Optional<TTVehicle> optionalTTVehicle=ttVehicleRepository.findById(id);
         if(optionalTTVehicle.isPresent())
@@ -95,7 +92,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
             }
             ttVehicleRepository.save(vehicle);
             logger.info("UPDATED VEHICLE SUCCESSFULLY! ID: {}",id);
-            return convertToResponse(vehicle);
+            return convertToDTO(vehicle);
         }
         else{
             logger.warn("VEHICLE NOT FOUND! Id: {}",id);
@@ -110,7 +107,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      */
     @Override
     @Transactional
-    public TTVehicleResponse deleteVehicle(Long vehicleId) {
+    public TTVehicleDTO deleteVehicle(Long vehicleId) {
         Optional<TTVehicle> optionalTTVehicle = ttVehicleRepository.findById(vehicleId);
 
         if (optionalTTVehicle.isPresent()) {
@@ -121,7 +118,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
                 d.setDeleted(true);
             });
             ttVehicle.setDeleted(true);
-            TTVehicleResponse response = convertToResponse(ttVehicle);
+            TTVehicleDTO response = convertToDTO(ttVehicle);
             logger.info("Soft Deleted Vehicle with ID: {}", vehicleId);
             return response;
         } else {
@@ -139,23 +136,23 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * @param ttVehicle Vehicle object which will be converted to Response
      * @return TTVehicleResponse
      */
-    private TTVehicleResponse convertToResponse(TTVehicle ttVehicle) {
-        return modelMapper.map(ttVehicle, TTVehicleResponse.class);
+    private TTVehicleDTO convertToDTO(TTVehicle ttVehicle) {
+        return modelMapper.map(ttVehicle, TTVehicleDTO.class);
     }
-    private TTVehicleResponse convertAllToResponse(TTVehicle ttVehicle)
+    private TTVehicleDTO convertAllToDTO(TTVehicle ttVehicle)
     {
-        TTVehicleResponse vehicleResponse=modelMapper.map(ttVehicle, TTVehicleResponse.class);
+        TTVehicleDTO vehicleResponse=modelMapper.map(ttVehicle, TTVehicleDTO.class);
         if(ttVehicle.getDefect()!=null&&!ttVehicle.getDefect().isEmpty())
         {
-            List<TTVehicleDefectResponse> defectResponses=ttVehicle.getDefect()
-                    .stream().map(this::convertToDefectResponse).collect(Collectors.toList());
+            List<TTVehicleDefectDTO> defectResponses=ttVehicle.getDefect()
+                    .stream().map(this::convertToDefectDTO).collect(Collectors.toList());
             vehicleResponse.setDefect(defectResponses);
         }
         return vehicleResponse;
     }
-    private TTVehicleDefectResponse convertToDefectResponse(TTVehicleDefect defect)
+    private TTVehicleDefectDTO convertToDefectDTO(TTVehicleDefect defect)
     {
-        return modelMapper.map(defect, TTVehicleDefectResponse.class);
+        return modelMapper.map(defect, TTVehicleDefectDTO.class);
     }
 
     private TTVehicle convertToVehicle(TTVehicleDTO ttVehicleDTO)

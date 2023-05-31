@@ -16,7 +16,6 @@ import org.springframework.web.reactive.function.client.WebClientException;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -68,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             else if (permissions.containsKey("OPERATOR")) {
                 if(permissions.containsKey("Username"))
-                request.setAttribute("Username",permissions.get("Username"));
+                    request.setAttribute("Username",permissions.get("Username"));
                 logger.info("USER AUTHORIZED");
                 filterChain.doFilter(request, response);
             } else {

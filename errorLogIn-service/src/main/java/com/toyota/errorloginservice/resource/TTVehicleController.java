@@ -1,7 +1,6 @@
 package com.toyota.errorloginservice.resource;
 
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
-import com.toyota.errorloginservice.dto.TTVehicleResponse;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class TTVehicleController {
     private final TTVehicleService ttVehicleService;
 
     @GetMapping("/getAll")
-    public List<TTVehicleResponse> getAllVehicles()
+    public List<TTVehicleDTO> getAllVehicles()
     {
         return ttVehicleService.getAll();
     }
@@ -32,9 +31,9 @@ public class TTVehicleController {
      * @return A ResponseEntity with the added TTVehicleResponse and HTTP status
      */
     @PostMapping("/addVehicle")
-    public ResponseEntity<TTVehicleResponse> addVehicle(@RequestBody @Valid TTVehicleDTO ttVehicleDTO)
+    public ResponseEntity<TTVehicleDTO> addVehicle(@RequestBody @Valid TTVehicleDTO ttVehicleDTO)
     {
-        TTVehicleResponse response=ttVehicleService.addVehicle(ttVehicleDTO);
+        TTVehicleDTO response=ttVehicleService.addVehicle(ttVehicleDTO);
 
         if(response==null)
         {
@@ -50,10 +49,10 @@ public class TTVehicleController {
      * @return ResponseEntity<TTVehicleResponse>
      */
     @PutMapping("/update/{id}")
-    public ResponseEntity<TTVehicleResponse> updateVehicle(@PathVariable("id") Long id,
+    public ResponseEntity<TTVehicleDTO> updateVehicle(@PathVariable("id") Long id,
                                                            @RequestBody TTVehicleDTO ttVehicleDTO)
     {
-        TTVehicleResponse response=ttVehicleService.updateVehicle(id,ttVehicleDTO);
+        TTVehicleDTO response=ttVehicleService.updateVehicle(id,ttVehicleDTO);
         if(response==null)
         {
             return ResponseEntity.badRequest().build();
@@ -66,9 +65,9 @@ public class TTVehicleController {
      * @return ResponseEntity with the deleted TTVehicleResponse
      */
     @PutMapping("/deleteVehicle")
-    public ResponseEntity<TTVehicleResponse> deleteVehicle(@RequestBody Long vehicleId)
+    public ResponseEntity<TTVehicleDTO> deleteVehicle(@RequestBody Long vehicleId)
     {
-        TTVehicleResponse vehicleResponse=ttVehicleService.deleteVehicle(vehicleId);
+        TTVehicleDTO vehicleResponse=ttVehicleService.deleteVehicle(vehicleId);
         if(vehicleResponse==null)
         {
             return ResponseEntity.notFound().build();

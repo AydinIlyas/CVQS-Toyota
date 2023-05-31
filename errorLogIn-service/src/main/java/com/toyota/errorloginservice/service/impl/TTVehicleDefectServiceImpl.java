@@ -5,9 +5,7 @@ import com.toyota.errorloginservice.dao.TTVehicleRepository;
 import com.toyota.errorloginservice.domain.TTVehicle;
 import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
-import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
-import com.toyota.errorloginservice.dto.TTVehicleDefectResponse;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +37,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
      * @param defectDTO Defect object which will added to the vehicle.
      */
     @Override
-    public TTVehicleDefectResponse addDefect(HttpServletRequest request,Long vehicleId,
+    public TTVehicleDefectDTO addDefect(HttpServletRequest request,Long vehicleId,
                                              TTVehicleDefectDTO defectDTO) {
         Optional<TTVehicle> optionalTTVehicle = ttVehicleRepository.findById(vehicleId);
         if (optionalTTVehicle.isPresent()) {
@@ -49,15 +47,47 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             TTVehicle ttVehicle = optionalTTVehicle.get();
             ttVehicle.getDefect().add(defect);
             defect.setTt_vehicle(ttVehicle);
-            ttVehicleRepository.save(ttVehicle);
-            logger.info("Created defect successfully");
-            return convertToResponse(defect);
+            if(defect.getLocation()!=null)
+                for(TTVehicleDefectLocation location : defect.getLocation())
+                    location.setTt_vehicle_defect(defect);
+            TTVehicleDefect saved=ttVehicleDefectRepository.save(defect);
+            logger.info("Created defect successfully! Vehicle ID: {}, Defect ID: {}",vehicleId,defect);
+            return convertToDTO(saved);
         }
         else{
             logger.warn("Vehicle with id {} couldn't found!",vehicleId);
             throw new EntityNotFoundException("There is no Vehicle with the id: "+vehicleId);
         }
 
+    }
+
+    /**
+     * Updates defect
+     * @param id ID of defect
+     * @param defectDTO Updated defect
+     * @return TTVehicleDefectDTO updated
+     */
+    @Override
+    public TTVehicleDefectDTO update(Long id, TTVehicleDefectDTO defectDTO) {
+        Optional<TTVehicleDefect> optionalDefect=ttVehicleDefectRepository.findById(id);
+        if(optionalDefect.isPresent())
+        {
+            TTVehicleDefect defect=optionalDefect.get();
+            if(defectDTO.getType()!=null&&!defect.getType().equals(defectDTO.getType()))
+            {
+                defect.setType(defectDTO.getType());
+            }
+
+            if(defectDTO.getDescription()!=null&&!defect.getDescription().equals(defectDTO.getDescription()))
+            {
+                defect.setDescription(defectDTO.getDescription());
+            }
+            ttVehicleDefectRepository.save(defect);
+            logger.info("DEFECT UPDATED SUCCESSFULLY! DEFECT ID: {}",id);
+            return convertToDTO(defect);
+        }
+        logger.warn("DEFECT WITH NOT FOUND! DEFECT ID: {}",id);
+        throw new EntityNotFoundException("DEFECT WITH NOT FOUND! DEFECT ID: "+id);
     }
 
     /**
@@ -73,21 +103,23 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             List<TTVehicleDefectLocation> locations = defect.getLocation();
             locations.forEach(l -> l.setDeleted(true));
             defect.setDeleted(true);
-            logger.info("Soft deleted defect successfully!");
+            logger.info("Soft deleted defect successfully! DEFECT ID: {}",defectId);
         }
         else{
-            logger.warn("Defect couldn't found! Id: {}",defectId);
+            logger.warn("Defect couldn't found! ID: {}",defectId);
             throw new EntityNotFoundException("Defect with id "+defectId+"couldn't found!");
         }
     }
+
+
 
     private TTVehicleDefect convertToEntity(TTVehicleDefectDTO defectDTO)
     {
         return modelMapper.map(defectDTO,TTVehicleDefect.class);
     }
-    private TTVehicleDefectResponse convertToResponse(TTVehicleDefect defect)
+    private TTVehicleDefectDTO convertToDTO(TTVehicleDefect defect)
     {
-        return modelMapper.map(defect,TTVehicleDefectResponse.class);
+        return modelMapper.map(defect,TTVehicleDefectDTO.class);
     }
 
 }

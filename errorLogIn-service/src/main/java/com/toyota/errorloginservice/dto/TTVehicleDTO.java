@@ -12,6 +12,7 @@ import java.util.List;
  * DTO for tt_vehicle used as input.
  */
 public class TTVehicleDTO {
+    private Long id;
     private String model;
     private String vin;
     private LocalDate yearOfProduction;
@@ -21,9 +22,10 @@ public class TTVehicleDTO {
 
     private List<TTVehicleDefectDTO> defect;
 
-    public TTVehicleDTO(String model, String vin, LocalDate yearOfProduction,
+    public TTVehicleDTO(Long id,String model, String vin, LocalDate yearOfProduction,
                         EngineType engineType, TransmissionType transmissionType,
                         String color, List<TTVehicleDefectDTO> defect) {
+        this.id=id;
         this.model = model;
         this.vin = vin;
         this.yearOfProduction = yearOfProduction;
@@ -34,6 +36,14 @@ public class TTVehicleDTO {
     }
 
     public TTVehicleDTO() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getModel() {

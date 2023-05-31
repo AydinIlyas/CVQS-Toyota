@@ -33,7 +33,7 @@ public class TTVehicle {
     private String color;
     private boolean deleted;
 
-    @OneToMany(mappedBy = "tt_vehicle",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "tt_vehicle", fetch = FetchType.LAZY)
     private List<TTVehicleDefect> defect;
 
 }

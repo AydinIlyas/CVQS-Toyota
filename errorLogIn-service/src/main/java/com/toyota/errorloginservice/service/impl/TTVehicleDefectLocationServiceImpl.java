@@ -44,7 +44,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
             TTVehicleDefect defect = optionalDefect.get();
             defect.getLocation().add(location);
             location.setTt_vehicle_defect(defect);
-            defectRepository.save(defect);
+            defectLocationRepository.save(location);
             logger.info("Successfully added Location to defect with id {}",defectId);
         } else {
             logger.warn("There is no defect with id: {}",defectId);
@@ -65,7 +65,9 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
         if (optionalLocation.isPresent()) {
             TTVehicleDefectLocation location = optionalLocation.get();
             location.setDeleted(true);
-            logger.info("Deleted location successfully from defect with id: {}",location.getTt_vehicle_defect().getId());
+            defectLocationRepository.save(location);
+            logger.info("Deleted location successfully! LOCATION ID: {}, DEFECT ID:{}",
+                    location.getId(),location.getTt_vehicle_defect().getId());
         }
         else{
             logger.warn("Delete failed! Location couldn't found! Id: {}",locationId);
