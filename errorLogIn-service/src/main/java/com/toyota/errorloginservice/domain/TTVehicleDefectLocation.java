@@ -3,6 +3,7 @@ package com.toyota.errorloginservice.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 /**
  * TTVehicleDefectLocation represents tt_vehicle_defect_location entity from database.
@@ -14,6 +15,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Where(clause="deleted = FALSE")
 public class TTVehicleDefectLocation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

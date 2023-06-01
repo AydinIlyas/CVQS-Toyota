@@ -3,6 +3,7 @@ package com.toyota.errorloginservice.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Where(clause="deleted = FALSE")
 public class TTVehicleDefect {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +38,7 @@ public class TTVehicleDefect {
     @ManyToOne
     @JsonIgnore
     private TTVehicle tt_vehicle;
+
     @OneToMany(mappedBy="tt_vehicle_defect", cascade=CascadeType.ALL)
     private List<TTVehicleDefectLocation> location;
 }

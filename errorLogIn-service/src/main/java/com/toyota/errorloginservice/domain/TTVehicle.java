@@ -2,6 +2,7 @@ package com.toyota.errorloginservice.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Where(clause="deleted = FALSE")
 public class TTVehicle {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
