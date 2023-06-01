@@ -1,7 +1,6 @@
 package com.toyota.errorlistingservice.service.impl;
 
-import com.toyota.errorlistingservice.dto.TTVehicleResponse;
-import com.toyota.errorlistingservice.exceptions.AttributeNotFoundException;
+
 import com.toyota.errorlistingservice.exceptions.UnauthorizedException;
 import com.toyota.errorlistingservice.service.abstracts.ErrorListingService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,15 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
 
 /**
  * Service class for listing errors with filtering,sorting and paging.
@@ -30,36 +27,51 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     private final Logger logger= LogManager.getLogger(ErrorListingServiceImpl.class);
 
     /**
-     * @param request Request for send bearer token to errorLogin service
-     * @param sort Attribute to determine which field to sort by.
-     * @param direction Determines in which direction to sort.
-     * @param page Determines which page to show.
-     * @param size Determines how many objects are on one page.
-     * @param attribute Determines what field you are looking for.
-     * @param desiredValue The string you are looking for.
-     * @return List of VehicleResponses
+     * Getting all vehicles with paging,filtering and sorting
+     * @param request request for adding bearer tokens
+     * @param model desired vehicle model
+     * @param vin desired vehicle identity number
+     * @param engineType desired engine type
+     * @param transmissionType desired transmission type
+     * @param color desired color
+     * @param yearOfProduction desired year of production
+     * @param page page number
+     * @param size objects on a page
+     * @param sortBy sorted by Field
+     * @param sortOrder sort Direction
+     * @return vehicle objects
      */
     @Override
-    public List<TTVehicleResponse> getAll(HttpServletRequest request,String sort, String direction, Integer page,
-                                          Integer size, String attribute, String desiredValue) {
+    public Page<Object> getAll(HttpServletRequest request, int page, int size, String sortBy,
+                                     String sortOrder, String model, String vin, String yearOfProduction,
+                                     String transmissionType, String engineType, String color) {
         String authHeader=extractToken(request);
-        List<TTVehicleResponse> entities = webClientBuilder.build().get()
-                .uri("http://error-login-service/ttvehicle/getAll")
-                .headers(h->h.setBearerAuth(authHeader))
+        logger.info("Request for getAll sent");
+        List<Object> response = webClientBuilder.build().get()
+                .uri("http://error-login-service/ttvehicle/getAll",uriBuilder ->
+                        uriBuilder
+                                .queryParam("sortBy",sortBy)
+                                .queryParam("sortOrder",sortOrder)
+                                .queryParam("model",model)
+                                .queryParam("vin",vin)
+                                .queryParam("yearOfProduction",yearOfProduction)
+                                .queryParam("transmissionType",transmissionType)
+                                .queryParam("engineType",engineType)
+                                .queryParam("color",color)
+                                .build()
+                )
+                .headers(h -> h.setBearerAuth(authHeader))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<TTVehicleResponse>>() {
-                })
+                .bodyToMono(new ParameterizedTypeReference<List<Object>>() {})
                 .block();
-        if (sort != null && direction != null) {
-            logger.debug("Sorting entities by sort: {}, direction: {}",sort,direction);
-            sortEntities(entities, sort, direction);
-        }
-        if(attribute!=null&&desiredValue!=null&&entities!=null)
-        {
-            logger.debug("Searching for desired value: {}, attribute {}",desiredValue,attribute);
-            entities=filterEntities(entities,attribute,desiredValue);
-        }
-        return getPage(entities, page, size);
+        logger.info("Vehicles Successfully received!");
+        int startIndex=size*page;
+        int endIndex=Math.min(startIndex+size,response.size());
+        PageRequest pageRequest=PageRequest.of(page,size);
+        List<Object> pageContent=response.subList(startIndex,endIndex);
+        Page<Object> responsePage =new PageImpl<>(pageContent,pageRequest,response.size());
+        logger.info("Page: {} Size: {}, Total:{}",page,size,response.size());
+        return responsePage;
     }
 
     /**
@@ -73,105 +85,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
         }
         logger.warn("USER IS UNAUTHORIZED!");
         throw new UnauthorizedException("USER IS UNAUTHORIZED");
-    }
-
-    /**
-     * Specifies which attribute to sort by.
-     * @param entities list of VehicleResponses
-     * @param sort sorting attribute
-     * @param direction direction (asc/desc)
-     */
-    private void sortEntities(List<TTVehicleResponse> entities, String sort, String direction) {
-        Comparator<TTVehicleResponse> comparator;
-        if (sort.equals("name")) {
-            comparator = Comparator.comparing(TTVehicleResponse::getName);
-        } else if (sort.equals("introduction_date")) {
-            comparator = Comparator.comparing(TTVehicleResponse::getIntroductionDate);
-        } else if (sort.equals("color")) {
-            comparator = Comparator.comparing(TTVehicleResponse::getColor);
-        } else {
-            logger.warn("ATTRIBUTE FOR SORTING INVALID: "+sort);
-            throw new AttributeNotFoundException("ATTRIBUTE FOR SORTING INVALID: "+sort);
-        }
-        sort(entities, comparator, direction);
-    }
-
-
-    /**
-     * Sorts entities
-     * @param entities list of VehicleResponses
-     * @param comparator comparator
-     * @param direction direction (asc/desc)
-     */
-    private void sort(List<TTVehicleResponse> entities, Comparator<TTVehicleResponse> comparator, String direction) {
-        Collections.sort(entities, comparator);
-        if (direction.equalsIgnoreCase("desc")) {
-            Collections.reverse(entities);
-        }
-        logger.info("Sorting completed");
-    }
-
-    /**
-     * @param entities list of VehicleResponses
-     * @param attribute The field you are looking for.
-     * @param desired Desired String
-     * @return List of TTVehicleResponse
-     */
-    private List<TTVehicleResponse> filterEntities(List<TTVehicleResponse> entities, String attribute, String desired) {
-        List<TTVehicleResponse> filtered = new ArrayList<>();
-        for (TTVehicleResponse e : entities) {
-            String attributeValue = getAttributes(e,attribute);
-            if (attributeValue!=null)
-            {
-
-                Pattern pattern=Pattern.compile(desired);
-                Matcher matcher= pattern.matcher(attributeValue);
-                if(matcher.find()){
-                    filtered.add(e);
-                }
-
-            }
-        }
-        logger.info("Searching for desired value completed");
-        return filtered;
-    }
-
-    /**
-     *  Returns the attribute field you are looking for.
-     * @param entity VehicleResponse
-     * @param attribute Field name
-     * @return Field as String
-     */
-    private String getAttributes(TTVehicleResponse entity, String attribute) {
-        if (attribute.equals("name")) {
-            return entity.getName();
-        } else if (attribute.equals("introduction_date")) {
-            return entity.getIntroductionDate().toString();
-        } else if (attribute.equals("color")) {
-            return entity.getColor();
-        } else {
-            logger.warn("INVALID ATTRIBUTE: "+attribute);
-            throw new AttributeNotFoundException("INVALID ATTRIBUTE:"+attribute);
-        }
-
-    }
-
-    /**
-     * @param entities List of Vehicle Responses
-     * @param page The page number
-     * @param size Number of objects on a page.
-     * @return List of Vehicle Responses
-     */
-    private List<TTVehicleResponse> getPage(List<TTVehicleResponse> entities, Integer page, Integer size) {
-        if (page != null && size != null) {
-            logger.debug("Paging started! Page: {}, Size: {}",page,size);
-            int start = (page - 1) * size;
-            int end = Math.min(start + size, entities.size());
-            logger.info("Paging Successfully");
-            return entities.subList(start, end);
-        }
-        logger.warn("Paging skipped");
-        return entities;
     }
 }
 

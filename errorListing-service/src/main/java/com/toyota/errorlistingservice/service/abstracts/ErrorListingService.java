@@ -1,13 +1,14 @@
 package com.toyota.errorlistingservice.service.abstracts;
 
-import com.toyota.errorlistingservice.dto.TTVehicleResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 
 /**
  * Interface for declaring functions of ErrorListingServiceImpl
  */
 public interface ErrorListingService {
-    List<TTVehicleResponse> getAll(HttpServletRequest request,String sort, String direction, Integer page, Integer size, String attribute, String desiredValue);
+    Page<Object> getAll(HttpServletRequest request, int page, int size, String sort,
+                              String sortOrder, String model, String vin, String yearOfProduction,
+                              String transmissionType, String engineType, String color);
 }

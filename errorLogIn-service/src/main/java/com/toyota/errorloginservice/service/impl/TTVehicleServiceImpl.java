@@ -11,9 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,14 +28,26 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     private final ModelMapper modelMapper;
     private final Logger logger = LogManager.getLogger(TTVehicleService.class);
 
+
+    /**
+     * @param sortBy Sorted By field
+     * @param sortOrder Sort Order (ASC/DESC)
+     * @param model desired model
+     * @param vin desired vin
+     * @param yearOfProduction desired year of production
+     * @param transmissionType desired transmissiontype
+     * @param engineType desired engineType
+     * @param color desired color
+     * @return List<TTVehicleDTO>
+     */
     @Override
-    public List<TTVehicleDTO> getAll() {
-
-        List<TTVehicle> ttVehicles = ttVehicleRepository.findAllByDeletedIsFalse();
-        return ttVehicles.stream()
-                .map(this::convertAllToDTO)
-                .collect(Collectors.toList());
-
+    public List<TTVehicleDTO> getVehiclesFiltered(String sortBy, Sort.Direction sortOrder,
+                                                  String model, String vin, String yearOfProduction,
+                                                  String transmissionType, String engineType, String color) {
+        Sort sort=Sort.by(sortOrder,sortBy);
+        List<TTVehicleDTO> ttVehicles= ttVehicleRepository.getVehiclesFiltered(model,vin,yearOfProduction,transmissionType,engineType
+        ,color,sort).stream().map(this::convertAllToDTO).collect(Collectors.toList());
+        return ttVehicles;
     }
 
     /**

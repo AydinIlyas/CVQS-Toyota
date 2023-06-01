@@ -4,6 +4,7 @@ import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,29 @@ import java.util.List;
 public class TTVehicleController {
     private final TTVehicleService ttVehicleService;
 
+    /**
+     * @param model desired model
+     * @param vin desired vin
+     * @param engineType desired engineType
+     * @param transmissionType desired transmissionType
+     * @param color desired color
+     * @param yearOfProduction desired year of Production
+     * @param sortBy Sorted By field
+     * @param sortOrder Sort Order (ASC/DESC)
+     * @return List<TTVehicleDTO>
+     */
     @GetMapping("/getAll")
-    public List<TTVehicleDTO> getAllVehicles()
+    public List<TTVehicleDTO> getAllVehicles(@RequestParam(defaultValue = "") String model,
+                                             @RequestParam(defaultValue = "") String vin,
+                                             @RequestParam(defaultValue = "") String engineType,
+                                             @RequestParam(defaultValue = "") String transmissionType,
+                                             @RequestParam(defaultValue = "") String color,
+                                             @RequestParam(defaultValue = "") String yearOfProduction,
+                                             @RequestParam(defaultValue = "") String sortBy,
+                                             @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder)
     {
-        return ttVehicleService.getAll();
+        return ttVehicleService.getVehiclesFiltered(sortBy, sortOrder, model,
+                vin, yearOfProduction, transmissionType, engineType, color);
     }
 
     /**
