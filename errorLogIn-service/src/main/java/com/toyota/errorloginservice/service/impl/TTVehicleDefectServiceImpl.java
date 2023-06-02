@@ -22,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -74,6 +76,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             TTVehicleDefect defect = convertToEntity(defectDTO);
             String username=(String)request.getAttribute("Username");
             defect.setReportedBy(username);
+            defect.setReportTime(LocalDateTime.now());
             TTVehicle ttVehicle = optionalTTVehicle.get();
             ttVehicle.getDefect().add(defect);
             defect.setTt_vehicle(ttVehicle);

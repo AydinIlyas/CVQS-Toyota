@@ -2,8 +2,6 @@ package com.toyota.errorlistingservice.service.abstracts;
 
 import com.toyota.errorlistingservice.dto.PaginationResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.Sort;
-
 import java.util.List;
 
 
@@ -16,5 +14,5 @@ public interface ErrorListingService {
                                            String transmissionType, String engineType, String color);
 
     PaginationResponse<Object> getDefects(HttpServletRequest request,int page,int size,String type, String state, String reportTime, String reportedBy,
-                            String vin, Sort.Direction sortOrder, String sortBy);
+                            String vin, String sortOrder, String sortBy);
 }

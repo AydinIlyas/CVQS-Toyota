@@ -75,7 +75,7 @@ public class TTVehicleDefectDTO {
     }
 
     public void setReportTime(LocalDateTime reportTime) {
-        this.reportTime = LocalDateTime.now();
+        this.reportTime = reportTime;
     }
 
     public String getReportedBy() {

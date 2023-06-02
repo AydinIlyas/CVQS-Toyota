@@ -5,7 +5,6 @@ import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.service.impl.ErrorListingServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -81,7 +80,7 @@ public class ErrorController {
             @RequestParam(defaultValue = "") String reportTime,
             @RequestParam(defaultValue = "") String reportedBy,
             @RequestParam(defaultValue = "") String vin,
-            @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder,
+            @RequestParam(defaultValue = "ASC") String sortOrder,
             @RequestParam(defaultValue = "") String sortBy
 
 

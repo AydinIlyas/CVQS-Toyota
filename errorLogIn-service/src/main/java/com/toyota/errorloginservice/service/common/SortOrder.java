@@ -10,8 +10,8 @@ public class SortOrder {
         List<Sort.Order> sorts = new ArrayList<>();
         Sort.Direction direction;
         for (String sort : sortList) {
-            if (sortDirection != null) {
-                direction = Sort.Direction.fromString(sortDirection);
+            if (sortDirection != null&&sortDirection.equalsIgnoreCase("Asc")) {
+                direction = Sort.Direction.ASC;
             } else {
                 direction = Sort.Direction.DESC;
             }

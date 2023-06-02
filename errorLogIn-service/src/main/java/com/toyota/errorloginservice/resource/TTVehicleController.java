@@ -42,9 +42,9 @@ public class TTVehicleController {
                                                            @RequestParam(defaultValue = "") String color,
                                                            @RequestParam(defaultValue = "") String yearOfProduction,
                                                            @RequestParam(defaultValue = "") List<String> sortBy,
-                                                           @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder)
+                                                           @RequestParam(defaultValue = "ASC") String sortOrder)
     {
-        return ttVehicleService.getVehiclesFiltered(page,size,sortBy, sortOrder.toString(), model,
+        return ttVehicleService.getVehiclesFiltered(page,size,sortBy, sortOrder, model,
                 vin, yearOfProduction, transmissionType, engineType, color);
     }
 

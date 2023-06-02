@@ -7,7 +7,6 @@ import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,14 +33,14 @@ public class TTVehicleDefectController {
             @RequestParam(defaultValue ="") String reportTime,
             @RequestParam(defaultValue ="") String reportedBy,
             @RequestParam(defaultValue ="") String vin,
-            @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder,
+            @RequestParam(defaultValue = "ASC") String sortOrder,
             @RequestParam(defaultValue ="") List<String> sortBy
 
 
             )
     {
         return ttVehicleDefectService.getAllFiltered(page,size,type, state, reportTime, reportedBy,
-                vin, sortOrder.toString(), sortBy);
+                vin, sortOrder, sortBy);
     }
 
     /**

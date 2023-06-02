@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -88,7 +87,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     @Override
     public PaginationResponse<Object> getDefects(HttpServletRequest request,int page, int size,String type, String state,
                                    String reportTime, String reportedBy, String vin,
-                                   Sort.Direction sortOrder, String sortBy) {
+                                   String sortOrder, String sortBy) {
         String authHeader=extractToken(request);
         logger.info("Request for getAll sent");
         PaginationResponse<Object> response = webClientBuilder.build().get()
@@ -100,7 +99,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                                 .queryParam("sortOrder",sortOrder)
                                 .queryParam("type",type)
                                 .queryParam("state",state)
-                                .queryParam("reportTIme",reportTime)
+                                .queryParam("reportTime",reportTime)
                                 .queryParam("reportedBy",reportedBy)
                                 .queryParam("vin",vin)
                                 .build()

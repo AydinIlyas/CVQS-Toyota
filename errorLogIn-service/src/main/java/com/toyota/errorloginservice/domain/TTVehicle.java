@@ -3,7 +3,6 @@ package com.toyota.errorloginservice.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Where;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,7 +24,7 @@ public class TTVehicle {
     private Long id;
     private String model;
     private String vin;
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+
     private LocalDate yearOfProduction;
     @Enumerated(value=EnumType.STRING)
     private EngineType engineType;
