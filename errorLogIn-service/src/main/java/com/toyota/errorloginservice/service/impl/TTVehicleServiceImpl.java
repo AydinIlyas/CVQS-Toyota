@@ -3,17 +3,26 @@ package com.toyota.errorloginservice.service.impl;
 import com.toyota.errorloginservice.dao.TTVehicleRepository;
 import com.toyota.errorloginservice.domain.TTVehicle;
 import com.toyota.errorloginservice.domain.TTVehicleDefect;
+import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
+import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
+import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
+import com.toyota.errorloginservice.service.common.SortOrder;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,20 +44,23 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * @param model desired model
      * @param vin desired vin
      * @param yearOfProduction desired year of production
-     * @param transmissionType desired transmissiontype
+     * @param transmissionType desired transmission type
      * @param engineType desired engineType
      * @param color desired color
      * @return List<TTVehicleDTO>
      */
     @Override
-    public List<TTVehicleDTO> getVehiclesFiltered(String sortBy, Sort.Direction sortOrder,
+    public PaginationResponse<TTVehicleDTO> getVehiclesFiltered(int page,int size,List<String> sortBy, String sortOrder,
                                                   String model, String vin, String yearOfProduction,
                                                   String transmissionType, String engineType, String color) {
-        Sort sort=Sort.by(sortOrder,sortBy);
-        List<TTVehicleDTO> ttVehicles= ttVehicleRepository.getVehiclesFiltered(model,vin,yearOfProduction,transmissionType,engineType
-        ,color,sort).stream().map(this::convertAllToDTO).collect(Collectors.toList());
-        return ttVehicles;
+        Pageable pageable= PageRequest.of(page,size,Sort.by(SortOrder.createSortOrder(sortBy,sortOrder)));
+        Page<TTVehicle> pageResponse=ttVehicleRepository.getVehiclesFiltered(model,vin,yearOfProduction,
+                transmissionType,engineType
+        ,color,pageable);
+        List<TTVehicleDTO>ttVehicleDTOS=pageResponse.stream().map(this::convertAllToDTO).collect(Collectors.toList());
+        return new PaginationResponse<>(ttVehicleDTOS,pageResponse);
     }
+
 
     /**
      * Adds TTVehicle to database.
@@ -164,9 +176,19 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     }
     private TTVehicleDefectDTO convertToDefectDTO(TTVehicleDefect defect)
     {
-        return modelMapper.map(defect, TTVehicleDefectDTO.class);
+        TTVehicleDefectDTO defectDTO=modelMapper.map(defect, TTVehicleDefectDTO.class);
+        if(defect.getLocation()!=null&&!defect.getLocation().isEmpty())
+        {
+            List<TTVehicleDefectLocationDTO> locationDTO=defect.getLocation().stream()
+                    .map(this::convertToLocationDto).collect(Collectors.toList());
+            defectDTO.setLocation(locationDTO);
+        }
+        return defectDTO;
     }
-
+    private TTVehicleDefectLocationDTO convertToLocationDto(TTVehicleDefectLocation location)
+    {
+        return modelMapper.map(location,TTVehicleDefectLocationDTO.class);
+    }
     private TTVehicle convertToVehicle(TTVehicleDTO ttVehicleDTO)
     {
         return modelMapper.map(ttVehicleDTO,TTVehicle.class);

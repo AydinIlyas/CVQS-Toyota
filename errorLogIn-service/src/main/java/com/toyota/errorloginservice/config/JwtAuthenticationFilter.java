@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             String endpoint=request.getRequestURI();
-            if(endpoint.equals("/ttvehicle/getAll"))
+            if(endpoint.equals("/ttvehicle/getAll")||endpoint.equals("/ttvehicleDefect/getAll"))
             {
                 if(permissions.containsKey("LEADER"))
                 {

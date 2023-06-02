@@ -27,6 +27,7 @@ public class TTVehicleDefect {
     private String description;
     @Enumerated(value=EnumType.STRING)
     private State state;
+    @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime reportTime;
 
     private String reportedBy;

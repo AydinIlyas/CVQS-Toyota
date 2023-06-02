@@ -1,6 +1,7 @@
 package com.toyota.errorlistingservice.service.impl;
 
 
+import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.exceptions.UnauthorizedException;
 import com.toyota.errorlistingservice.service.abstracts.ErrorListingService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -42,14 +41,16 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @return vehicle objects
      */
     @Override
-    public Page<Object> getAll(HttpServletRequest request, int page, int size, String sortBy,
-                                     String sortOrder, String model, String vin, String yearOfProduction,
-                                     String transmissionType, String engineType, String color) {
+    public PaginationResponse<Object> getVehicles(HttpServletRequest request, int page, int size, List<String> sortBy,
+                                    String sortOrder, String model, String vin, String yearOfProduction,
+                                    String transmissionType, String engineType, String color) {
         String authHeader=extractToken(request);
         logger.info("Request for getAll sent");
-        List<Object> response = webClientBuilder.build().get()
+        PaginationResponse<Object> response = webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicle/getAll",uriBuilder ->
                         uriBuilder
+                                .queryParam("page",page)
+                                .queryParam("size",size)
                                 .queryParam("sortBy",sortBy)
                                 .queryParam("sortOrder",sortOrder)
                                 .queryParam("model",model)
@@ -62,16 +63,56 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                 )
                 .headers(h -> h.setBearerAuth(authHeader))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<Object>>() {})
+                .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {})
                 .block();
         logger.info("Vehicles Successfully received!");
-        int startIndex=size*page;
-        int endIndex=Math.min(startIndex+size,response.size());
-        PageRequest pageRequest=PageRequest.of(page,size);
-        List<Object> pageContent=response.subList(startIndex,endIndex);
-        Page<Object> responsePage =new PageImpl<>(pageContent,pageRequest,response.size());
-        logger.info("Page: {} Size: {}, Total:{}",page,size,response.size());
-        return responsePage;
+        if(response!=null)
+            logger.info("Page: {} Size: {}, Total:{}",page,size,response.getPageable().getTotalElements());
+        return response;
+    }
+
+    /**
+     * Getting vehicles with paging, filtering and sorting. Sends request to errorLogin.
+     * @param request request for sending token to errorLogin
+     * @param page page Number starts from 0
+     * @param size entity amount on a page
+     * @param type desired type of defect
+     * @param state desired state of defect
+     * @param reportTime desired reportTime of defect
+     * @param reportedBy desired reporter
+     * @param vin desired vehicle id number
+     * @param sortOrder desired sorting direction ASC,DESC
+     * @param sortBy ordered by fields
+     * @return Custom paging response
+     */
+    @Override
+    public PaginationResponse<Object> getDefects(HttpServletRequest request,int page, int size,String type, String state,
+                                   String reportTime, String reportedBy, String vin,
+                                   Sort.Direction sortOrder, String sortBy) {
+        String authHeader=extractToken(request);
+        logger.info("Request for getAll sent");
+        PaginationResponse<Object> response = webClientBuilder.build().get()
+                .uri("http://error-login-service/ttvehicleDefect/getAll",uriBuilder ->
+                        uriBuilder
+                                .queryParam("page",page)
+                                .queryParam("size",size)
+                                .queryParam("sortBy",sortBy)
+                                .queryParam("sortOrder",sortOrder)
+                                .queryParam("type",type)
+                                .queryParam("state",state)
+                                .queryParam("reportTIme",reportTime)
+                                .queryParam("reportedBy",reportedBy)
+                                .queryParam("vin",vin)
+                                .build()
+                )
+                .headers(h -> h.setBearerAuth(authHeader))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {})
+                .block();
+        logger.info("Vehicles Successfully received!");
+        if(response!=null)
+            logger.info("Page: {} Size: {}, Total:{}",page,size,response.getPageable().getTotalElements());
+        return response;
     }
 
     /**

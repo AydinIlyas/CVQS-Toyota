@@ -1,16 +1,19 @@
 package com.toyota.errorloginservice.resource;
 
 
+import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.text.html.parser.Entity;
+import java.util.List;
 
 
 /**
@@ -21,6 +24,25 @@ import javax.swing.text.html.parser.Entity;
 @RequiredArgsConstructor
 public class TTVehicleDefectController {
     private final TTVehicleDefectService ttVehicleDefectService;
+
+    @GetMapping("getAll")
+    public PaginationResponse<TTVehicleDefectDTO> getAllFiltered(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue ="5") int size,
+            @RequestParam(defaultValue ="") String type,
+            @RequestParam(defaultValue ="") String state,
+            @RequestParam(defaultValue ="") String reportTime,
+            @RequestParam(defaultValue ="") String reportedBy,
+            @RequestParam(defaultValue ="") String vin,
+            @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder,
+            @RequestParam(defaultValue ="") List<String> sortBy
+
+
+            )
+    {
+        return ttVehicleDefectService.getAllFiltered(page,size,type, state, reportTime, reportedBy,
+                vin, sortOrder.toString(), sortBy);
+    }
 
     /**
      * Adding defect to tt_vehicle

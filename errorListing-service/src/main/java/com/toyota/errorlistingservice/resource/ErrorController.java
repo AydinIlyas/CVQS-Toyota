@@ -1,14 +1,17 @@
 package com.toyota.errorlistingservice.resource;
 
 
+import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.service.impl.ErrorListingServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 /**
@@ -35,26 +38,57 @@ public class ErrorController {
      * @param sortOrder sort Direction
      * @return vehicle objects
      */
-    @GetMapping("/getAll")
-    public Page<Object> getAll(HttpServletRequest request,
-                                     @RequestParam(defaultValue = "1") int page,
-                                     @RequestParam(defaultValue = "5") int size,
-                                     @RequestParam(defaultValue = "") String sortBy,
-                                     @RequestParam(defaultValue = "ASC") String sortOrder,
-                                     @RequestParam(defaultValue = "") String filterModel,
-                                     @RequestParam(defaultValue = "") String filterVin,
-                                     @RequestParam(defaultValue = "") String filterYearOfProduction,
-                                     @RequestParam(defaultValue = "") String filterTransmissionType,
-                                     @RequestParam(defaultValue = "") String filterEngineType,
-                                     @RequestParam(defaultValue = "") String filterColor
+    @GetMapping("/getVehicles")
+    public PaginationResponse<Object> getAll(HttpServletRequest request,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "5") int size,
+                                             @RequestParam(defaultValue = "") List<String> sortBy,
+                                             @RequestParam(defaultValue = "ASC") String sortOrder,
+                                             @RequestParam(defaultValue = "") String filterModel,
+                                             @RequestParam(defaultValue = "") String filterVin,
+                                             @RequestParam(defaultValue = "") String filterYearOfProduction,
+                                             @RequestParam(defaultValue = "") String filterTransmissionType,
+                                             @RequestParam(defaultValue = "") String filterEngineType,
+                                             @RequestParam(defaultValue = "") String filterColor
     )
     {
-        return service.getAll(request, page, size, sortBy, sortOrder,
+        return service.getVehicles(request, page, size, sortBy, sortOrder,
                 filterModel, filterVin, filterYearOfProduction, filterTransmissionType,
                 filterEngineType, filterColor);
+    }
+
+    /**
+     * Request for getting vehicles with paging, filtering and sorting
+     * @param request request for sending token to errorLogin
+     * @param page page Number starts from 0
+     * @param size entity amount on a page
+     * @param type desired type of defect
+     * @param state desired state of defect
+     * @param reportTime desired reportTime of defect
+     * @param reportedBy desired reporter
+     * @param vin desired vehicle id number
+     * @param sortOrder desired sorting direction ASC,DESC
+     * @param sortBy ordered by fields
+     * @return Custom paging response
+     */
+    @GetMapping("getDefects")
+    public PaginationResponse<Object> getAllFiltered(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "") String type,
+            @RequestParam(defaultValue = "") String state,
+            @RequestParam(defaultValue = "") String reportTime,
+            @RequestParam(defaultValue = "") String reportedBy,
+            @RequestParam(defaultValue = "") String vin,
+            @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder,
+            @RequestParam(defaultValue = "") String sortBy
 
 
-
+    )
+    {
+        return service.getDefects(request,page,size,type, state, reportTime, reportedBy,
+                vin, sortOrder, sortBy);
     }
 
 

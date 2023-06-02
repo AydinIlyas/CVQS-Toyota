@@ -1,5 +1,6 @@
 package com.toyota.errorloginservice.resource;
 
+import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import jakarta.validation.Valid;
@@ -32,16 +33,18 @@ public class TTVehicleController {
      * @return List<TTVehicleDTO>
      */
     @GetMapping("/getAll")
-    public List<TTVehicleDTO> getAllVehicles(@RequestParam(defaultValue = "") String model,
-                                             @RequestParam(defaultValue = "") String vin,
-                                             @RequestParam(defaultValue = "") String engineType,
-                                             @RequestParam(defaultValue = "") String transmissionType,
-                                             @RequestParam(defaultValue = "") String color,
-                                             @RequestParam(defaultValue = "") String yearOfProduction,
-                                             @RequestParam(defaultValue = "") String sortBy,
-                                             @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder)
+    public PaginationResponse<TTVehicleDTO> getAllVehicles(@RequestParam(defaultValue = "") int page,
+                                                           @RequestParam(defaultValue = "") int size,
+                                                           @RequestParam(defaultValue = "") String model,
+                                                           @RequestParam(defaultValue = "") String vin,
+                                                           @RequestParam(defaultValue = "") String engineType,
+                                                           @RequestParam(defaultValue = "") String transmissionType,
+                                                           @RequestParam(defaultValue = "") String color,
+                                                           @RequestParam(defaultValue = "") String yearOfProduction,
+                                                           @RequestParam(defaultValue = "") List<String> sortBy,
+                                                           @RequestParam(defaultValue = "ASC") Sort.Direction sortOrder)
     {
-        return ttVehicleService.getVehiclesFiltered(sortBy, sortOrder, model,
+        return ttVehicleService.getVehiclesFiltered(page,size,sortBy, sortOrder.toString(), model,
                 vin, yearOfProduction, transmissionType, engineType, color);
     }
 

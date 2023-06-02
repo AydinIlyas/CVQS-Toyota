@@ -5,19 +5,26 @@ import com.toyota.errorloginservice.dao.TTVehicleRepository;
 import com.toyota.errorloginservice.domain.TTVehicle;
 import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
+import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
+import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
+import com.toyota.errorloginservice.service.common.SortOrder;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing tt_vehicle_defect data.
@@ -31,6 +38,29 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     private final Logger logger= LogManager.getLogger(TTVehicleDefectServiceImpl.class);
 
 
+
+
+    /**
+     * @param type desired type of defect
+     * @param state desired state of defect
+     * @param reportTime desired reportTime of defect
+     * @param reportedBy desired reporter of defect
+     * @param vin desired vin of defect
+     * @param sortOrder desired sort direction
+     * @param sortBy desired fields for sorting
+     * @return Page of defects
+     */
+    @Override
+    public PaginationResponse<TTVehicleDefectDTO> getAllFiltered(int page,int size, String type, String state, String reportTime,
+                                                   String reportedBy, String vin, String sortOrder,
+                                                   List<String> sortBy) {
+        Pageable pageable= PageRequest.of(page,size,Sort.by(SortOrder.createSortOrder(sortBy,sortOrder)));
+        Page<TTVehicleDefect> pageResponse=ttVehicleDefectRepository
+                .getDefectsFiltered(type,state,reportTime,reportedBy,vin,pageable);
+        List<TTVehicleDefectDTO> ttVehicleDefectDTOS=pageResponse.stream().map(this::convertAllToDTO).collect(Collectors.toList());
+
+        return new PaginationResponse<>(ttVehicleDefectDTOS,pageResponse);
+    }
     /**
      * Adds a defect to the vehicle if present.
      * @param vehicleId Vehicle id of the vehicle which has the defect.
@@ -90,6 +120,9 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
         throw new EntityNotFoundException("DEFECT WITH NOT FOUND! DEFECT ID: "+id);
     }
 
+
+
+
     /**
      * Soft deletes defect and associated locations, if present.
      * @param defectId Defect id of the defect which will be deleted.
@@ -120,6 +153,21 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     private TTVehicleDefectDTO convertToDTO(TTVehicleDefect defect)
     {
         return modelMapper.map(defect,TTVehicleDefectDTO.class);
+    }
+    private TTVehicleDefectDTO convertAllToDTO(TTVehicleDefect defect)
+    {
+        TTVehicleDefectDTO defectDto=modelMapper.map(defect,TTVehicleDefectDTO.class);
+        if(defect.getLocation()!=null&&!defect.getLocation().isEmpty())
+        {
+            List<TTVehicleDefectLocationDTO> locationDto=defect.getLocation().stream().
+                    map(this::convertToLocationDTO).collect(Collectors.toList());
+            defectDto.setLocation(locationDto);
+        }
+        return defectDto;
+    }
+    private TTVehicleDefectLocationDTO convertToLocationDTO(TTVehicleDefectLocation location)
+    {
+        return modelMapper.map(location,TTVehicleDefectLocationDTO.class);
     }
 
 }
