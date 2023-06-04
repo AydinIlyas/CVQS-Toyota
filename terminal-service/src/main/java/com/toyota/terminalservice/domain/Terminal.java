@@ -8,12 +8,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
+/**
+ * Terminal Class representing terminal Entity
+ */
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Where(clause = "deleted=FALSE")
 public class Terminal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +27,6 @@ public class Terminal {
     private String name;
 
     private boolean isActive;
+    private boolean deleted;
 
 }
