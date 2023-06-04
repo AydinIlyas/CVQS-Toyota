@@ -5,8 +5,12 @@ import com.toyota.usermanagementservice.domain.Role;
 import lombok.Builder;
 
 import java.util.Set;
-@Builder
+
+/**
+ * Response Dto for user. Without password field.
+ */
 public class UserResponse {
+    private Long id;
     private String firstname;
     private String lastname;
     private String username;
@@ -14,7 +18,7 @@ public class UserResponse {
     private Set<Role> role;
     private Gender gender;
 
-    public UserResponse(String firstname, String lastname, String username, String email, Set<Role> role, Gender gender) {
+    public UserResponse(Long id,String firstname, String lastname, String username, String email, Set<Role> role, Gender gender) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.username = username;
@@ -24,6 +28,14 @@ public class UserResponse {
     }
 
     public UserResponse() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstname() {

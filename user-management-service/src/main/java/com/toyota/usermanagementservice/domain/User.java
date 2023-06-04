@@ -5,13 +5,15 @@ import lombok.*;
 
 import java.util.Set;
 
+/**
+ * Users class represents users entity in database
+ */
 @Entity
 @Table(name="users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +26,7 @@ public class User {
     @Column(unique = true)
     private String email;
     private Set<Role> role;
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     private boolean deleted;

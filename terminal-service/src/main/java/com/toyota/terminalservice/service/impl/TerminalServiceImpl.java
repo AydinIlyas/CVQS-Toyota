@@ -37,7 +37,7 @@ public class TerminalServiceImpl implements TerminalService {
      * @return Page of terminals
      */
     @Override
-    public Page<TerminalDTO> getActiveTerminals(int page,int size,String name,boolean isActive,
+    public Page<TerminalDTO> getTerminals(int page,int size,String name,boolean isActive,
                                                 String sortBy,String sortDirection)
     {
         Pageable pageable= PageRequest.of(page,size,Sort.by(createSortOrder(sortBy,sortDirection)));

@@ -1,6 +1,7 @@
 package com.toyota.usermanagementservice.advice;
 
 import com.toyota.usermanagementservice.exception.UnexpectedException;
+import com.toyota.usermanagementservice.exception.UserAlreadyExistsException;
 import com.toyota.usermanagementservice.exception.UserNotFoundException;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +38,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return
      */
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFound(UserNotFoundException ex) {
+    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, ex, getRequestPath());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -48,9 +49,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return
      */
     @ExceptionHandler(UnexpectedException.class)
-    public ResponseEntity<Object> handleEntityNotFound(UnexpectedException ex) {
+    public ResponseEntity<Object> handleUnexpectedException(UnexpectedException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex, getRequestPath());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    /**
+     * Handles Unexpected exception
+     *
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex, getRequestPath());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     /**

@@ -39,7 +39,7 @@ public class TerminalController {
                                                 @RequestParam(defaultValue = "name")String sortBy,
                                                 @RequestParam(defaultValue="ASC") String sortDirection)
     {
-        return terminalService.getActiveTerminals(page,size,name,isActive,sortBy,sortDirection);
+        return terminalService.getTerminals(page,size,name,isActive,sortBy,sortDirection);
     }
 
     /**

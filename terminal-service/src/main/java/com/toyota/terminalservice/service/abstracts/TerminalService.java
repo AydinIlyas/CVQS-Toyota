@@ -17,7 +17,7 @@ public interface TerminalService {
      * @param sortDirection Sort Direction (ASC/DESC)
      * @return Page of terminals
      */
-    Page<TerminalDTO> getActiveTerminals(int page,int size,String name,boolean isActive,
+    Page<TerminalDTO> getTerminals(int page,int size,String name,boolean isActive,
                                          String sortBy,String sortDirection);
 
     /**
