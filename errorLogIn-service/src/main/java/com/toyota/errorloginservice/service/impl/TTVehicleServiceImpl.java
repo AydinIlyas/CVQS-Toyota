@@ -72,8 +72,8 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     public TTVehicleDTO addVehicle(TTVehicleDTO ttVehicleDTO) {
         TTVehicle ttVehicle = convertToVehicle(ttVehicleDTO);
         TTVehicle saved = ttVehicleRepository.save(ttVehicle);
-        logger.info("Successfully added Vehicle!");
-        return modelMapper.map(saved, TTVehicleDTO.class);
+        logger.info("Successfully added Vehicle! ID: {}",saved.getId());
+        return convertToDTO(saved);
     }
 
     /**
@@ -161,6 +161,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * @return TTVehicleResponse
      */
     private TTVehicleDTO convertToDTO(TTVehicle ttVehicle) {
+        if(ttVehicle==null) return null;
         return modelMapper.map(ttVehicle, TTVehicleDTO.class);
     }
     private TTVehicleDTO convertAllToDTO(TTVehicle ttVehicle)
