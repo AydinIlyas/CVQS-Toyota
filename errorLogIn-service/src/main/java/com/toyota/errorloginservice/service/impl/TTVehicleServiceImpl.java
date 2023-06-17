@@ -54,7 +54,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
                 transmissionType,engineType
         ,color,pageable);
         List<TTVehicleDTO>ttVehicleDTOS=pageResponse.stream().map(
-                mapUtil::convertVehiceWithAllToDTO
+                mapUtil::convertVehicleWithAllToDTO
         ).collect(Collectors.toList());
         return new PaginationResponse<>(ttVehicleDTOS,pageResponse);
     }
@@ -71,7 +71,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
         TTVehicle ttVehicle = mapUtil.convertVehicleDTOToEntity(ttVehicleDTO);
         TTVehicle saved = ttVehicleRepository.save(ttVehicle);
         logger.info("Successfully added Vehicle! ID: {}",saved.getId());
-        return mapUtil.convertVehiceWithAllToDTO(saved);
+        return mapUtil.convertVehicleWithAllToDTO(saved);
     }
 
     /**

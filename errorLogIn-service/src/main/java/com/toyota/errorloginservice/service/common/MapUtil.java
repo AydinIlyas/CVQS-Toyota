@@ -28,7 +28,7 @@ public class MapUtil {
         if(ttVehicle==null) return null;
         return modelMapper.map(ttVehicle, TTVehicleDTO.class);
     }
-    public TTVehicleDTO convertVehiceWithAllToDTO(TTVehicle ttVehicle)
+    public TTVehicleDTO convertVehicleWithAllToDTO(TTVehicle ttVehicle)
     {
         TTVehicleDTO vehicleResponse=modelMapper.map(ttVehicle, TTVehicleDTO.class);
         if(ttVehicle.getDefect()!=null&&!ttVehicle.getDefect().isEmpty())
