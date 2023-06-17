@@ -76,7 +76,6 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             TTVehicleDefect defect = convertToEntity(defectDTO);
             String username=(String)request.getAttribute("Username");
             defect.setReportedBy(username);
-            defect.setReportTime(LocalDateTime.now());
             TTVehicle ttVehicle = optionalTTVehicle.get();
             ttVehicle.getDefect().add(defect);
             defect.setTt_vehicle(ttVehicle);
@@ -115,6 +114,10 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             {
                 defect.setDescription(defectDTO.getDescription());
             }
+            if(defectDTO.getState()!=null&&!defect.getState().equals(defectDTO.getState()))
+            {
+                defect.setState(defectDTO.getState());
+            }
             ttVehicleDefectRepository.save(defect);
             logger.info("DEFECT UPDATED SUCCESSFULLY! DEFECT ID: {}",id);
             return convertToDTO(defect);
@@ -139,6 +142,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             List<TTVehicleDefectLocation> locations = defect.getLocation();
             locations.forEach(l -> l.setDeleted(true));
             defect.setDeleted(true);
+            ttVehicleDefectRepository.save(defect);
             logger.info("Soft deleted defect successfully! DEFECT ID: {}",defectId);
         }
         else{

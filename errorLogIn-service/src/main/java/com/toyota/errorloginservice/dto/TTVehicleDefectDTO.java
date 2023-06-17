@@ -27,13 +27,12 @@ public class TTVehicleDefectDTO {
     }
 
     public TTVehicleDefectDTO(Long id,String type, String description, State state,
-                              LocalDateTime reportTime,
                               byte[] defectImage, List<TTVehicleDefectLocationDTO> location) {
         this.id=id;
         this.type = type;
         this.description = description;
         this.state = state;
-        this.reportTime = reportTime;
+        this.reportTime=LocalDateTime.now();
         this.defectImage = defectImage;
         this.location = location;
     }
