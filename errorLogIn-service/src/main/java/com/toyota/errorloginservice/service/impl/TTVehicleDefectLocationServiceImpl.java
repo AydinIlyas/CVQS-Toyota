@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -42,6 +43,8 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
                     .y_Axis(defectLocationDTO.getY_Axis())
                     .build();
             TTVehicleDefect defect = optionalDefect.get();
+            if(defect.getLocation()==null)
+                defect.setLocation(new ArrayList<>());
             defect.getLocation().add(location);
             location.setTt_vehicle_defect(defect);
             defectLocationRepository.save(location);
