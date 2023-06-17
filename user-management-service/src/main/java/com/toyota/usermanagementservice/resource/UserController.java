@@ -1,5 +1,6 @@
 package com.toyota.usermanagementservice.resource;
 
+import com.toyota.usermanagementservice.domain.Role;
 import com.toyota.usermanagementservice.dto.UserDTO;
 import com.toyota.usermanagementservice.dto.UserResponse;
 import com.toyota.usermanagementservice.service.abstracts.UserService;
@@ -64,9 +65,21 @@ public class UserController {
     }
 
     @PutMapping("update/{user_id}")
-    public UserResponse update (HttpServletRequest request,@PathVariable("user_id") Long user_id,@RequestBody UserDTO userDTO)
+    public UserResponse update (HttpServletRequest request,
+                                @PathVariable("user_id") Long user_id,
+                                @RequestBody UserDTO userDTO)
     {
         return userService.update(request,user_id,userDTO);
+    }
+    @PutMapping("/role/add/{user_id}")
+    public ResponseEntity<UserResponse> addRole(HttpServletRequest request,
+                                                @PathVariable("user_id") Long user_id,
+                                                @RequestBody Role role)
+    {
+        UserResponse response=userService.addRole(request,user_id,role);
+        if(response==null)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @PutMapping("/delete")
     public UserResponse deleteUser(@RequestBody Long userId, HttpServletRequest request)

@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.text.html.parser.Entity;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Controller for handling authentication related requests.
@@ -28,84 +25,89 @@ public class UserController {
 
     /**
      * Calls UserService registering function.
+     *
      * @param request Request for registering.
      * @return Boolean
      */
     @PostMapping("/register")
-    public Boolean register(@RequestBody RegisterRequest request)
-    {
-        AuthenticationResponse response=userService.register(request);
-        if(response==null)return false;
-        else return true;
+    public Boolean register(@RequestBody RegisterRequest request) {
+        AuthenticationResponse response = userService.register(request);
+        return response != null;
     }
 
     /**
      * Calls user service login function.
+     *
      * @param request Login Request
      * @return ResponseEntity of token
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request)
-    {
-        AuthenticationResponse response=userService.login(request);
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
+        AuthenticationResponse response = userService.login(request);
         return ResponseEntity.ok(response);
     }
 
     /**
      * Updating username
+     *
      * @param newUsername New username
      * @param oldUsername Old username for finding entity
      * @return Boolean
      */
     @PutMapping("update/{oldUsername}")
     public Boolean update(@RequestBody String newUsername,
-                          @PathVariable("oldUsername") String oldUsername)
-    {
-        return userService.updateUsername(newUsername,oldUsername);
+                          @PathVariable("oldUsername") String oldUsername) {
+        return userService.updateUsername(newUsername, oldUsername);
     }
 
-    @PutMapping("/changePassword")
-    public ResponseEntity<Entity> changePassword(HttpServletRequest request,@RequestBody PasswordsDTO passwordsDTO)
+    @PutMapping("/addRole/{username}")
+    public boolean addRole(@PathVariable("username")String username,@RequestBody String role)
     {
-        boolean success=userService.changePassword(request,passwordsDTO);
-        if(success)
+        return userService.addRole(username,role);
+    }
+
+
+    @PutMapping("/changePassword")
+    public ResponseEntity<Entity> changePassword(HttpServletRequest request, @RequestBody PasswordsDTO passwordsDTO) {
+        boolean success = userService.changePassword(request, passwordsDTO);
+        if (success)
             return ResponseEntity.status(HttpStatus.OK).build();
-        else{
+        else {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
         }
     }
 
     /**
      * Verifies user bearer token
+     *
      * @param request Request
      * @return Set of permissions of the user
      */
     @GetMapping("/verify")
-    public Set<String> verify(HttpServletRequest request)
-    {
+    public Set<String> verify(HttpServletRequest request) {
         return userService.verify(request);
     }
 
     /**
      * Verifies user bearer token
+     *
      * @param request Request
      * @return Map of permissions and username
      */
     @GetMapping("/verifyAndUsername")
-    public Map<String,String> verifyAndUsername(HttpServletRequest request)
-    {
+    public Map<String, String> verifyAndUsername(HttpServletRequest request) {
         return userService.verifyAndUsername(request);
     }
 
 
     /**
      * Soft deletes user
+     *
      * @param username Username of user which will be deleted.
      * @return Boolean
      */
     @PutMapping("/delete")
-    public Boolean delete(@RequestBody String username)
-    {
+    public Boolean delete(@RequestBody String username) {
         return userService.delete(username);
     }
 

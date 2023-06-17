@@ -1,5 +1,6 @@
 package com.toyota.usermanagementservice.service.abstracts;
 
+import com.toyota.usermanagementservice.domain.Role;
 import com.toyota.usermanagementservice.dto.UserDTO;
 import com.toyota.usermanagementservice.dto.UserResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,4 +15,6 @@ public interface UserService {
 
     Page<UserResponse> getAll(String firstname, String lastname, String username, String email,
                               int page, int size, List<String> sortList, String sortOrder);
+
+    UserResponse addRole(HttpServletRequest request,Long userId,Role roles);
 }

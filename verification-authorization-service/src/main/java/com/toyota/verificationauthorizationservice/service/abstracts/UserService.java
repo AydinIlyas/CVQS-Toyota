@@ -6,7 +6,6 @@ import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,4 +24,6 @@ public interface UserService {
     boolean changePassword(HttpServletRequest request,PasswordsDTO passwordsDTO);
 
     Map<String, String> verifyAndUsername(HttpServletRequest request);
+
+    boolean addRole(String username,String role);
 }

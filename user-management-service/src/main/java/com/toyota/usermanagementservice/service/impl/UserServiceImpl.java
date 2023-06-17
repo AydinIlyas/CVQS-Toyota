@@ -1,6 +1,7 @@
 package com.toyota.usermanagementservice.service.impl;
 
 import com.toyota.usermanagementservice.dao.UserRepository;
+import com.toyota.usermanagementservice.domain.Role;
 import com.toyota.usermanagementservice.domain.User;
 import com.toyota.usermanagementservice.dto.RegisterRequest;
 import com.toyota.usermanagementservice.dto.UserDTO;
@@ -45,19 +46,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse create(UserDTO userDTO) {
 
-        if(userRepository.existsByUsername(userDTO.getUsername()))
-        {
-            logger.warn("USERNAME IS ALREADY TAKEN! USERNAME: {}",userDTO.getUsername());
-            throw new UserAlreadyExistsException("Username '"+userDTO.getUsername()+"' is already taken!");
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
+            logger.warn("USERNAME IS ALREADY TAKEN! USERNAME: {}", userDTO.getUsername());
+            throw new UserAlreadyExistsException("Username '" + userDTO.getUsername() + "' is already taken!");
         }
 
-        if(userRepository.existsByEmail(userDTO.getEmail()))
-        {
-            logger.warn("EMAIL IS ALREADY TAKEN! EMAIL: {}",userDTO.getEmail());
-            throw new UserAlreadyExistsException("EMAIL '"+userDTO.getEmail()+"' is already taken!");
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            logger.warn("EMAIL IS ALREADY TAKEN! EMAIL: {}", userDTO.getEmail());
+            throw new UserAlreadyExistsException("EMAIL '" + userDTO.getEmail() + "' is already taken!");
         }
         User user = convertDtoToEntity(userDTO);
-        Set<String> roles = userDTO.getRole().stream().map(role -> role.toString()).collect(Collectors.toSet());
+        Set<String> roles = userDTO.getRole().stream().map(Enum::toString).collect(Collectors.toSet());
         Boolean response = webClientBuilder.build().post()
                 .uri("http://verification-authorization-service/auth/register")
                 .bodyValue(new RegisterRequest(userDTO.getUsername(), userDTO.getPassword(), roles))
@@ -87,34 +86,35 @@ public class UserServiceImpl implements UserService {
 
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            if (userDTO.getUsername()!=null&&!user.getUsername().equals(userDTO.getUsername())) {
+            if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
                 String bearer = extractToken(request);
                 if (bearer == null) {
                     return null;
                 }
                 Boolean updated = webClientBuilder.build().put()
-                        .uri("http://verification-authorization-service/auth/update/{oldUsername}", user.getUsername())
+                        .uri("http://verification-authorization-service/auth/update/{oldUsername}",
+                                user.getUsername())
                         .headers(auth -> auth.setBearerAuth(bearer))
                         .bodyValue(userDTO.getUsername())
                         .retrieve()
                         .bodyToMono(Boolean.class).block();
-                if(updated!=null&&updated)
-                user.setUsername(userDTO.getUsername());
-                else{
+                if (updated != null && updated)
+                    user.setUsername(userDTO.getUsername());
+                else {
                     logger.warn("Username couldn't changed in verification service!");
                     throw new UnexpectedException("Username couldn't changed in verification service!");
                 }
             }
-            if (userDTO.getEmail()!=null&&!user.getEmail().equals(userDTO.getEmail())) {
+            if (userDTO.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
                 user.setEmail(userDTO.getEmail());
             }
-            if (userDTO.getFirstname()!=null&&!user.getFirstname().equals(userDTO.getFirstname())) {
+            if (userDTO.getFirstname() != null && !user.getFirstname().equals(userDTO.getFirstname())) {
                 user.setFirstname(userDTO.getFirstname());
             }
-            if (userDTO.getLastname()!=null&&!user.getLastname().equals(userDTO.getLastname())) {
+            if (userDTO.getLastname() != null && !user.getLastname().equals(userDTO.getLastname())) {
                 user.setLastname(userDTO.getLastname());
             }
-            if (userDTO.getGender()!=null&&!user.getGender().equals(userDTO.getGender())) {
+            if (userDTO.getGender() != null && !user.getGender().equals(userDTO.getGender())) {
                 user.setGender(userDTO.getGender());
             }
             User saved = userRepository.save(user);
@@ -137,7 +137,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse deleteUser(HttpServletRequest request, Long userId) {
         String bearer = extractToken(request);
-        if(bearer==null)
+        if (bearer == null)
             return null;
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
@@ -187,6 +187,49 @@ public class UserServiceImpl implements UserService {
         Page<User> entities = userRepository.getUsersFiltered(firstname, lastname, email
                 , username, pageable);
         return entities.map(this::convertToResponse);
+
+    }
+
+    /**
+     * Adds new role to user
+     * @param userId User ID of user who will get the role
+     * @param role New role
+     * @return UserResponse
+     */
+    @Override
+    public UserResponse addRole(HttpServletRequest request, Long userId, Role role) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            String authToken=extractToken(request);
+            User user = optionalUser.get();
+            if (!role.equals(Role.ADMIN) && !role.equals(Role.LEADER) && !role.equals(Role.OPERATOR))
+                return null;
+            Boolean success = webClientBuilder.build()
+                    .put()
+                    .uri("http://verification-authorization-service/auth/addRole/{username}",
+                            user.getUsername())
+                    .headers(h-> {
+                        assert authToken != null;
+                        h.setBearerAuth(authToken);
+                    })
+                    .bodyValue(role.toString())
+                    .retrieve()
+                    .bodyToMono(Boolean.class)
+                    .block();
+            if (success != null && success) {
+                user.getRole().add(role);
+                userRepository.save(user);
+                logger.info("USER ID: {}, USERNAME: {}, GOT NEW ROLE: {}",
+                        user.getId(), user.getUsername(), role);
+                return convertToResponse(user);
+            }
+            else{ return null;}
+
+        } else
+        {
+            logger.warn("USER NOT FOUND! ID: {}", userId);
+            throw new UserNotFoundException("USER NOT FOUND! ID: " + userId);
+        }
 
     }
 

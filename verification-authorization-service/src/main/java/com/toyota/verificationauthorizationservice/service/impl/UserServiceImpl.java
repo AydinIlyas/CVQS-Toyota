@@ -55,9 +55,7 @@ public class UserServiceImpl implements UserService {
         user.setRoles(set);
         for (String role : request.getRoles()) {
             Optional<Role> roleOptional = roleRepository.findByName(role);
-            if (roleOptional.isPresent()) {
-                set.add(roleOptional.get());
-            }
+            roleOptional.ifPresent(set::add);
         }
         if (set.size() < 1) return null;
         userRepository.save(user);
@@ -203,6 +201,31 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    /**
+     * @param role
+     * @return
+     */
+    @Override
+    public boolean addRole(String username,String role) {
+        Optional<User> optionalUser=userRepository.findByUsernameAndDeletedIsFalse(username);
+
+        if(optionalUser.isPresent())
+        {
+            User user=optionalUser.get();
+            Optional<Role> foundRole=roleRepository.findByName(role);
+            if(foundRole.isPresent())
+            {
+                user.getRoles().add(foundRole.get());
+                userRepository.save(user);
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        return false;
+    }
+
 
     private String extractToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
@@ -211,4 +234,5 @@ public class UserServiceImpl implements UserService {
         }
         return null;
     }
+
 }
