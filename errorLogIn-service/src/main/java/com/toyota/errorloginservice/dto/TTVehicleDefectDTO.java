@@ -32,7 +32,6 @@ public class TTVehicleDefectDTO {
         this.type = type;
         this.description = description;
         this.state = state;
-        this.reportTime=LocalDateTime.now();
         this.defectImage = defectImage;
         this.location = location;
     }

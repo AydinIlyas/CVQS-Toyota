@@ -3,11 +3,9 @@ package com.toyota.errorloginservice.service.impl;
 import com.toyota.errorloginservice.dao.TTVehicleDefectRepository;
 import com.toyota.errorloginservice.dao.TTVehicleRepository;
 import com.toyota.errorloginservice.domain.*;
-import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,15 +29,14 @@ import static org.mockito.Mockito.when;
 class TTVehicleDefectServiceImplTest {
 
     private TTVehicleDefectServiceImpl ttVehicleDefectService;
-    private ModelMapper modelMapper;
     @Mock
     private TTVehicleDefectRepository defectRepository;
     @Mock
     private TTVehicleRepository vehicleRepository;
     @BeforeEach
     void setUp() {
-        modelMapper=new ModelMapper();
-        ttVehicleDefectService=new TTVehicleDefectServiceImpl(defectRepository,vehicleRepository,modelMapper);
+        ModelMapper modelMapper = new ModelMapper();
+        ttVehicleDefectService=new TTVehicleDefectServiceImpl(defectRepository,vehicleRepository, modelMapper);
     }
     @Test
     void getAllFiltered() {
@@ -51,7 +48,9 @@ class TTVehicleDefectServiceImplTest {
         List<TTVehicleDefectLocationDTO> locations= List.of(new TTVehicleDefectLocationDTO(1L,15,30));
         TTVehicleDefectDTO defectDTO=new TTVehicleDefectDTO(1L,"Broken Window","Windshield",
                 State.MAJOR,null,locations);
-        TTVehicle vehicle = new TTVehicle(1L, "Supra", "0001", LocalDate.now(), EngineType.DIESEL,
+        TTVehicle vehicle = new TTVehicle(1L, "Supra", "0001", LocalDate
+                .of(2000, 3,30),
+                EngineType.DIESEL,
                 TransmissionType.MANUAL, "Red",false,new ArrayList<>());
         HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
 
@@ -68,7 +67,6 @@ class TTVehicleDefectServiceImplTest {
         assertEquals(defectDTO.getType(),result.getType());
         assertEquals(defectDTO.getDescription(),result.getDescription());
         assertEquals(defectDTO.getState(),result.getState());
-        assertEquals(defectDTO.getReportTime(),result.getReportTime());
         assertNotNull(result.getLocation());
     }
 
@@ -126,8 +124,8 @@ class TTVehicleDefectServiceImplTest {
 
         //then
         verify(defectRepository).save(any(TTVehicleDefect.class));
-        assertEquals(true,defect.isDeleted());
-        assertEquals(true,locations.get(0).isDeleted());
-        assertEquals(true,locations.get(1).isDeleted());
+        assertTrue(defect.isDeleted());
+        assertTrue(locations.get(0).isDeleted());
+        assertTrue(locations.get(1).isDeleted());
     }
 }

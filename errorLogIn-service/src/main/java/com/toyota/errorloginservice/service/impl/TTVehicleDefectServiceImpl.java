@@ -76,6 +76,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             TTVehicleDefect defect = convertToEntity(defectDTO);
             String username=(String)request.getAttribute("Username");
             defect.setReportedBy(username);
+            defect.setReportTime(LocalDateTime.now());
             TTVehicle ttVehicle = optionalTTVehicle.get();
             ttVehicle.getDefect().add(defect);
             defect.setTt_vehicle(ttVehicle);
