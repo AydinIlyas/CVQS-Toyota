@@ -27,7 +27,7 @@ public class TTVehicleDefectLocationController {
      * @return ResponseEntity with String message.
      */
     @PostMapping("/add")
-    private ResponseEntity<Entity> addLocation(@RequestParam Long defectId,
+    public ResponseEntity<Entity> addLocation(@RequestParam Long defectId,
                                                         @RequestBody @Valid TTVehicleDefectLocationDTO location)
     {
         defectLocationService.add(defectId,location);
@@ -40,7 +40,7 @@ public class TTVehicleDefectLocationController {
      * @return ResponseEntity with String message
      */
     @PutMapping("/delete")
-    private ResponseEntity<Entity> deleteLocation(@RequestBody Long locationId)
+    public ResponseEntity<Entity> deleteLocation(@RequestBody Long locationId)
     {
         defectLocationService.delete(locationId);
         return ResponseEntity.status(HttpStatus.OK).build();

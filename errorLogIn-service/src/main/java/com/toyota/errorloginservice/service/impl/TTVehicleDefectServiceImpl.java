@@ -133,18 +133,20 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     /**
      * Soft deletes defect and associated locations, if present.
      * @param defectId Defect id of the defect which will be deleted.
+     * @return TTVehicleDefectDTO
      */
     @Override
     @Transactional
-    public void deleteDefect(Long defectId) {
+    public TTVehicleDefectDTO deleteDefect(Long defectId) {
         Optional<TTVehicleDefect> optionalDefect = ttVehicleDefectRepository.findById(defectId);
         if (optionalDefect.isPresent()) {
             TTVehicleDefect defect = optionalDefect.get();
             List<TTVehicleDefectLocation> locations = defect.getLocation();
             locations.forEach(l -> l.setDeleted(true));
             defect.setDeleted(true);
-            ttVehicleDefectRepository.save(defect);
+            TTVehicleDefect saved=ttVehicleDefectRepository.save(defect);
             logger.info("Soft deleted defect successfully! DEFECT ID: {}",defectId);
+            return convertToDTO(saved);
         }
         else{
             logger.warn("Defect couldn't found! ID: {}",defectId);
