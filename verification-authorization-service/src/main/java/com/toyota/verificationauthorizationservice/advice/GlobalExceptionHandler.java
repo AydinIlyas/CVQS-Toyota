@@ -14,13 +14,13 @@ import org.springframework.web.reactive.result.method.annotation.ResponseEntityE
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(NoRolesException.class)
-    public ResponseEntity<Object> handleAttributeNotFoundException(NoRolesException e)
+    public ResponseEntity<Object> handleNoRolesException(NoRolesException e)
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.NOT_FOUND,e.getMessage(),getRequestPath());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(IncorrectPasswordException.class)
-    public ResponseEntity<Object> handlIncorrectPasswordException(IncorrectPasswordException e)
+    public ResponseEntity<Object> handleIncorrectPasswordException(IncorrectPasswordException e)
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.UNAUTHORIZED,e,getRequestPath());
         return new ResponseEntity<>(errorResponse,HttpStatus.UNAUTHORIZED);
