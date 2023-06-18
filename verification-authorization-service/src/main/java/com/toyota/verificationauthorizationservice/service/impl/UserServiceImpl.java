@@ -57,8 +57,12 @@ public class UserServiceImpl implements UserService {
             Optional<Role> roleOptional = roleRepository.findByName(role);
             roleOptional.ifPresent(set::add);
         }
-        if (set.size() < 1) return null;
+        if (set.size() < 1) {
+            logger.warn("No Valid Roles Found!");
+            throw new NoRolesException("No Valid Roles Found!");
+        }
         userRepository.save(user);
+        logger.info("Successfully created new User! Username: {}",user.getUsername());
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -82,6 +86,7 @@ public class UserServiceImpl implements UserService {
         );
         User user = userRepository.findByUsernameAndDeletedIsFalse(request.getUsername()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
+        logger.info("Successfully Authenticated! Username: {}",user.getUsername());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -102,9 +107,11 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+            logger.info("Successfully got authorities for authorization!");
             return authorities.stream()
                     .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         }
+        logger.warn("User not found for authorization! Username: {}",username);
         return null;
     }
 
@@ -121,13 +128,16 @@ public class UserServiceImpl implements UserService {
             User user = optionalUser.get();
             user.setDeleted(true);
             userRepository.save(user);
+            logger.info("Successfully deleted user. {}",user.getUsername());
             return true;
         }
+        logger.warn("Delete failed. User not Found!");
         return false;
     }
 
     /**
      * Updates username
+     *
      * @param newUsername New username
      * @param oldUsername Old username
      * @return Boolean
@@ -150,7 +160,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param request HttpServletRequest for extracting username
+     * @param request      HttpServletRequest for extracting username
      * @param passwordsDTO PasswordDTO Which includes new and old password
      * @return boolean
      */
@@ -179,6 +189,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * Returns permissions and username
      * @param request HttpServletRequest request for extracting username
      * @return Map with Permissions
      */
@@ -191,67 +202,70 @@ public class UserServiceImpl implements UserService {
             User user = optionalUser.get();
             Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
 
-            Map<String,String> map=authorities.stream()
+            Map<String, String> map = authorities.stream()
                     .collect(Collectors.toMap(
                             GrantedAuthority::getAuthority,
                             GrantedAuthority::getAuthority
                     ));
-            map.put("Username",username);
+            map.put("Username", username);
+            logger.info("User verified and returned with username");
             return map;
         }
+        logger.warn("User Not Found!");
         return null;
     }
 
     /**
      * Adds new role to user
+     *
      * @param username Username of user
-     * @param role New Role which should be added
+     * @param role     New Role which should be added
      * @return boolean
      */
     @Override
-    public boolean addRole(String username,String role) {
-        Optional<User> optionalUser=userRepository.findByUsernameAndDeletedIsFalse(username);
+    public boolean addRole(String username, String role) {
+        Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
 
-        if(optionalUser.isPresent())
-        {
-            User user=optionalUser.get();
-            Optional<Role> foundRole=roleRepository.findByName(role);
-            if(foundRole.isPresent())
-            {
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            Optional<Role> foundRole = roleRepository.findByName(role);
+            if (foundRole.isPresent()) {
                 user.getRoles().add(foundRole.get());
                 userRepository.save(user);
+                logger.info("ADDED new Role to User. User: {}, Role: {}",user.getUsername(),role);
                 return true;
-            }
-            else{
+            } else {
+                logger.warn("Role not found! Role: {}",role);
                 return false;
             }
         }
+        logger.warn("User not found!");
         return false;
     }
 
     /**
      * @param username Username of user
-     * @param role Role which should be removed
+     * @param role     Role which should be removed
      * @return boolean
      */
     @Override
     public boolean removeRole(String username, String role) {
-        Optional<User> optionalUser=userRepository.findByUsernameAndDeletedIsFalse(username);
+        Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
 
-        if(optionalUser.isPresent())
-        {
-            User user=optionalUser.get();
-            Optional<Role> foundRole=roleRepository.findByName(role);
-            if(foundRole.isPresent())
-            {
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            Optional<Role> foundRole = roleRepository.findByName(role);
+            if (foundRole.isPresent()) {
                 user.getRoles().remove(foundRole.get());
                 userRepository.save(user);
+                logger.info("REMOVED role from user! User: {}, Role: {}",user.getUsername(),role);
                 return true;
-            }
-            else{
+            } else {
+                logger.warn("Role not Found! Role: {}",role);
                 return false;
             }
         }
+        logger.warn("User not Found!");
         return false;
     }
 
