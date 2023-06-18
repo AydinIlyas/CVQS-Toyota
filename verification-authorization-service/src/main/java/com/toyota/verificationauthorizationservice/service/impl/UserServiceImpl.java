@@ -127,9 +127,10 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param newUsername
-     * @param oldUsername
-     * @return
+     * Updates username
+     * @param newUsername New username
+     * @param oldUsername Old username
+     * @return Boolean
      */
     @Override
     public Boolean updateUsername(String newUsername, String oldUsername) {
@@ -149,9 +150,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param request
-     * @param passwordsDTO
-     * @return
+     * @param request HttpServletRequest for extracting username
+     * @param passwordsDTO PasswordDTO Which includes new and old password
+     * @return boolean
      */
     @Override
     public boolean changePassword(HttpServletRequest request, PasswordsDTO passwordsDTO) {
@@ -178,8 +179,8 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param request
-     * @return
+     * @param request HttpServletRequest request for extracting username
+     * @return Map with Permissions
      */
     @Override
     public Map<String, String> verifyAndUsername(HttpServletRequest request) {
@@ -202,8 +203,10 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @param role
-     * @return
+     * Adds new role to user
+     * @param username Username of user
+     * @param role New Role which should be added
+     * @return boolean
      */
     @Override
     public boolean addRole(String username,String role) {
@@ -216,6 +219,32 @@ public class UserServiceImpl implements UserService {
             if(foundRole.isPresent())
             {
                 user.getRoles().add(foundRole.get());
+                userRepository.save(user);
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param username Username of user
+     * @param role Role which should be removed
+     * @return boolean
+     */
+    @Override
+    public boolean removeRole(String username, String role) {
+        Optional<User> optionalUser=userRepository.findByUsernameAndDeletedIsFalse(username);
+
+        if(optionalUser.isPresent())
+        {
+            User user=optionalUser.get();
+            Optional<Role> foundRole=roleRepository.findByName(role);
+            if(foundRole.isPresent())
+            {
+                user.getRoles().remove(foundRole.get());
                 userRepository.save(user);
                 return true;
             }

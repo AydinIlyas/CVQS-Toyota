@@ -17,4 +17,6 @@ public interface UserService {
                               int page, int size, List<String> sortList, String sortOrder);
 
     UserResponse addRole(HttpServletRequest request,Long userId,Role roles);
+
+    UserResponse removeRole(HttpServletRequest request, Long userId, Role role);
 }

@@ -1,8 +1,6 @@
 package com.toyota.usermanagementservice.advice;
 
-import com.toyota.usermanagementservice.exception.UnexpectedException;
-import com.toyota.usermanagementservice.exception.UserAlreadyExistsException;
-import com.toyota.usermanagementservice.exception.UserNotFoundException;
+import com.toyota.usermanagementservice.exception.*;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,6 +63,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(SingleRoleRemovalException.class)
+    public ResponseEntity<Object> handleSingleRoleRemovalException(SingleRoleRemovalException ex)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,ex,getRequestPath());
+        return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(RoleAlreadyExistsException.class)
+    public ResponseEntity<Object> handleRoleAlreadyExistsException(RoleAlreadyExistsException ex)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,ex,getRequestPath());
+        return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<Object> handleRoleNotFoundException(RoleNotFoundException ex)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,ex,getRequestPath());
+        return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+    }
     /**
      * Handles if an argument is invalid.
      *

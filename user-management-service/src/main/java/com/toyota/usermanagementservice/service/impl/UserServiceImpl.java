@@ -6,9 +6,7 @@ import com.toyota.usermanagementservice.domain.User;
 import com.toyota.usermanagementservice.dto.RegisterRequest;
 import com.toyota.usermanagementservice.dto.UserDTO;
 import com.toyota.usermanagementservice.dto.UserResponse;
-import com.toyota.usermanagementservice.exception.UnexpectedException;
-import com.toyota.usermanagementservice.exception.UserAlreadyExistsException;
-import com.toyota.usermanagementservice.exception.UserNotFoundException;
+import com.toyota.usermanagementservice.exception.*;
 import com.toyota.usermanagementservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +66,8 @@ public class UserServiceImpl implements UserService {
             throw new UnexpectedException("USER COULDN'T CREATED!");
         }
         User saved = userRepository.save(user);
-        logger.info("USER SUCCESSFULLY CREATED! ID: {}", saved);
+        logger.info("USER SUCCESSFULLY CREATED! USER ID: {}, USERNAME: {}"
+                , saved.getId(),saved.getUsername());
         return convertToResponse(saved);
     }
 
@@ -118,7 +117,8 @@ public class UserServiceImpl implements UserService {
                 user.setGender(userDTO.getGender());
             }
             User saved = userRepository.save(user);
-
+            logger.info("User Successfully Updated! USER ID: {}, USERNAME: {}"
+                    ,saved.getId(),saved.getUsername());
             return convertToResponse(saved);
         } else {
             logger.warn("USER NOT FOUND! ID: {}", userId);
@@ -152,6 +152,8 @@ public class UserServiceImpl implements UserService {
             if (deleteFromAuth != null && deleteFromAuth) {
                 user.setDeleted(true);
                 User saved = userRepository.save(user);
+                logger.info("DELETED Successfully User! USER ID: {}, USERNAME: {}"
+                        ,saved.getId(),saved.getUsername());
                 return convertToResponse(saved);
             } else {
                 logger.warn("USER COULDN'T FOUND IN AUTHENTICATION SERVICE! ID: {}", userId);
@@ -192,23 +194,27 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Adds new role to user
-     * @param userId User ID of user who will get the role
-     * @param role New role
+     *
+     * @param userId User ID of the user who should get the new role
+     * @param role   New role
      * @return UserResponse
      */
     @Override
     public UserResponse addRole(HttpServletRequest request, Long userId, Role role) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
-            String authToken=extractToken(request);
+            String authToken = extractToken(request);
             User user = optionalUser.get();
-            if (!role.equals(Role.ADMIN) && !role.equals(Role.LEADER) && !role.equals(Role.OPERATOR))
-                return null;
+
+            if (user.getRole().contains(role)) {
+                logger.warn("USER ALREADY HAVE THIS ROLE! Role: {}",role);
+                throw new RoleAlreadyExistsException("User already have this Role. Role: " + role.toString());
+            }
             Boolean success = webClientBuilder.build()
                     .put()
                     .uri("http://verification-authorization-service/auth/addRole/{username}",
                             user.getUsername())
-                    .headers(h-> {
+                    .headers(h -> {
                         assert authToken != null;
                         h.setBearerAuth(authToken);
                     })
@@ -219,14 +225,65 @@ public class UserServiceImpl implements UserService {
             if (success != null && success) {
                 user.getRole().add(role);
                 userRepository.save(user);
-                logger.info("USER ID: {}, USERNAME: {}, GOT NEW ROLE: {}",
+                logger.info(" ADDED NEW ROLE: {},USER ID: {}, USERNAME: {}",
                         user.getId(), user.getUsername(), role);
                 return convertToResponse(user);
+            } else {
+                throw new UnexpectedException("Add Role Failed in verification service!");
             }
-            else{ return null;}
 
-        } else
-        {
+        } else {
+            logger.warn("USER NOT FOUND! ID: {}", userId);
+            throw new UserNotFoundException("USER NOT FOUND! ID: " + userId);
+        }
+
+    }
+
+    /**
+     * Adds new role to user
+     *
+     * @param userId User ID of the user who is to lose the existing role
+     * @param role   Role to remove
+     * @return UserResponse
+     */
+    @Override
+    public UserResponse removeRole(HttpServletRequest request, Long userId, Role role) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            String authToken = extractToken(request);
+            User user = optionalUser.get();
+            if (user.getRole().size() <= 1) {
+                logger.warn("USER ONLY HAVE SINGLE ROLE!");
+                throw new SingleRoleRemovalException();
+            }
+            if (!user.getRole().contains(role)) {
+                logger.warn("USER DOES NOT HAVE THIS ROLE! ROLE: {}", role.toString());
+                throw new RoleNotFoundException("User does not have this role! Role: " + role);
+            }
+            Boolean success = webClientBuilder.build()
+                    .put()
+                    .uri("http://verification-authorization-service/auth/removeRole/{username}",
+                            user.getUsername())
+                    .headers(h -> {
+                        assert authToken != null;
+                        h.setBearerAuth(authToken);
+                    })
+                    .bodyValue(role.toString())
+                    .retrieve()
+                    .bodyToMono(Boolean.class)
+                    .block();
+            if (success != null && success) {
+                user.getRole().remove(role);
+                userRepository.save(user);
+                logger.info("REMOVED ROLE: {}, USER ID: {}, USERNAME: {}",
+                        user.getId(), user.getUsername(), role);
+                return convertToResponse(user);
+            } else {
+                logger.warn("UNEXPECTED EXCEPTION IN VERIFICATION SERVICE!");
+                throw new UnexpectedException("Remove Role failed in verification Service!");
+            }
+
+        } else {
             logger.warn("USER NOT FOUND! ID: {}", userId);
             throw new UserNotFoundException("USER NOT FOUND! ID: " + userId);
         }

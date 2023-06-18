@@ -26,4 +26,6 @@ public interface UserService {
     Map<String, String> verifyAndUsername(HttpServletRequest request);
 
     boolean addRole(String username,String role);
+
+    boolean removeRole(String username, String role);
 }

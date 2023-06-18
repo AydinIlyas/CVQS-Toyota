@@ -81,6 +81,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+    @PutMapping("/role/remove/{user_id}")
+    public ResponseEntity<UserResponse> removeRole(HttpServletRequest request,
+                                                @PathVariable("user_id") Long user_id,
+                                                @RequestBody Role role)
+    {
+        UserResponse response=userService.removeRole(request,user_id,role);
+        if(response==null)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
     @PutMapping("/delete")
     public UserResponse deleteUser(@RequestBody Long userId, HttpServletRequest request)
     {

@@ -66,6 +66,12 @@ public class UserController {
         return userService.addRole(username,role);
     }
 
+    @PutMapping("/removeRole/{username}")
+    public boolean removeRole(@PathVariable("username")String username,@RequestBody String role)
+    {
+        return userService.removeRole(username,role);
+    }
+
 
     @PutMapping("/changePassword")
     public ResponseEntity<Entity> changePassword(HttpServletRequest request, @RequestBody PasswordsDTO passwordsDTO) {
