@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
 
@@ -52,7 +51,7 @@ public class TTVehicleDefectController {
     @PostMapping("/add")
     public ResponseEntity<TTVehicleDefectDTO> addDefect(HttpServletRequest request, @RequestParam Long vehicleId, @RequestBody @Valid TTVehicleDefectDTO defectDTO)
     {
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ttVehicleDefectService.addDefect(request,vehicleId,defectDTO));
     }
 
@@ -71,13 +70,13 @@ public class TTVehicleDefectController {
     /**
      * Soft deletes defect and all associated locations.
      * @param defectId Defect id of the defect that should be deleted.
-     * @return ResponseEntity with String message.
+     * @return ResponseEntity<TTVehicleDefectDTO></> with soft deleted entity.
      */
     @PutMapping("/delete")
-    public ResponseEntity<Entity> deleteDefect(@RequestBody Long defectId)
+    public ResponseEntity<TTVehicleDefectDTO> deleteDefect(@RequestBody Long defectId)
     {
-        ttVehicleDefectService.deleteDefect(defectId);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        TTVehicleDefectDTO response=ttVehicleDefectService.deleteDefect(defectId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }

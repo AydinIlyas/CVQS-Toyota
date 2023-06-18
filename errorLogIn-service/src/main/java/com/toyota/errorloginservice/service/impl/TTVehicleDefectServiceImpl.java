@@ -7,15 +7,14 @@ import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
-import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
-import com.toyota.errorloginservice.service.common.SortOrder;
+import com.toyota.errorloginservice.service.common.MapUtil;
+import com.toyota.errorloginservice.service.common.SortUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
 public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     private final TTVehicleDefectRepository ttVehicleDefectRepository;
     private final TTVehicleRepository ttVehicleRepository;
-    private final ModelMapper modelMapper;
+    private final MapUtil mapUtil;
     private final Logger logger= LogManager.getLogger(TTVehicleDefectServiceImpl.class);
 
 
@@ -56,10 +55,12 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     public PaginationResponse<TTVehicleDefectDTO> getAllFiltered(int page,int size, String type, String state, String reportTime,
                                                    String reportedBy, String vin, String sortOrder,
                                                    List<String> sortBy) {
-        Pageable pageable= PageRequest.of(page,size,Sort.by(SortOrder.createSortOrder(sortBy,sortOrder)));
+        Pageable pageable= PageRequest.of(page,size,Sort.by(SortUtil.createSortOrder(sortBy,sortOrder)));
         Page<TTVehicleDefect> pageResponse=ttVehicleDefectRepository
                 .getDefectsFiltered(type,state,reportTime,reportedBy,vin,pageable);
-        List<TTVehicleDefectDTO> ttVehicleDefectDTOS=pageResponse.stream().map(this::convertAllToDTO).collect(Collectors.toList());
+        List<TTVehicleDefectDTO> ttVehicleDefectDTOS=pageResponse.stream().map(
+                mapUtil::convertDefectToDTO
+        ).collect(Collectors.toList());
 
         return new PaginationResponse<>(ttVehicleDefectDTOS,pageResponse);
     }
@@ -73,7 +74,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
                                              TTVehicleDefectDTO defectDTO) {
         Optional<TTVehicle> optionalTTVehicle = ttVehicleRepository.findById(vehicleId);
         if (optionalTTVehicle.isPresent()) {
-            TTVehicleDefect defect = convertToEntity(defectDTO);
+            TTVehicleDefect defect = mapUtil.convertDefectDTOToEntity(defectDTO);
             String username=(String)request.getAttribute("Username");
             defect.setReportedBy(username);
             defect.setReportTime(LocalDateTime.now());
@@ -85,7 +86,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
                     location.setTt_vehicle_defect(defect);
             TTVehicleDefect saved=ttVehicleDefectRepository.save(defect);
             logger.info("Created defect successfully! Vehicle ID: {}, Defect ID: {}",vehicleId,defect);
-            return convertToDTO(saved);
+            return mapUtil.convertDefectToDTO(saved);
         }
         else{
             logger.warn("Vehicle with id {} couldn't found!",vehicleId);
@@ -115,9 +116,13 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             {
                 defect.setDescription(defectDTO.getDescription());
             }
+            if(defectDTO.getState()!=null&&!defect.getState().equals(defectDTO.getState()))
+            {
+                defect.setState(defectDTO.getState());
+            }
             ttVehicleDefectRepository.save(defect);
             logger.info("DEFECT UPDATED SUCCESSFULLY! DEFECT ID: {}",id);
-            return convertToDTO(defect);
+            return mapUtil.convertDefectToDTO(defect);
         }
         logger.warn("DEFECT WITH NOT FOUND! DEFECT ID: {}",id);
         throw new EntityNotFoundException("DEFECT WITH NOT FOUND! DEFECT ID: "+id);
@@ -129,17 +134,20 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     /**
      * Soft deletes defect and associated locations, if present.
      * @param defectId Defect id of the defect which will be deleted.
+     * @return TTVehicleDefectDTO
      */
     @Override
     @Transactional
-    public void deleteDefect(Long defectId) {
+    public TTVehicleDefectDTO deleteDefect(Long defectId) {
         Optional<TTVehicleDefect> optionalDefect = ttVehicleDefectRepository.findById(defectId);
         if (optionalDefect.isPresent()) {
             TTVehicleDefect defect = optionalDefect.get();
             List<TTVehicleDefectLocation> locations = defect.getLocation();
             locations.forEach(l -> l.setDeleted(true));
             defect.setDeleted(true);
+            TTVehicleDefect saved=ttVehicleDefectRepository.save(defect);
             logger.info("Soft deleted defect successfully! DEFECT ID: {}",defectId);
+            return mapUtil.convertDefectToDTO(saved);
         }
         else{
             logger.warn("Defect couldn't found! ID: {}",defectId);
@@ -148,29 +156,5 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     }
 
 
-
-    private TTVehicleDefect convertToEntity(TTVehicleDefectDTO defectDTO)
-    {
-        return modelMapper.map(defectDTO,TTVehicleDefect.class);
-    }
-    private TTVehicleDefectDTO convertToDTO(TTVehicleDefect defect)
-    {
-        return modelMapper.map(defect,TTVehicleDefectDTO.class);
-    }
-    private TTVehicleDefectDTO convertAllToDTO(TTVehicleDefect defect)
-    {
-        TTVehicleDefectDTO defectDto=modelMapper.map(defect,TTVehicleDefectDTO.class);
-        if(defect.getLocation()!=null&&!defect.getLocation().isEmpty())
-        {
-            List<TTVehicleDefectLocationDTO> locationDto=defect.getLocation().stream().
-                    map(this::convertToLocationDTO).collect(Collectors.toList());
-            defectDto.setLocation(locationDto);
-        }
-        return defectDto;
-    }
-    private TTVehicleDefectLocationDTO convertToLocationDTO(TTVehicleDefectLocation location)
-    {
-        return modelMapper.map(location,TTVehicleDefectLocationDTO.class);
-    }
 
 }

@@ -5,7 +5,7 @@ import org.springframework.data.domain.Sort;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SortOrder {
+public class SortUtil {
     public static List<Sort.Order> createSortOrder(List<String> sortList, String sortDirection) {
         List<Sort.Order> sorts = new ArrayList<>();
         Sort.Direction direction;
