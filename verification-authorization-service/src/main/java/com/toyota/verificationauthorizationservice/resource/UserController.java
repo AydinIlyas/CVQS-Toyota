@@ -31,8 +31,7 @@ public class UserController {
      */
     @PostMapping("/register")
     public Boolean register(@RequestBody RegisterRequest request) {
-        AuthenticationResponse response = userService.register(request);
-        return response != null;
+        return userService.register(request);
     }
 
     /**
@@ -79,7 +78,7 @@ public class UserController {
         if (success)
             return ResponseEntity.status(HttpStatus.OK).build();
         else {
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 

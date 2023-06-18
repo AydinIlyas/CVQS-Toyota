@@ -104,7 +104,7 @@ public class JwtServiceImpl implements JwtService {
 
     /**
      * Extracts expiration date
-     * @param token
+     * @param token token
      * @return  Date
      */
     private Date extractExpiration(String token) {

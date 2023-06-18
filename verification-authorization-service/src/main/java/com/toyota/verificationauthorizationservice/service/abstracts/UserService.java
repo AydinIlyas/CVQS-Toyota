@@ -13,7 +13,7 @@ import java.util.Set;
  * Interface for UserService
  */
 public interface UserService {
-    AuthenticationResponse register(RegisterRequest request);
+    Boolean register(RegisterRequest request);
     AuthenticationResponse login(AuthenticationRequest request);
     Set<String> verify(HttpServletRequest request);
 

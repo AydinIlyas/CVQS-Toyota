@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
      * @return Token
      */
     @Override
-    public AuthenticationResponse register(RegisterRequest request) {
+    public Boolean register(RegisterRequest request) {
         if (request.getRoles().size() < 1) {
             logger.warn("NO ROLE FOUND FOR REGISTRATION!");
             throw new NoRolesException("NO ROLE FOUND FOR REGISTRATION");
@@ -63,10 +63,7 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
         logger.info("Successfully created new User! Username: {}",user.getUsername());
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+        return true;
 
     }
 

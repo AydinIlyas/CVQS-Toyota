@@ -27,8 +27,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -57,12 +56,10 @@ class UserServiceImplTest {
         when(userRepository.save(any(User.class))).thenAnswer(
                 invocationOnMock -> invocationOnMock.getArgument(0)
         );
-        when(jwtService.generateToken(any(User.class))).thenReturn("testToken");
-
-        AuthenticationResponse response=userService.register(registerRequest);
+        boolean success=userService.register(registerRequest);
 
         //then
-        assertNotNull(response.getToken());
+        assertTrue(success);
 
     }
     @Test
