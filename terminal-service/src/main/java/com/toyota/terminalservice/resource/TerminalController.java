@@ -25,7 +25,7 @@ public class TerminalController {
      * Lists Terminals with paging, sorting and filtering.
      * @param page Page to be displayed
      * @param size Size of the page
-     * @param name Filter for the field name.
+     * @param depName Filter for the field department Name.
      * @param isActive Filter for the field isActive
      * @param sortBy Which field to sort by
      * @param sortDirection Sort Direction (ASC/DESC)
@@ -34,12 +34,12 @@ public class TerminalController {
     @GetMapping("/getAll")
     public Page<TerminalDTO> getActiveTerminals(@RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "5") int size,
-                                                @RequestParam(defaultValue = "") String name,
+                                                @RequestParam(defaultValue = "") String depName,
                                                 @RequestParam(defaultValue = "true") boolean isActive,
                                                 @RequestParam(defaultValue = "name")String sortBy,
                                                 @RequestParam(defaultValue="ASC") String sortDirection)
     {
-        return terminalService.getTerminals(page,size,name,isActive,sortBy,sortDirection);
+        return terminalService.getTerminals(page,size,depName,isActive,sortBy,sortDirection);
     }
 
     /**
