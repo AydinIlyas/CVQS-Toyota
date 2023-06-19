@@ -30,18 +30,18 @@ public class TerminalServiceImpl implements TerminalService {
      * Lists Terminals with paging, sorting and filtering.
      * @param page Page to be displayed
      * @param size Size of the page
-     * @param name Filter for the field name.
+     * @param depName Filter for the field name.
      * @param isActive Filter for the field isActive
      * @param sortBy Which field to sort by
      * @param sortDirection Sort Direction (ASC/DESC)
      * @return Page of terminals
      */
     @Override
-    public Page<TerminalDTO> getTerminals(int page,int size,String name,boolean isActive,
+    public Page<TerminalDTO> getTerminals(int page,int size,String depName,boolean isActive,
                                                 String sortBy,String sortDirection)
     {
         Pageable pageable= PageRequest.of(page,size,Sort.by(createSortOrder(sortBy,sortDirection)));
-        Page<Terminal> terminals=terminalRepository.getTerminalsFiltered(name,isActive,pageable);
+        Page<Terminal> terminals=terminalRepository.getTerminalsFiltered(depName,isActive,pageable);
         logger.info("Terminal Page created! Page: {}, Size: {}, Sorted By: {}, Total Pages: {}," +
                         "Total Elements: {}",
                 terminals.getPageable().getPageNumber(),terminals.getNumberOfElements(),terminals.getPageable().getSort(),
@@ -73,17 +73,17 @@ public class TerminalServiceImpl implements TerminalService {
         Terminal terminal=convertToTerminal(terminalDTO);
         terminal.setActive(true);
         Terminal saved=terminalRepository.save(terminal);
-        logger.info("CREATED Terminal Successfully! ID: {}",saved.getId());
+        logger.info("CREATED Terminal Successfully! Department Code: {}",saved.getDepCode());
     }
 
     /**
      * Activates Terminal
-     * @param id ID of terminal to be activated.
+     * @param depCode department code of terminal to be activated.
      */
     @Override
-    public void activateTerminal(Long id) {
+    public void activateTerminal(String depCode) {
 
-        Optional<Terminal> optionalTerminal=terminalRepository.findById(id);
+        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
         if(optionalTerminal.isPresent())
         {
             Terminal terminal=optionalTerminal.get();
@@ -92,8 +92,8 @@ public class TerminalServiceImpl implements TerminalService {
             logger.info("Terminal CREATED successfully");
         }
         else{
-            logger.warn("Terminal Not Found! ID: {}",id);
-            throw new TerminalNotFoundException("Terminal Not Found! ID: "+id);
+            logger.warn("Terminal Not Found! Department Code: {}",depCode);
+            throw new TerminalNotFoundException("Terminal Not Found! Department Code: "+depCode);
         }
 
 
@@ -101,11 +101,11 @@ public class TerminalServiceImpl implements TerminalService {
 
     /**
      * Disables Terminal
-     * @param id ID of terminal to be disabled
+     * @param depCode department code of terminal to be disabled
      */
     @Override
-    public void disableTerminal(Long id) {
-        Optional<Terminal> optionalTerminal=terminalRepository.findById(id);
+    public void disableTerminal(String depCode) {
+        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
 
         if(optionalTerminal.isPresent())
         {
@@ -115,18 +115,18 @@ public class TerminalServiceImpl implements TerminalService {
             logger.info("Terminal ACTIVATED successfully");
         }
         else{
-            logger.warn("Terminal Not Found! ID: {}",id);
-            throw new TerminalNotFoundException("Terminal Not Found! ID: "+id);
+            logger.warn("Terminal Not Found! Department Code: {}",depCode);
+            throw new TerminalNotFoundException("Terminal Not Found! Department Code: "+depCode);
         }
     }
 
     /**
      * Soft deletes Terminal
-     * @param id ID of terminal to be softly deleted.
+     * @param depCode department code of terminal to be softly deleted.
      */
     @Override
-    public void delete(Long id) {
-        Optional<Terminal> optionalTerminal=terminalRepository.findById(id);
+    public void delete(String depCode) {
+        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
         if(optionalTerminal.isPresent())
         {
             Terminal terminal=optionalTerminal.get();
@@ -134,8 +134,8 @@ public class TerminalServiceImpl implements TerminalService {
             terminalRepository.save(terminal);
         }
         else{
-            logger.warn("Terminal Not Found! ID: {}",id);
-            throw new TerminalNotFoundException("Terminal Not Found! ID: "+id);
+            logger.warn("Terminal Not Found! Department code: {}",depCode);
+            throw new TerminalNotFoundException("Terminal Not Found! Department Code: "+depCode);
         }
     }
 

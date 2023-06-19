@@ -28,19 +28,19 @@ public interface TerminalService {
 
     /**
      * Activates Terminal
-     * @param id ID of terminal to be activated.
+     * @param depCode department code of terminal to be activated.
      */
-    void activateTerminal(Long id);
+    void activateTerminal(String depCode);
 
     /**
      * Disables Terminal
-     * @param id ID of terminal to be disabled
+     * @param depCode department code of terminal to be disabled
      */
-    void disableTerminal(Long id);
+    void disableTerminal(String depCode);
 
     /**
      * Soft deletes Terminal
-     * @param id ID of terminal to be softly deleted.
+     * @param depCode department code of terminal to be softly deleted.
      */
-    void delete(Long id);
+    void delete(String depCode);
 }

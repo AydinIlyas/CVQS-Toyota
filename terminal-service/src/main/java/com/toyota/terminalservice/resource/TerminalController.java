@@ -56,35 +56,35 @@ public class TerminalController {
     }
 
     /**
-     * @param id ID of terminal to be activated.
+     * @param depCode department code of terminal to be activated.
      * @return ResponseEntity<Entity> with status
      */
     @PutMapping("/activate")
-    public ResponseEntity<Entity> activateTerminal(@RequestBody Long id)
+    public ResponseEntity<Entity> activateTerminal(@RequestBody String depCode)
     {
 
-        terminalService.activateTerminal(id);
+        terminalService.activateTerminal(depCode);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
-     * @param id ID of terminal to be disabled
+     * @param depCode department code of terminal to be disabled
      * @return ResponseEntity<Entity> with status
      */
     @PutMapping("/disable")
-    public ResponseEntity<Entity> disableTerminal(@RequestBody Long id)
+    public ResponseEntity<Entity> disableTerminal(@RequestBody String depCode)
     {
-        terminalService.disableTerminal(id);
+        terminalService.disableTerminal(depCode);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
-     * @param id ID of terminal to be soft deleted
+     * @param depCode department code of terminal to be soft deleted
      * @return ResponseEntity<Entity> with status
      */
     @PutMapping("/delete")
-    public ResponseEntity<Entity> deleteTerminal(@RequestBody Long id){
-        terminalService.delete(id);
+    public ResponseEntity<Entity> deleteTerminal(@RequestBody String depCode){
+        terminalService.delete(depCode);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

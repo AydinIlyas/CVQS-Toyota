@@ -6,31 +6,42 @@ import jakarta.validation.constraints.NotNull;
  * Terminal for data transfer
  */
 public class TerminalDTO {
-    private String id;
     @NotNull
-    private String name;
+    private String depName;
+    private String depCode;
+    private String shopCode;
 
     public TerminalDTO() {
     }
 
-    public TerminalDTO(String id, String name) {
-        this.id = id;
-        this.name = name;
+
+    public TerminalDTO(String depName, String depCode, String shopCode) {
+        this.depName = depName;
+        this.depCode = depCode;
+        this.shopCode = shopCode;
     }
 
-    public String getId() {
-        return id;
+    public String getDepName() {
+        return depName;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setDepName(String depName) {
+        this.depName = depName;
     }
 
-    public String getName() {
-        return name;
+    public String getDepCode() {
+        return depCode;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setDepCode(String depCode) {
+        this.depCode = depCode;
+    }
+
+    public String getShopCode() {
+        return shopCode;
+    }
+
+    public void setShopCode(String shopCode) {
+        this.shopCode = shopCode;
     }
 }
