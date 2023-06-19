@@ -6,14 +6,17 @@ import com.toyota.usermanagementservice.domain.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.*;
 
 import java.util.Set;
 
 /**
  * DTO with password field for registering user.
  */
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDTO {
     @NotNull
     private String firstname;
