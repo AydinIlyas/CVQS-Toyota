@@ -66,8 +66,8 @@ public class UserServiceImpl implements UserService {
             throw new UnexpectedException("USER COULDN'T CREATED!");
         }
         User saved = userRepository.save(user);
-        logger.info("USER SUCCESSFULLY CREATED! USER ID: {}, USERNAME: {}"
-                , saved.getId(),saved.getUsername());
+        logger.info("USER SUCCESSFULLY CREATED! USERNAME: {}"
+                ,saved.getUsername());
         return convertToResponse(saved);
     }
 
@@ -87,13 +87,13 @@ public class UserServiceImpl implements UserService {
             User user = optionalUser.get();
             if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
                 String bearer = extractToken(request);
-                if (bearer == null) {
-                    return null;
-                }
                 Boolean updated = webClientBuilder.build().put()
                         .uri("http://verification-authorization-service/auth/update/{oldUsername}",
                                 user.getUsername())
-                        .headers(auth -> auth.setBearerAuth(bearer))
+                        .headers(auth -> {
+                            assert bearer != null;
+                            auth.setBearerAuth(bearer);
+                        })
                         .bodyValue(userDTO.getUsername())
                         .retrieve()
                         .bodyToMono(Boolean.class).block();
@@ -137,14 +137,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse deleteUser(HttpServletRequest request, Long userId) {
         String bearer = extractToken(request);
-        if (bearer == null)
-            return null;
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             Boolean deleteFromAuth = webClientBuilder.build().put()
                     .uri("http://verification-authorization-service/auth/delete")
-                    .headers(h -> h.setBearerAuth(bearer))
+                    .headers(h -> {
+                        assert bearer != null;
+                        h.setBearerAuth(bearer);
+                    })
                     .bodyValue(user.getUsername())
                     .retrieve()
                     .bodyToMono(Boolean.class)

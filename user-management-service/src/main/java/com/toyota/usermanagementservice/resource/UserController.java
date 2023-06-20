@@ -65,11 +65,11 @@ public class UserController {
     }
 
     @PutMapping("update/{user_id}")
-    public UserResponse update (HttpServletRequest request,
+    public ResponseEntity<UserResponse> update (HttpServletRequest request,
                                 @PathVariable("user_id") Long user_id,
                                 @RequestBody UserDTO userDTO)
     {
-        return userService.update(request,user_id,userDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.update(request,user_id,userDTO));
     }
     @PutMapping("/role/add/{user_id}")
     public ResponseEntity<UserResponse> addRole(HttpServletRequest request,
@@ -77,8 +77,6 @@ public class UserController {
                                                 @RequestBody Role role)
     {
         UserResponse response=userService.addRole(request,user_id,role);
-        if(response==null)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @PutMapping("/role/remove/{user_id}")
@@ -87,14 +85,12 @@ public class UserController {
                                                 @RequestBody Role role)
     {
         UserResponse response=userService.removeRole(request,user_id,role);
-        if(response==null)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @PutMapping("/delete")
-    public UserResponse deleteUser(@RequestBody Long userId, HttpServletRequest request)
+    public ResponseEntity<UserResponse> deleteUser(HttpServletRequest request,@RequestBody Long userId)
     {
-        return userService.deleteUser(request,userId);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUser(request,userId));
     }
 
 }
