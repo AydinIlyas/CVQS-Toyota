@@ -2,6 +2,7 @@ package com.toyota.usermanagementservice.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import java.util.Set;
 
@@ -14,6 +15,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Where(clause = "deleted=FALSE")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
