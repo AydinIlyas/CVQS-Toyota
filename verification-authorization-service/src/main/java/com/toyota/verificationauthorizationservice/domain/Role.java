@@ -41,13 +41,8 @@ public class Role {
             inverseJoinColumns = @JoinColumn(name="permission_id")
     )
     private Set<Permission> permissions=new HashSet<>();
-
-    public Role(String name)
-    {
-        this.name=name;
-    }
-
     public Set<GrantedAuthority> getPermissions() {
+        if(permissions==null)return null;
         return permissions.stream()
                 .map(permission -> new SimpleGrantedAuthority(permission.getName()))
                 .collect(Collectors.toSet());

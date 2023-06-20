@@ -27,11 +27,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final Logger logger= LogManager.getLogger(JwtAuthenticationFilter.class);
     /**
-     * @param request
-     * @param response
-     * @param filterChain
-     * @throws ServletException
-     * @throws IOException
+     * @param request HttpServletRequest
+     * @param response HttpServletResponse
+     * @param filterChain FilterChain
+     * @throws ServletException ServletException
+     * @throws IOException IOException
      */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -67,12 +67,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
-            else{
-                logger.warn("TOKEN IS INVALID");
-            }
-        }
-        else{
-            logger.info("USERNAME EXTRACT FAIL");
         }
         filterChain.doFilter(request,response);
     }

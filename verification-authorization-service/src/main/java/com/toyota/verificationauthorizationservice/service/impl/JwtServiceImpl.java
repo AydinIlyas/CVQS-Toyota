@@ -32,7 +32,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
 
-    public <T> T extractClaim(String token, Function<Claims,T> claimsResolver)
+    private <T> T extractClaim(String token, Function<Claims,T> claimsResolver)
     {
         final Claims claims=extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -67,7 +67,7 @@ public class JwtServiceImpl implements JwtService {
      * @param userDetails User information
      * @return Token
      */
-    public String generateToken(
+    private String generateToken(
             Map<String,Object> extraClaims, UserDetails userDetails
     )
     {
@@ -104,7 +104,7 @@ public class JwtServiceImpl implements JwtService {
 
     /**
      * Extracts expiration date
-     * @param token
+     * @param token token
      * @return  Date
      */
     private Date extractExpiration(String token) {
