@@ -38,7 +38,7 @@ public class ErrorController {
      * @return vehicle objects
      */
     @GetMapping("/getVehicles")
-    public PaginationResponse<Object> getAll(HttpServletRequest request,
+    public PaginationResponse<Object> getAllVehiclesFiltered(HttpServletRequest request,
                                              @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "5") int size,
                                              @RequestParam(defaultValue = "") List<String> sortBy,
@@ -71,7 +71,7 @@ public class ErrorController {
      * @return Custom paging response
      */
     @GetMapping("getDefects")
-    public PaginationResponse<Object> getAllFiltered(
+    public PaginationResponse<Object> getAllDefectsFiltered(
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
