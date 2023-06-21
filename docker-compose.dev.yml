@@ -1,0 +1,113 @@
+version: '3.8'
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    depends_on:
+      - postgres
+      - discovery-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - toyota
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    depends_on:
+      - postgres
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - toyota
+
+  error-listing-service:
+    build:
+      context: ./errorListing-service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - discovery-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ToyotaProject
+    networks:
+      - toyota
+
+  error-login-service:
+    build:
+      context: ./errorLogIn-service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - discovery-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ToyotaProject
+    networks:
+      - toyota
+
+  terminal-service:
+    build:
+      context: ./terminal-service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - discovery-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ToyotaProject
+    networks:
+      - toyota
+
+  user-management-service:
+    build:
+      context: ./user-management-service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - discovery-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ToyotaProject
+    networks:
+      - toyota
+
+  verification-authorization-service:
+    build:
+      context: ./verification-authorization-service
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - discovery-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ToyotaProject
+    networks:
+      - toyota
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password1
+      - POSTGRES_DB=ToyotaProject
+      - PG_DATA= /data/postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres:/data/postgres
+    networks:
+      - toyota
+
+networks:
+  toyota:

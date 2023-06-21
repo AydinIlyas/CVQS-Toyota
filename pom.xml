@@ -13,6 +13,7 @@
 		<module>errorListing-service</module>
 		<module>errorLogIn-service</module>
 		<module>terminal-service</module>
+		<module>api-gateway</module>
 		<module>user-management-service</module>
 		<module>verification-authorization-service</module>
 	</modules>
