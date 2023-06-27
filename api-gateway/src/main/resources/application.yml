@@ -16,22 +16,54 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: error-ttVehicle-getVehicle
+          uri: lb://error-login-service
+          predicates:
+            - Path=/ttvehicle/getAll
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "LEADER"
         - id: error-ttVehicle
           uri: lb://error-login-service
           predicates:
             - Path=/ttvehicle/**
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "OPERATOR"
+        - id: error-ttDefect
+          uri: lb://error-login-service
+          predicates:
+            - Path=/ttvehicleDefect/getAll
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "LEADER"
         - id: error-ttDefect
           uri: lb://error-login-service
           predicates:
             - Path=/ttvehicleDefect/**
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "OPERATOR"
         - id: error-location
           uri: lb://error-login-service
           predicates:
             - Path=/defectLocation/**
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "OPERATOR"
         - id: error-list
           uri: lb://error-listing-service
           predicates:
             - Path=/errors/**
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "LEADER"
         - id: terminal-service
           uri: lb://terminal-service
           predicates:
@@ -40,19 +72,13 @@ spring:
           uri: lb://verification-authorization-service
           predicates:
             - Path=/auth/**
+
         - id:  user-management-service
           uri: lb://user-management-service
           predicates:
             - Path=/user-management/**
-#        - id: user-management-service
-#          uri: lb://user-management-service
-#        - id: verification-authorization-service
-#          uri: lb://verification-authorization-service
-#spring.cloud.gateway.routes[0].predicates[2]=Path=/ttvehicle/deleteVehicle
-#spring.cloud.gateway.routes[1].id=error-ttDefect
-#spring.cloud.gateway.routes[1].uri=lb://error-login-service
-#spring.cloud.gateway.routes[1].predicates[0]=Path=/ttvehicleDefect
-#spring.cloud.gateway.routes[2].id=error-Location
-#spring.cloud.gateway.routes[2].uri=lb://error-login-service
-#spring.cloud.gateway.routes[2].predicates[0]=Path=/defectLocation
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "ADMIN"
 
