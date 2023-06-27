@@ -8,7 +8,6 @@ import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.common.MapUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,14 +77,14 @@ class TTVehicleDefectServiceImplTest {
                 .of(2000, 3,30),
                 EngineType.DIESEL,
                 TransmissionType.MANUAL, "Red",false,new ArrayList<>());
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
+        String username="username";
 
         //when
         when(vehicleRepository.findById(any())).thenReturn(Optional.of(vehicle));
         when(defectRepository.save(any(TTVehicleDefect.class))).thenAnswer(
                 invocation -> invocation.getArgument(0)
         );
-        TTVehicleDefectDTO result=ttVehicleDefectService.addDefect(request,1L,defectDTO);
+        TTVehicleDefectDTO result=ttVehicleDefectService.addDefect(username,1L,defectDTO);
 
         //then
         Mockito.verify(defectRepository).save(any(TTVehicleDefect.class));
@@ -99,12 +98,12 @@ class TTVehicleDefectServiceImplTest {
     void addDefect_Fail() {
         //given
         TTVehicleDefectDTO defectDTO=new TTVehicleDefectDTO();
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
+        String username="username";
 
         //when
         when(vehicleRepository.findById(any())).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class,()->ttVehicleDefectService.addDefect(request,1L,defectDTO));
+        assertThrows(EntityNotFoundException.class,()->ttVehicleDefectService.addDefect(username,1L,defectDTO));
     }
 
     @Test

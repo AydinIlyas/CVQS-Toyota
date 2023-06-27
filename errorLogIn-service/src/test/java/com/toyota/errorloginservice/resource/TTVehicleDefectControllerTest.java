@@ -5,7 +5,6 @@ import com.toyota.errorloginservice.dto.CustomPageable;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.service.impl.TTVehicleDefectServiceImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -64,12 +63,12 @@ class TTVehicleDefectControllerTest {
         TTVehicleDefectDTO defectDTO=new TTVehicleDefectDTO(1L,"Broken Window","Windshield",
                 State.MAJOR,null,Collections.emptyList());
         Long vehicleId=1L;
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
+        String username="username";
         //when
-        Mockito.when(ttVehicleDefectService.addDefect(any(),anyLong(),any(TTVehicleDefectDTO.class)))
+        Mockito.when(ttVehicleDefectService.addDefect(anyString(),anyLong(),any(TTVehicleDefectDTO.class)))
                 .thenReturn(defectDTO);
 
-        ResponseEntity<TTVehicleDefectDTO> result =defectController.addDefect(request,vehicleId,defectDTO);
+        ResponseEntity<TTVehicleDefectDTO> result =defectController.addDefect(username,vehicleId,defectDTO);
         //then
         Mockito.verify(ttVehicleDefectService).addDefect(any(),anyLong(),any(TTVehicleDefectDTO.class));
         assertEquals(HttpStatus.CREATED, result.getStatusCode());

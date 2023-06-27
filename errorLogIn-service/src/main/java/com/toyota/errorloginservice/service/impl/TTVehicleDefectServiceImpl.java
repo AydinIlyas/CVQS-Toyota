@@ -11,7 +11,6 @@ import com.toyota.errorloginservice.exception.EntityNotFoundException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import com.toyota.errorloginservice.service.common.MapUtil;
 import com.toyota.errorloginservice.service.common.SortUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,12 +69,11 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
      * @param defectDTO Defect object which will added to the vehicle.
      */
     @Override
-    public TTVehicleDefectDTO addDefect(HttpServletRequest request,Long vehicleId,
+    public TTVehicleDefectDTO addDefect(String username,Long vehicleId,
                                              TTVehicleDefectDTO defectDTO) {
         Optional<TTVehicle> optionalTTVehicle = ttVehicleRepository.findById(vehicleId);
         if (optionalTTVehicle.isPresent()) {
             TTVehicleDefect defect = mapUtil.convertDefectDTOToEntity(defectDTO);
-            String username=(String)request.getAttribute("Username");
             defect.setReportedBy(username);
             defect.setReportTime(LocalDateTime.now());
             TTVehicle ttVehicle = optionalTTVehicle.get();

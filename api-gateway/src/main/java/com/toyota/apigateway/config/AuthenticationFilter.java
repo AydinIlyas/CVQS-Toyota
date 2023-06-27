@@ -49,7 +49,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                                 return Mono.error(new UnauthorizedException("User Not Found"));
                             }
                             else if (result.containsKey(requiredRole)) {
-                                return chain.filter(exchange);
+                                return chain.filter(exchange.mutate().request(
+                                                exchange.getRequest().mutate()
+                                                        .header("Username",result.get("Username").toString())
+                                                        .build())
+                                        .build());
                             } else {
                                 return Mono.error(new UnauthorizedException("User not authorized!"));
                             }
