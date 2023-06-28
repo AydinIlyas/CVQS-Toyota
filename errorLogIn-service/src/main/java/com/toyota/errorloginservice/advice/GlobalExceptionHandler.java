@@ -1,6 +1,7 @@
 package com.toyota.errorloginservice.advice;
 
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
+import com.toyota.errorloginservice.exception.ImageProcessingException;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +35,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), getRequestPath());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ImageProcessingException.class)
+    public ResponseEntity<Object> handleImageProcessingException(ImageProcessingException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), getRequestPath());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

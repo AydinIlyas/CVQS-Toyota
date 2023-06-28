@@ -6,10 +6,11 @@ import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.List;
 
 
@@ -80,4 +81,25 @@ public class TTVehicleDefectController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PostMapping("/add/image/{defectId}")
+    public ResponseEntity<Entity> addImage(@PathVariable("defectId") Long defectId,
+                                           @RequestParam("Image") MultipartFile image)
+    {
+        ttVehicleDefectService.addImage(defectId,image);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+    @GetMapping("/get/image/{defectId}")
+    public ResponseEntity<byte[]> getImage(@PathVariable("defectId") Long defectId,
+                                           @RequestParam(defaultValue = "jpeg") String format)
+    {
+        HttpHeaders headers=new HttpHeaders();
+        byte[] imageData=ttVehicleDefectService.getImage(defectId,format);
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        if (format.equalsIgnoreCase("png")) {
+            headers.setContentType(MediaType.IMAGE_PNG);
+        } else {
+            headers.setContentType(MediaType.IMAGE_JPEG);
+        }
+        return new ResponseEntity<>(imageData,headers,HttpStatus.OK);
+    }
 }

@@ -19,20 +19,17 @@ public class TTVehicleDefectDTO {
     private String reportedBy;
 
 
-    private byte[] defectImage;
-
     private List<TTVehicleDefectLocationDTO> location;
 
     public TTVehicleDefectDTO() {
     }
 
     public TTVehicleDefectDTO(Long id,String type, String description, State state,
-                              byte[] defectImage, List<TTVehicleDefectLocationDTO> location) {
+                              List<TTVehicleDefectLocationDTO> location) {
         this.id=id;
         this.type = type;
         this.description = description;
         this.state = state;
-        this.defectImage = defectImage;
         this.location = location;
     }
 
@@ -82,14 +79,6 @@ public class TTVehicleDefectDTO {
 
     public void setReportedBy(String reportedBy) {
         this.reportedBy = reportedBy;
-    }
-
-    public byte[] getDefectImage() {
-        return defectImage;
-    }
-
-    public void setDefectImage(byte[] defectImage) {
-        this.defectImage = defectImage;
     }
 
     public List<TTVehicleDefectLocationDTO> getLocation() {

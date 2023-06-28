@@ -72,7 +72,8 @@ class TTVehicleDefectServiceImplTest {
         //given
         List<TTVehicleDefectLocationDTO> locations= List.of(new TTVehicleDefectLocationDTO(1L,15,30));
         TTVehicleDefectDTO defectDTO=new TTVehicleDefectDTO(1L,"Broken Window","Windshield",
-                State.MAJOR,null,locations);
+                State.MAJOR,locations);
+
         TTVehicle vehicle = new TTVehicle(1L, "Supra", "0001", LocalDate
                 .of(2000, 3,30),
                 EngineType.DIESEL,

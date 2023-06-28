@@ -61,7 +61,7 @@ class TTVehicleDefectControllerTest {
     void addDefect() {
         //given
         TTVehicleDefectDTO defectDTO=new TTVehicleDefectDTO(1L,"Broken Window","Windshield",
-                State.MAJOR,null,Collections.emptyList());
+                State.MAJOR,Collections.emptyList());
         Long vehicleId=1L;
         String username="username";
         //when
@@ -78,7 +78,6 @@ class TTVehicleDefectControllerTest {
         assertEquals(defectDTO.getType(), resultBody.getType());
         assertEquals(defectDTO.getDescription(), resultBody.getDescription());
         assertEquals(defectDTO.getState(), resultBody.getState());
-        assertEquals(defectDTO.getDefectImage(), resultBody.getDefectImage());
     }
 
     @Test

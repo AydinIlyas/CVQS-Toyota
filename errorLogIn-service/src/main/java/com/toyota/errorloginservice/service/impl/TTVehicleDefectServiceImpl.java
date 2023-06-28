@@ -8,6 +8,7 @@ import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
+import com.toyota.errorloginservice.exception.ImageProcessingException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import com.toyota.errorloginservice.service.common.MapUtil;
 import com.toyota.errorloginservice.service.common.SortUtil;
@@ -20,7 +21,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +71,73 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
 
         return new PaginationResponse<>(ttVehicleDefectDTOS,pageResponse);
     }
+
+    /**
+     * @param defectId ID of the defect.
+     * @param image Image to add.
+     */
+    @Override
+    public void addImage(Long defectId, MultipartFile image) {
+        Optional<TTVehicleDefect> optionalDefect=ttVehicleDefectRepository.findById(defectId);
+        if(optionalDefect.isPresent())
+        {
+            TTVehicleDefect defect=optionalDefect.get();
+            try{
+            byte[] bytes=image.getBytes();
+            defect.setDefectImage(bytes);
+            ttVehicleDefectRepository.save(defect);
+            }
+            catch (IOException e)
+            {
+                throw new ImageProcessingException("Failed to get bytes of image.");
+            }
+        }
+        else{
+            throw new EntityNotFoundException("Defect Not Found!");
+        }
+    }
+
+    /**
+     * @param defectId  ID of the defect.
+     * @param format format of the image.
+     * @return byte[]
+     */
+    @Override
+    public byte[] getImage(Long defectId,String format) {
+        Optional<TTVehicleDefect> optionalDefect=ttVehicleDefectRepository.findById(defectId);
+        if(optionalDefect.isPresent())
+        {
+            TTVehicleDefect defect=optionalDefect.get();
+            try {
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(defect.getDefectImage());
+                BufferedImage image = ImageIO.read(inputStream);
+                Graphics2D g=(Graphics2D) image.getGraphics();
+                g.setStroke(new BasicStroke(3));
+                g.setColor(Color.RED);
+                for(TTVehicleDefectLocation location:defect.getLocation())
+                {
+                    if(location.isDeleted())continue;
+                    int x1=location.getX_Axis()-10;
+                    int x2=location.getX_Axis()+10;
+                    int y1=location.getY_Axis()-10;
+                    int y2=location.getY_Axis()+10;
+                    g.drawLine(x1,y1,x2,y2);
+
+                }
+                g.dispose();
+                ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+                String formatName=format.equalsIgnoreCase("png")?"png":"jpeg";
+                ImageIO.write(image,formatName,outputStream);
+                return outputStream.toByteArray();
+            }
+            catch (IOException e)
+            {
+                throw new ImageProcessingException("Failed to read Input-stream");
+            }
+        }
+        throw new EntityNotFoundException("Defect Not Found");
+    }
+
     /**
      * Adds a defect to the vehicle if present.
      * @param vehicleId Vehicle id of the vehicle which has the defect.

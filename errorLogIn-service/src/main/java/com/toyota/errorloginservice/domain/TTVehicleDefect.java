@@ -3,7 +3,9 @@ package com.toyota.errorloginservice.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.Where;
+import org.hibernate.type.descriptor.jdbc.VarbinaryJdbcType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +35,7 @@ public class TTVehicleDefect {
     private String reportedBy;
 
     @Lob
+    @JdbcType(VarbinaryJdbcType.class)
     private byte[] defectImage;
 
     private boolean deleted;
