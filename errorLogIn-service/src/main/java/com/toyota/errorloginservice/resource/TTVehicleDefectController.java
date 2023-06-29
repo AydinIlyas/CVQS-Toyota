@@ -3,10 +3,12 @@ package com.toyota.errorloginservice.resource;
 
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
+import com.toyota.errorloginservice.dto.UpdateValidation;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,7 +67,7 @@ public class TTVehicleDefectController {
      */
     @PutMapping("/update/{id}")
     public ResponseEntity<TTVehicleDefectDTO> update(@PathVariable("id") Long id,
-                                                     @RequestBody TTVehicleDefectDTO defectDTO)
+                                                     @Validated(UpdateValidation.class) @RequestBody TTVehicleDefectDTO defectDTO)
     {
         return ResponseEntity.ok().body(ttVehicleDefectService.update(id,defectDTO));
     }

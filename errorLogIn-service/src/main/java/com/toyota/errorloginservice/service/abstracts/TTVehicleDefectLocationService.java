@@ -9,4 +9,6 @@ import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 public interface TTVehicleDefectLocationService {
     void add(Long defectId, TTVehicleDefectLocationDTO defectLocationDTO);
     void delete(Long locationId);
+
+    void update(Long id, TTVehicleDefectLocationDTO locationDTO);
 }

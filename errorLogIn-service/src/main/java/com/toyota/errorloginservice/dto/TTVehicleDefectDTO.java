@@ -2,6 +2,10 @@ package com.toyota.errorloginservice.dto;
 
 
 import com.toyota.errorloginservice.domain.State;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,14 +15,18 @@ import java.util.List;
 
 public class TTVehicleDefectDTO {
     private Long id;
+    @NotNull(message = "Type must not be null")
+    @NotBlank(message = "Type must not be blank")
     private String type;
+
     private String description;
+    @NotNull(message="State must not be null")
     private State state;
     private LocalDateTime reportTime;
 
     private String reportedBy;
 
-
+    @Valid
     private List<TTVehicleDefectLocationDTO> location;
 
     public TTVehicleDefectDTO() {

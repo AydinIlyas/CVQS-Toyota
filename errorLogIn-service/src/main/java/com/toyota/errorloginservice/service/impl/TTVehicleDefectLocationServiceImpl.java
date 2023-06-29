@@ -51,23 +51,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
             {
                 throw new ImageNotFoundException("Defect has no image!");
             }
-            try
-            {
-                BufferedImage bufferedImage= ImageIO.read(new ByteArrayInputStream(defect.getDefectImage()));
-                if(bufferedImage.getHeight()<defectLocationDTO.getY_Axis())
-                {
-                    throw new InvalidLocationException("Y Axis of location is exceeding maximum height of image. Max: "
-                            +bufferedImage.getHeight());
-                }
-                if(bufferedImage.getWidth()<defectLocationDTO.getX_Axis())
-                {
-                    throw new InvalidLocationException("X Axis of location is exceeding maximum width of image. Max: "
-                            +bufferedImage.getWidth());
-                }
-            }
-            catch(IOException e){
-                throw new ImageProcessingException("Image reading failed!");
-            }
+            isLocationValid(defect,defectLocationDTO);
             TTVehicleDefectLocation location = TTVehicleDefectLocation.builder()
                     .x_Axis(defectLocationDTO.getX_Axis())
                     .y_Axis(defectLocationDTO.getY_Axis())
@@ -104,6 +88,54 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
         else{
             logger.warn("Delete failed! Location couldn't found! Id: {}",locationId);
             throw new EntityNotFoundException("Location with id "+locationId+"couldn't be found");
+        }
+    }
+
+    /**
+     * @param id ID of Location
+     * @param locationDTO Updated LocationDTO
+     */
+    @Override
+    public void update(Long id, TTVehicleDefectLocationDTO locationDTO) {
+        Optional<TTVehicleDefectLocation> optionalLocation=defectLocationRepository.findById(id);
+        if(optionalLocation.isPresent())
+        {
+            TTVehicleDefectLocation location=optionalLocation.get();
+            isLocationValid(location.getTt_vehicle_defect(),locationDTO);
+            if(locationDTO.getX_Axis()!=null&&locationDTO.getX_Axis()!=location.getX_Axis())
+            {
+                location.setX_Axis(locationDTO.getX_Axis());
+            }
+            if(locationDTO.getY_Axis()!=null&&locationDTO.getY_Axis()!=location.getY_Axis())
+            {
+                location.setY_Axis(locationDTO.getY_Axis());
+            }
+            defectLocationRepository.save(location);
+        }
+        else{
+            throw new EntityNotFoundException("TTVehicleDefectLocation not found! ID: "+id);
+        }
+
+    }
+
+    private void isLocationValid(TTVehicleDefect defect, TTVehicleDefectLocationDTO defectLocationDTO)
+    {
+        try
+        {
+            BufferedImage bufferedImage= ImageIO.read(new ByteArrayInputStream(defect.getDefectImage()));
+            if(bufferedImage.getHeight()<defectLocationDTO.getY_Axis())
+            {
+                throw new InvalidLocationException("Y Axis of location is exceeding maximum height of image. Max: "
+                        +bufferedImage.getHeight());
+            }
+            if(bufferedImage.getWidth()<defectLocationDTO.getX_Axis())
+            {
+                throw new InvalidLocationException("X Axis of location is exceeding maximum width of image. Max: "
+                        +bufferedImage.getWidth());
+            }
+        }
+        catch(IOException e){
+            throw new ImageProcessingException("Image reading failed!");
         }
     }
 }

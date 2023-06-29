@@ -1,6 +1,7 @@
 package com.toyota.errorloginservice.dto;
 
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -8,9 +9,11 @@ import jakarta.validation.constraints.NotNull;
  */
 public class TTVehicleDefectLocationDTO {
     private Long id;
-    @NotNull
+    @NotNull(message = "X Axis must not be null")
+    @Min(groups = UpdateValidation.class,value = 0,message = "X Axis value must be greater than or equal to zero")
     private Integer x_Axis;
-    @NotNull
+    @NotNull(message = "Y Axis must not be null")
+    @Min(groups = UpdateValidation.class,value = 0,message = "Y Axis value must be greater than or equal to zero")
     private Integer y_Axis;
 
     public TTVehicleDefectLocationDTO() {

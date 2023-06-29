@@ -4,6 +4,10 @@ package com.toyota.errorloginservice.dto;
 
 import com.toyota.errorloginservice.domain.EngineType;
 import com.toyota.errorloginservice.domain.TransmissionType;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,13 +17,21 @@ import java.util.List;
  */
 public class TTVehicleDTO {
     private Long id;
+    @NotNull(message = "Model must not be null")
+    @NotBlank(message="Model must not be blank")
     private String model;
+    @NotNull(message="Vehicle identification number must not be null")
+    @NotBlank(message="Vehicle identification number must not be blank")
     private String vin;
+    @NotNull(message="Year of production must not be null")
+    @PastOrPresent(groups = UpdateValidation.class,message="Date must be present or past")
     private LocalDate yearOfProduction;
+    @NotNull(message="Engine type must not be null")
     private EngineType engineType;
+    @NotNull(message="Transmission type must not be null")
     private TransmissionType transmissionType;
     private String color;
-
+    @Valid
     private List<TTVehicleDefectDTO> defect;
 
     public TTVehicleDTO(Long id,String model, String vin, LocalDate yearOfProduction,

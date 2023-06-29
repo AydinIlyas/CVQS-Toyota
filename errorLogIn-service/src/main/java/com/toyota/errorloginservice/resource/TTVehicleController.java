@@ -2,12 +2,13 @@ package com.toyota.errorloginservice.resource;
 
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
+import com.toyota.errorloginservice.dto.UpdateValidation;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -73,7 +74,7 @@ public class TTVehicleController {
      */
     @PutMapping("/update/{id}")
     public ResponseEntity<TTVehicleDTO> updateVehicle(@PathVariable("id") Long id,
-                                                           @RequestBody TTVehicleDTO ttVehicleDTO)
+                                                        @Validated(UpdateValidation.class)  @RequestBody TTVehicleDTO ttVehicleDTO)
     {
         TTVehicleDTO response=ttVehicleService.updateVehicle(id,ttVehicleDTO);
         if(response==null)
