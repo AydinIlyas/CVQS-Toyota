@@ -6,6 +6,9 @@ import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.domain.TTVehicleDefectLocation;
 import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
+import com.toyota.errorloginservice.exception.ImageNotFoundException;
+import com.toyota.errorloginservice.exception.ImageProcessingException;
+import com.toyota.errorloginservice.exception.InvalidLocationException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleDefectLocationService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +16,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -38,11 +45,33 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
         Optional<TTVehicleDefect> optionalDefect = defectRepository.findById(defectId);
 
         if (optionalDefect.isPresent()) {
+
+            TTVehicleDefect defect = optionalDefect.get();
+            if(defect.getDefectImage()==null)
+            {
+                throw new ImageNotFoundException("Defect has no image!");
+            }
+            try
+            {
+                BufferedImage bufferedImage= ImageIO.read(new ByteArrayInputStream(defect.getDefectImage()));
+                if(bufferedImage.getHeight()<defectLocationDTO.getY_Axis())
+                {
+                    throw new InvalidLocationException("Y Axis of location is exceeding maximum height of image. Max: "
+                            +bufferedImage.getHeight());
+                }
+                if(bufferedImage.getWidth()<defectLocationDTO.getX_Axis())
+                {
+                    throw new InvalidLocationException("X Axis of location is exceeding maximum width of image. Max: "
+                            +bufferedImage.getWidth());
+                }
+            }
+            catch(IOException e){
+                throw new ImageProcessingException("Image reading failed!");
+            }
             TTVehicleDefectLocation location = TTVehicleDefectLocation.builder()
                     .x_Axis(defectLocationDTO.getX_Axis())
                     .y_Axis(defectLocationDTO.getY_Axis())
                     .build();
-            TTVehicleDefect defect = optionalDefect.get();
             if(defect.getLocation()==null)
                 defect.setLocation(new ArrayList<>());
             defect.getLocation().add(location);

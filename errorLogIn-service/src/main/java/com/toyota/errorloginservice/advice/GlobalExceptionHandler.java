@@ -1,7 +1,9 @@
 package com.toyota.errorloginservice.advice;
 
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
+import com.toyota.errorloginservice.exception.ImageNotFoundException;
 import com.toyota.errorloginservice.exception.ImageProcessingException;
+import com.toyota.errorloginservice.exception.InvalidLocationException;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +43,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ImageProcessingException.class)
     public ResponseEntity<Object> handleImageProcessingException(ImageProcessingException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), getRequestPath());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<Object> handleImageNotFoundException(ImageNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), getRequestPath());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(InvalidLocationException.class)
+    public ResponseEntity<Object> handleInvalidLocationException(InvalidLocationException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), getRequestPath());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

@@ -21,5 +21,5 @@ public interface TTVehicleDefectService {
 
     void addImage(Long defectId, MultipartFile image);
 
-    byte[] getImage(Long defectId,String format);
+    byte[] getImage(Long defectId,String format,int width,int height,String colorHex,boolean processed);
 }

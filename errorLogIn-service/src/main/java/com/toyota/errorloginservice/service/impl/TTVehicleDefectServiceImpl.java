@@ -30,8 +30,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -82,6 +85,8 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
         if(optionalDefect.isPresent())
         {
             TTVehicleDefect defect=optionalDefect.get();
+            defect.getLocation().forEach(l->l.setDeleted(true));
+            defect.setLocation(new ArrayList<>());
             try{
             byte[] bytes=image.getBytes();
             defect.setDefectImage(bytes);
@@ -103,25 +108,30 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
      * @return byte[]
      */
     @Override
-    public byte[] getImage(Long defectId,String format) {
+    public byte[] getImage(Long defectId,String format,int width,int height,String colorHex,boolean processed) {
         Optional<TTVehicleDefect> optionalDefect=ttVehicleDefectRepository.findById(defectId);
         if(optionalDefect.isPresent())
         {
             TTVehicleDefect defect=optionalDefect.get();
+            if(defect.getDefectImage()==null)
+            {
+                throw new ImageProcessingException("Image Not Found");
+            }
+            if(!processed)
+                return defect.getDefectImage();
             try {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(defect.getDefectImage());
                 BufferedImage image = ImageIO.read(inputStream);
                 Graphics2D g=(Graphics2D) image.getGraphics();
                 g.setStroke(new BasicStroke(3));
-                g.setColor(Color.RED);
+                Color color=Color.decode(isValidColorHex(colorHex));
+                g.setColor(color);
                 for(TTVehicleDefectLocation location:defect.getLocation())
                 {
                     if(location.isDeleted())continue;
-                    int x1=location.getX_Axis()-10;
-                    int x2=location.getX_Axis()+10;
-                    int y1=location.getY_Axis()-10;
-                    int y2=location.getY_Axis()+10;
-                    g.drawLine(x1,y1,x2,y2);
+                    int x=location.getX_Axis()-width/2;
+                    int y=location.getY_Axis()-height/2;
+                    g.fillRect(x,y,width,height);
 
                 }
                 g.dispose();
@@ -228,6 +238,17 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
         }
     }
 
+    private String isValidColorHex(String color)
+    {
+        String regex="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+        Pattern pattern=Pattern.compile(regex);
+        Matcher matcher=pattern.matcher(color);
+        if(matcher.matches())
+            return color;
+        else
+            return "#FF0000";
+
+    }
 
 
 }

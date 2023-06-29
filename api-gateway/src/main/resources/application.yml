@@ -32,10 +32,18 @@ spring:
             - AuthenticationFilter
           metadata:
             requiredRole: "OPERATOR"
-        - id: error-ttDefect
+        - id: error-ttDefect-getDefects
           uri: lb://error-login-service
           predicates:
             - Path=/ttvehicleDefect/getAll
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "LEADER"
+        - id: error-ttDefect-getImage
+          uri: lb://error-login-service
+          predicates:
+            - Path=/ttvehicleDefect/get/image/**
           filters:
             - AuthenticationFilter
           metadata:
