@@ -35,11 +35,13 @@ public class TerminalController {
     public Page<TerminalDTO> getActiveTerminals(@RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "5") int size,
                                                 @RequestParam(defaultValue = "") String depName,
+                                                @RequestParam(defaultValue = "") String depCode,
+                                                @RequestParam(defaultValue = "") String shopCode,
                                                 @RequestParam(defaultValue = "true") boolean isActive,
-                                                @RequestParam(defaultValue = "name")String sortBy,
+                                                @RequestParam(defaultValue = "depName")String sortBy,
                                                 @RequestParam(defaultValue="ASC") String sortDirection)
     {
-        return terminalService.getTerminals(page,size,depName,isActive,sortBy,sortDirection);
+        return terminalService.getTerminals(page,size,depName,depCode,shopCode,isActive,sortBy,sortDirection);
     }
 
     /**

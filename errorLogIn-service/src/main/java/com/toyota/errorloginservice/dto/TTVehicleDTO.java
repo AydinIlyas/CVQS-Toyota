@@ -17,10 +17,10 @@ import java.util.List;
  */
 public class TTVehicleDTO {
     private Long id;
-    @NotNull(message = "Model must not be null")
+
     @NotBlank(message="Model must not be blank")
     private String model;
-    @NotNull(message="Vehicle identification number must not be null")
+
     @NotBlank(message="Vehicle identification number must not be blank")
     private String vin;
     @NotNull(message="Year of production must not be null")

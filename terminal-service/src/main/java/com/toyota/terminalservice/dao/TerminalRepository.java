@@ -15,8 +15,11 @@ import java.util.Optional;
 @Repository
 public interface TerminalRepository extends JpaRepository<Terminal,Long> {
     @Query("Select t from Terminal t where (Upper(t.depName) like concat('%',upper(?1) ,'%') or t.depName is null)" +
-            " and t.isActive=(?2)")
-    Page<Terminal> getTerminalsFiltered(String name, boolean isActive, Pageable pageable);
+            "and (Upper(t.depCode) like concat('%',upper(?2) ,'%') or t.depCode is null) and " +
+            "(Upper(t.shopCode) like concat('%',upper(?3) ,'%') or t.shopCode is null)" +
+            " and t.isActive=(?4)")
+    Page<Terminal> getTerminalsFiltered(String depName,String depCode,String shopCode, boolean isActive,
+                                        Pageable pageable);
 
     Optional<Terminal> findByDepCode(String depCode);
 }

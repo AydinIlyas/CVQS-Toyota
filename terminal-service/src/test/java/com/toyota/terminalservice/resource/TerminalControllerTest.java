@@ -33,18 +33,22 @@ class TerminalControllerTest {
         int page=0;
         int size=5;
         String depName="depName";
+        String depCode="depCode";
+        String shopCode="shopCode";
         boolean isActive=true;
         String sortBy="depName";
         String sortDirection="ASC";
         List<TerminalDTO> content=List.of(new TerminalDTO());
         //when
         Page<TerminalDTO> pageMock=new PageImpl<>(content);
-        when(terminalService.getTerminals(anyInt(),anyInt(),anyString(),anyBoolean(),anyString(),anyString()))
+        when(terminalService.getTerminals(anyInt(),anyInt(),anyString(),anyString(),anyString(),anyBoolean()
+                ,anyString(),anyString()))
                 .thenReturn(pageMock);
         Page<TerminalDTO> result=terminalController.getActiveTerminals
-                (page,size,depName,isActive,sortBy,sortDirection);
+                (page,size,depName,depCode,shopCode,isActive,sortBy,sortDirection);
         //then
-        verify(terminalService).getTerminals(anyInt(),anyInt(),anyString(),anyBoolean(),anyString(),anyString());
+        verify(terminalService).getTerminals(anyInt(),anyInt(),anyString(),anyString(),anyString(),anyBoolean()
+                ,anyString(),anyString());
         assertEquals(result,pageMock);
         assertEquals(content,pageMock.getContent());
 

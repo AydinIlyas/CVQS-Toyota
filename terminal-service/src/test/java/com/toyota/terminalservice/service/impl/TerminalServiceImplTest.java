@@ -36,6 +36,8 @@ class TerminalServiceImplTest {
         int page=0;
         int size=5;
         String depName="depName";
+        String depCode="depCode";
+        String shopCode="shopCode";
         boolean isActive=true;
         String sortBy="depName";
         String sortDirection="ASC";
@@ -45,8 +47,10 @@ class TerminalServiceImplTest {
         Page<Terminal> pageMock=new PageImpl<>(content,pageable,1);
 
         //when
-        when(terminalRepository.getTerminalsFiltered(anyString(),anyBoolean(),any())).thenReturn(pageMock);
-        Page<TerminalDTO> result=terminalService.getTerminals(page,size,depName,isActive,sortBy,sortDirection);
+        when(terminalRepository.getTerminalsFiltered(anyString(),anyString(),anyString(),anyBoolean(),any()))
+                .thenReturn(pageMock);
+        Page<TerminalDTO> result=terminalService.getTerminals(page,size,depName,depCode,shopCode,isActive,sortBy
+                ,sortDirection);
 
         //then
         assertEquals(page,result.getPageable().getPageNumber());

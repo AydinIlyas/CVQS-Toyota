@@ -37,11 +37,11 @@ public class TerminalServiceImpl implements TerminalService {
      * @return Page of terminals
      */
     @Override
-    public Page<TerminalDTO> getTerminals(int page,int size,String depName,boolean isActive,
-                                                String sortBy,String sortDirection)
+    public Page<TerminalDTO> getTerminals(int page,int size,String depName,String depCode,String shopCode
+            ,boolean isActive,String sortBy,String sortDirection)
     {
         Pageable pageable= PageRequest.of(page,size,Sort.by(createSortOrder(sortBy,sortDirection)));
-        Page<Terminal> terminals=terminalRepository.getTerminalsFiltered(depName,isActive,pageable);
+        Page<Terminal> terminals=terminalRepository.getTerminalsFiltered(depName,depCode,shopCode,isActive,pageable);
         logger.info("Terminal Page created! Page: {}, Size: {}, Sorted By: {}, Total Pages: {}," +
                         "Total Elements: {}",
                 terminals.getPageable().getPageNumber(),terminals.getNumberOfElements(),terminals.getPageable().getSort(),

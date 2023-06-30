@@ -1,14 +1,17 @@
 package com.toyota.terminalservice.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Terminal for data transfer
  */
 public class TerminalDTO {
-    @NotNull
+
+    @NotBlank(message="Department name must not be blank")
     private String depName;
+    @NotBlank(message="Department code must not be blank")
     private String depCode;
+    @NotBlank(message = "Shop code must not be blank")
     private String shopCode;
 
     public TerminalDTO() {

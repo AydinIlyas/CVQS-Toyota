@@ -15,7 +15,7 @@ import java.util.List;
 
 public class TTVehicleDefectDTO {
     private Long id;
-    @NotNull(message = "Type must not be null")
+
     @NotBlank(message = "Type must not be blank")
     private String type;
 
