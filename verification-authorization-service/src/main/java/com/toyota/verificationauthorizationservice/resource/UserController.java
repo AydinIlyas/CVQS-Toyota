@@ -6,6 +6,7 @@ import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class UserController {
      * @return ResponseEntity of token
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody AuthenticationRequest request) {
         AuthenticationResponse response = userService.login(request);
         return ResponseEntity.ok(response);
     }
@@ -73,7 +74,7 @@ public class UserController {
 
 
     @PutMapping("/changePassword")
-    public ResponseEntity<Entity> changePassword(HttpServletRequest request, @RequestBody PasswordsDTO passwordsDTO) {
+    public ResponseEntity<Entity> changePassword(HttpServletRequest request,@Valid @RequestBody PasswordsDTO passwordsDTO) {
         boolean success = userService.changePassword(request, passwordsDTO);
         if (success)
             return ResponseEntity.status(HttpStatus.OK).build();

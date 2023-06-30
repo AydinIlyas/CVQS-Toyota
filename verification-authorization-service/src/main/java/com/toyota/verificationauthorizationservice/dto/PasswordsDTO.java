@@ -1,7 +1,14 @@
 package com.toyota.verificationauthorizationservice.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public class PasswordsDTO {
+    @NotBlank(message="Old password must not be blank")
     String oldPassword;
+    @Size(min=8,message = "New password must be at least 8 characters")
+    @NotBlank(message = "New password must not be blank")
     String newPassword;
 
     public PasswordsDTO(String oldPassword, String newPassword) {

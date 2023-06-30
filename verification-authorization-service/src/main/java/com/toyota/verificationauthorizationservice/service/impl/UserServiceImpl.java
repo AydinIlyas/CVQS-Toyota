@@ -9,6 +9,7 @@ import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
 import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import com.toyota.verificationauthorizationservice.exception.IncorrectPasswordException;
+import com.toyota.verificationauthorizationservice.exception.InvalidAuthenticationException;
 import com.toyota.verificationauthorizationservice.exception.NoRolesException;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
@@ -18,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -62,7 +64,7 @@ public class UserServiceImpl implements UserService {
             throw new NoRolesException("No Valid Roles Found!");
         }
         userRepository.save(user);
-        logger.info("Successfully created new User! Username: {}",user.getUsername());
+        logger.info("Successfully created new User! Username: {}", user.getUsername());
         return true;
 
     }
@@ -75,15 +77,19 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException e) {
+            throw new InvalidAuthenticationException();
+        }
         User user = userRepository.findByUsernameAndDeletedIsFalse(request.getUsername()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        logger.info("Successfully Authenticated! Username: {}",user.getUsername());
+        logger.info("Successfully Authenticated! Username: {}", user.getUsername());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -108,7 +114,7 @@ public class UserServiceImpl implements UserService {
             return authorities.stream()
                     .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         }
-        logger.warn("User not found for authorization! Username: {}",username);
+        logger.warn("User not found for authorization! Username: {}", username);
         return null;
     }
 
@@ -125,7 +131,7 @@ public class UserServiceImpl implements UserService {
             User user = optionalUser.get();
             user.setDeleted(true);
             userRepository.save(user);
-            logger.info("Successfully deleted user. {}",user.getUsername());
+            logger.info("Successfully deleted user. {}", user.getUsername());
             return true;
         }
         logger.warn("Delete failed. User not Found!");
@@ -187,6 +193,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Returns permissions and username
+     *
      * @param request HttpServletRequest request for extracting username
      * @return Map with Permissions
      */
@@ -229,10 +236,10 @@ public class UserServiceImpl implements UserService {
             if (foundRole.isPresent()) {
                 user.getRoles().add(foundRole.get());
                 userRepository.save(user);
-                logger.info("ADDED new Role to User. User: {}, Role: {}",user.getUsername(),role);
+                logger.info("ADDED new Role to User. User: {}, Role: {}", user.getUsername(), role);
                 return true;
             } else {
-                logger.warn("Role not found! Role: {}",role);
+                logger.warn("Role not found! Role: {}", role);
                 return false;
             }
         }
@@ -255,10 +262,10 @@ public class UserServiceImpl implements UserService {
             if (foundRole.isPresent()) {
                 user.getRoles().remove(foundRole.get());
                 userRepository.save(user);
-                logger.info("REMOVED role from user! User: {}, Role: {}",user.getUsername(),role);
+                logger.info("REMOVED role from user! User: {}, Role: {}", user.getUsername(), role);
                 return true;
             } else {
-                logger.warn("Role not Found! Role: {}",role);
+                logger.warn("Role not Found! Role: {}", role);
                 return false;
             }
         }
