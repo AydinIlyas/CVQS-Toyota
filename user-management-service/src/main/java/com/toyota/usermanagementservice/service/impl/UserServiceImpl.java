@@ -90,10 +90,7 @@ public class UserServiceImpl implements UserService {
                 Boolean updated = webClientBuilder.build().put()
                         .uri("http://verification-authorization-service/auth/update/{oldUsername}",
                                 user.getUsername())
-                        .headers(auth -> {
-                            assert bearer != null;
-                            auth.setBearerAuth(bearer);
-                        })
+                        .headers(auth -> auth.setBearerAuth(bearer))
                         .bodyValue(userDTO.getUsername())
                         .retrieve()
                         .bodyToMono(Boolean.class).block();
@@ -142,10 +139,7 @@ public class UserServiceImpl implements UserService {
             User user = optionalUser.get();
             Boolean deleteFromAuth = webClientBuilder.build().put()
                     .uri("http://verification-authorization-service/auth/delete")
-                    .headers(h -> {
-                        assert bearer != null;
-                        h.setBearerAuth(bearer);
-                    })
+                    .headers(h -> h.setBearerAuth(bearer))
                     .bodyValue(user.getUsername())
                     .retrieve()
                     .bodyToMono(Boolean.class)
@@ -215,10 +209,7 @@ public class UserServiceImpl implements UserService {
                     .put()
                     .uri("http://verification-authorization-service/auth/addRole/{username}",
                             user.getUsername())
-                    .headers(h -> {
-                        assert authToken != null;
-                        h.setBearerAuth(authToken);
-                    })
+                    .headers(h -> h.setBearerAuth(authToken))
                     .bodyValue(role.toString())
                     .retrieve()
                     .bodyToMono(Boolean.class)
@@ -265,10 +256,7 @@ public class UserServiceImpl implements UserService {
                     .put()
                     .uri("http://verification-authorization-service/auth/removeRole/{username}",
                             user.getUsername())
-                    .headers(h -> {
-                        assert authToken != null;
-                        h.setBearerAuth(authToken);
-                    })
+                    .headers(h -> h.setBearerAuth(authToken))
                     .bodyValue(role.toString())
                     .retrieve()
                     .bodyToMono(Boolean.class)
@@ -322,7 +310,7 @@ public class UserServiceImpl implements UserService {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7);
         }
-        return null;
+        throw new BearerTokenNotFoundException("Bearer token not found");
     }
 
     /**

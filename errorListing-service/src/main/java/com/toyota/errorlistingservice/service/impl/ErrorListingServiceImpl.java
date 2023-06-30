@@ -2,7 +2,7 @@ package com.toyota.errorlistingservice.service.impl;
 
 
 import com.toyota.errorlistingservice.dto.PaginationResponse;
-import com.toyota.errorlistingservice.exceptions.UnauthorizedException;
+import com.toyota.errorlistingservice.exceptions.BearerTokenNotFoundException;
 import com.toyota.errorlistingservice.service.abstracts.ErrorListingService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -124,7 +124,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
             return authorizationHeader.substring(7);
         }
         logger.warn("USER IS UNAUTHORIZED!");
-        throw new UnauthorizedException("USER IS UNAUTHORIZED");
+        throw new BearerTokenNotFoundException("USER IS UNAUTHORIZED");
     }
 }
 

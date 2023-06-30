@@ -36,6 +36,7 @@ public class ErrorResponse {
         this.status=status.value();
         this.error=status.name();
         this.message=message;
+        this.path=getRequestPath();
     }
     public ErrorResponse(HttpStatus status,String message,Exception ex)
     {
@@ -45,14 +46,6 @@ public class ErrorResponse {
         this.message=message;
         this.debugMessage=ex.getLocalizedMessage();
         this.path=getRequestPath();
-    }
-    public ErrorResponse(HttpStatus status,String message,String path)
-    {
-        this();
-        this.status=status.value();
-        this.error=status.name();
-        this.message=message;
-        this.path=path;
     }
     public void addValidationError(List<FieldError> errors)
     {
