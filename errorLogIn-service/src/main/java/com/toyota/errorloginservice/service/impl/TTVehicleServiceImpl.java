@@ -6,6 +6,7 @@ import com.toyota.errorloginservice.domain.TTVehicleDefect;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
+import com.toyota.errorloginservice.exception.VehicleAlreadyExistsException;
 import com.toyota.errorloginservice.service.abstracts.TTVehicleService;
 import com.toyota.errorloginservice.service.common.MapUtil;
 import com.toyota.errorloginservice.service.common.SortUtil;
@@ -68,6 +69,10 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      */
     @Override
     public TTVehicleDTO addVehicle(TTVehicleDTO ttVehicleDTO) {
+        if(ttVehicleRepository.existsByVinAndDeletedIsFalse(ttVehicleDTO.getVin()))
+        {
+            throw new VehicleAlreadyExistsException("Vehicle with this vin already exists. Vin: "+ttVehicleDTO.getVin());
+        }
         TTVehicle ttVehicle = mapUtil.convertVehicleDTOToEntity(ttVehicleDTO);
         TTVehicle saved = ttVehicleRepository.save(ttVehicle);
         logger.info("Successfully added Vehicle! ID: {}",saved.getId());
@@ -94,6 +99,10 @@ public class TTVehicleServiceImpl implements TTVehicleService {
             }
             if(ttVehicleDTO.getVin()!=null&&!vehicle.getVin().equals(ttVehicleDTO.getVin()))
             {
+                if(ttVehicleRepository.existsByVinAndDeletedIsFalse(ttVehicleDTO.getVin()))
+                {
+                    throw new VehicleAlreadyExistsException("Vehicle with this vin already exists. Vin: "+ttVehicleDTO.getVin());
+                }
                 vehicle.setVin(ttVehicleDTO.getVin());
             }
             if(ttVehicleDTO.getColor()!=null&&!vehicle.getColor().equals(ttVehicleDTO.getColor()))

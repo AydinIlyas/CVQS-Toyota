@@ -22,4 +22,5 @@ public interface TTVehicleRepository extends JpaRepository<TTVehicle,Long> {
     Page<TTVehicle> getVehiclesFiltered(String model, String vin, String yearOfProduction, String transmissionType,
                                         String engineType, String color, Pageable pageable);
 
+    boolean existsByVinAndDeletedIsFalse(String vin);
 }

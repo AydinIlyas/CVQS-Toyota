@@ -1,9 +1,6 @@
 package com.toyota.errorloginservice.advice;
 
-import com.toyota.errorloginservice.exception.EntityNotFoundException;
-import com.toyota.errorloginservice.exception.ImageNotFoundException;
-import com.toyota.errorloginservice.exception.ImageProcessingException;
-import com.toyota.errorloginservice.exception.InvalidLocationException;
+import com.toyota.errorloginservice.exception.*;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +35,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles VehicleAlreadyExistsException
+     * @param ex VehicleAlreadyExistsException thrown when vin is already taken
+     * @return ResponseEntity with error response.
+     */
+    @ExceptionHandler(VehicleAlreadyExistsException.class)
+    public ResponseEntity<Object> handleVehicleAlreadyExistsException(VehicleAlreadyExistsException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     /**

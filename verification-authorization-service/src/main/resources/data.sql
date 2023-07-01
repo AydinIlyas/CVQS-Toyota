@@ -4,9 +4,9 @@ INSERT INTO "ToyotaProject".public.roles (name,description) VALUES
                                          ('OPERATOR','OPERATOR');
 
 INSERT INTO "ToyotaProject".public.permission (name,description) VALUES
-    ('TEST','ADMIN'),
-    ('TEST1','LEADER'),
-    ('TEST2','OPERATOR');
+    ('ADMIN','ADMIN'),
+    ('LEADER','LEADER'),
+    ('OPERATOR','OPERATOR');
 
 INSERT INTO "ToyotaProject".public.roles_permissions (role_id,permission_id) VALUES
                                                           (1,1),
