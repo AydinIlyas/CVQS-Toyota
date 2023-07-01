@@ -99,6 +99,13 @@ public class UserServiceImpl implements UserService {
 
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
+            if (userDTO.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
+                if(userRepository.existsByEmailAndDeletedIsFalse(userDTO.getEmail()))
+                {
+                    throw new UserAlreadyExistsException("Email is taken!");
+                }
+                user.setEmail(userDTO.getEmail());
+            }
             if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
                 if(userRepository.existsByUsernameAndDeletedIsFalse(userDTO.getUsername()))
                 {
@@ -136,13 +143,7 @@ public class UserServiceImpl implements UserService {
                     throw new UnexpectedException("Username couldn't changed in verification service!");
                 }
             }
-            if (userDTO.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
-                if(userRepository.existsByEmailAndDeletedIsFalse(userDTO.getEmail()))
-                {
-                    throw new UserAlreadyExistsException("Email is taken!");
-                }
-                user.setEmail(userDTO.getEmail());
-            }
+
             if (userDTO.getFirstname() != null && !user.getFirstname().equals(userDTO.getFirstname())) {
                 user.setFirstname(userDTO.getFirstname());
             }

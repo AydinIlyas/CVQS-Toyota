@@ -66,12 +66,13 @@ class UserServiceImplTest {
                 .thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(any());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
                 .thenReturn(monoSpy);
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(false);
+        when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(false);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
@@ -99,12 +100,13 @@ class UserServiceImplTest {
                 .thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(any());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
                 .thenReturn(monoSpy);
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(false);
+        when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(false);
 
         //then
         assertThrows(UnexpectedException.class,
@@ -117,7 +119,7 @@ class UserServiceImplTest {
                 "email@gmail.com","abcdef1",Set.of(Role.OPERATOR), Gender.FEMALE);
 
         //when
-        when(userRepository.existsByUsername(anyString())).thenReturn(true);
+        when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(true);
 
         //then
         assertThrows(UserAlreadyExistsException.class,
@@ -130,7 +132,7 @@ class UserServiceImplTest {
                 "email@gmail.com","abcdef1",Set.of(Role.OPERATOR), Gender.FEMALE);
 
         //when
-        when(userRepository.existsByEmail(anyString())).thenReturn(true);
+        when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(true);
 
         //then
         assertThrows(UserAlreadyExistsException.class,
@@ -158,6 +160,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
@@ -181,7 +184,7 @@ class UserServiceImplTest {
         assertEquals(userDTO.getGender(),response.getGender());
     }
     @Test
-    void update_Fail() {
+    void update_UnexpectedFail() {
         //given
         UserDTO userDTO=new UserDTO("firstname","lastname","username",
                 "email@gmail.com","abcdef1",Set.of(Role.OPERATOR), Gender.FEMALE);
@@ -201,6 +204,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
@@ -225,6 +229,36 @@ class UserServiceImplTest {
         //then
         assertThrows(UserNotFoundException.class,()->userService.update(request,1L,userDTO));
     }
+    @Test
+    void update_UsernameTaken() {
+        //given
+        UserDTO userDTO=new UserDTO();
+        userDTO.setUsername("Username");
+        User user=new User();
+        user.setUsername("oldUsername");
+        //when
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
+        when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(true);
+
+        //then
+        assertThrows(UserAlreadyExistsException.class,()->userService.update(request,1L,userDTO));
+    }
+    @Test
+    void update_EmailTaken() {
+        //given
+        UserDTO userDTO=new UserDTO();
+        userDTO.setEmail("email");
+        User user=new User();
+        user.setEmail("oldEmail");
+        //when
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
+        when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(true);
+
+        //then
+        assertThrows(UserAlreadyExistsException.class,()->userService.update(request,1L,userDTO));
+    }
 
     @Test
     void deleteUser_Success() {
@@ -245,6 +279,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
@@ -298,6 +333,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
@@ -314,7 +350,7 @@ class UserServiceImplTest {
 
 
     @Test
-    void getAll() {
+    void getAll_Asc() {
         //given
         String firstname="firstname";
         String lastname="lastname";
@@ -325,6 +361,34 @@ class UserServiceImplTest {
         List<String> sortList=List.of("firstname");
         String sortOrder="Asc";
         Sort.Order sort=new Sort.Order(Sort.Direction.ASC,sortList.get(0));
+        Pageable pageable= PageRequest.of(page,size, Sort.by(sort));
+        List<User> content=List.of(new User());
+        //when
+        Page<User> pageMock=new PageImpl<>(content,pageable,1);
+        when(userRepository.getUsersFiltered(firstname,lastname,email,username,pageable))
+                .thenReturn(pageMock);
+        Page<UserResponse> response=userService.getAll(firstname,lastname,username,email,
+                page,size,sortList,sortOrder);
+
+        //then
+        assertEquals(UserResponse.class,response.getContent().get(0).getClass());
+        assertEquals(page,response.getPageable().getPageNumber());
+        assertEquals(size,response.getPageable().getPageSize());
+
+
+    }
+    @Test
+    void getAll_Desc() {
+        //given
+        String firstname="firstname";
+        String lastname="lastname";
+        String username="username";
+        String email="email";
+        int page=1;
+        int size=3;
+        List<String> sortList=List.of("firstname");
+        String sortOrder="Desc";
+        Sort.Order sort=new Sort.Order(Sort.Direction.DESC,sortList.get(0));
         Pageable pageable= PageRequest.of(page,size, Sort.by(sort));
         List<User> content=List.of(new User());
         //when
@@ -364,6 +428,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
@@ -405,6 +470,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
@@ -478,6 +544,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))
@@ -520,6 +587,7 @@ class UserServiceImplTest {
         }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
         Mono<Boolean> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(Boolean.class))

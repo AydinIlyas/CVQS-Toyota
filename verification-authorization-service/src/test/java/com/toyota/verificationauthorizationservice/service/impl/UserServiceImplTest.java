@@ -9,8 +9,7 @@ import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
 import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
-import com.toyota.verificationauthorizationservice.exception.IncorrectPasswordException;
-import com.toyota.verificationauthorizationservice.exception.NoRolesException;
+import com.toyota.verificationauthorizationservice.exception.*;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -114,7 +113,7 @@ class UserServiceImplTest {
 
 
         //then
-        assertThrows(AuthenticationException.class,
+        assertThrows(InvalidAuthenticationException.class,
                 ()->userService.login(authenticationRequest));
     }
 
@@ -171,16 +170,15 @@ class UserServiceImplTest {
         assertTrue(result);
     }
     @Test
-    void delete_Fail() {
+    void delete_UserNotFound() {
         //given
         String username="username";
         //when
         when(userRepository.findByUsernameAndDeletedIsFalse(username)).thenReturn(Optional.empty());
 
-        Boolean result=userService.delete(username);
-
         //then
-        assertFalse(result);
+        assertThrows(UserNotFoundException.class,
+                ()->userService.delete(username));
     }
 
     @Test
@@ -199,18 +197,29 @@ class UserServiceImplTest {
         assertEquals(newUsername,user.getUsername());
     }
     @Test
-    void updateUsername_Fail() {
+    void updateUsername_UserNotFound() {
         //given
         String username="username";
         String newUsername="updatedUser";
         //when
         when(userRepository.findByUsernameAndDeletedIsFalse(username)).thenReturn(Optional.empty());
 
-        Boolean success=userService.updateUsername(newUsername,username);
+        //then
+        assertThrows(UserNotFoundException.class,()->userService.updateUsername(newUsername,username));
+    }
+
+    @Test
+    void updateUsername_UsernameTaken() {
+        //given
+        String username="username";
+        String newUsername="updatedUser";
+        //when
+        when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(true);
 
         //then
-        assertFalse(success);
+        assertThrows(UsernameTakenException.class,()->userService.updateUsername(newUsername,username));
     }
+
 
 
     @Test
@@ -261,9 +270,9 @@ class UserServiceImplTest {
         when(jwtService.extractUsername(anyString())).thenReturn("username");
         when(userRepository.findByUsernameAndDeletedIsFalse(username)).thenReturn(Optional.empty());
 
-        boolean success=userService.changePassword(request,passwordsDTO);
         //then
-        assertFalse(success);
+        assertThrows(UserNotFoundException.class,
+                ()->userService.changePassword(request,passwordsDTO) );
     }
     @Test
     void changePassword_BearerFail() {
@@ -339,11 +348,9 @@ class UserServiceImplTest {
         //given
         String username="username";
         String roleStr="Admin";
-        //when
-        boolean success=userService.addRole(username,roleStr);
 
         //then
-        assertFalse(success);
+        assertThrows(UserNotFoundException.class,()->userService.addRole(username,roleStr));
     }
     @Test
     void addRole_RoleNotFound() {
@@ -357,10 +364,8 @@ class UserServiceImplTest {
         when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.of(user));
         when(roleRepository.findByName(anyString())).thenReturn(Optional.empty());
 
-        boolean success=userService.addRole(username,roleStr);
-
         //then
-        assertFalse(success);
+        assertThrows(RoleNotFoundException.class,()->userService.addRole(username,roleStr));
         assertEquals(1,user.getRoles().size());
     }
 
@@ -393,10 +398,8 @@ class UserServiceImplTest {
         //when
         when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.empty());
 
-        boolean success=userService.removeRole(username,roleStr);
-
         //then
-        assertFalse(success);
+        assertThrows(UserNotFoundException.class,()->userService.removeRole(username,roleStr));
     }
     @Test
     void removeRole_RoleNotFound() {
@@ -406,14 +409,13 @@ class UserServiceImplTest {
         User user=new User(1L,"username","password",false,roles);
         String username="username";
         String roleStr="Admin";
+
         //when
         when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.of(user));
         when(roleRepository.findByName(anyString())).thenReturn(Optional.empty());
 
-        boolean success=userService.removeRole(username,roleStr);
-
         //then
-        assertFalse(success);
+        assertThrows(RoleNotFoundException.class,()->userService.removeRole(username,roleStr));
         assertEquals(1,user.getRoles().size());
     }
 }
