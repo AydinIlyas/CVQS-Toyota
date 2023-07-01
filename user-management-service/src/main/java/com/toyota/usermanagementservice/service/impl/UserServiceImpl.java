@@ -17,14 +17,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,12 +44,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse create(UserDTO userDTO) {
 
-        if (userRepository.existsByUsername(userDTO.getUsername())) {
+        if (userRepository.existsByUsernameAndDeletedIsFalse(userDTO.getUsername())) {
             logger.warn("USERNAME IS ALREADY TAKEN! USERNAME: {}", userDTO.getUsername());
             throw new UserAlreadyExistsException("Username '" + userDTO.getUsername() + "' is already taken!");
         }
 
-        if (userRepository.existsByEmail(userDTO.getEmail())) {
+        if (userRepository.existsByEmailAndDeletedIsFalse(userDTO.getEmail())) {
             logger.warn("EMAIL IS ALREADY TAKEN! EMAIL: {}", userDTO.getEmail());
             throw new UserAlreadyExistsException("EMAIL '" + userDTO.getEmail() + "' is already taken!");
         }
@@ -59,6 +59,19 @@ public class UserServiceImpl implements UserService {
                 .uri("http://verification-authorization-service/auth/register")
                 .bodyValue(new RegisterRequest(userDTO.getUsername(), userDTO.getPassword(), roles))
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, clientResponse->{
+                    if(clientResponse.statusCode()==HttpStatus.CONFLICT)
+                    {
+                        throw new UserAlreadyExistsException("User already exists in verification-authorization-service");
+                    }
+                    else if(clientResponse.statusCode()==HttpStatus.BAD_REQUEST)
+                    {
+                        throw new RoleNotFoundException("Problem with roles in verification-authorization-service");
+                    }
+                    else{
+                        throw new UnexpectedException("Unexpected exception in verification-authorization-service");
+                    }
+                })
                 .bodyToMono(Boolean.class)
                 .block();
         if (response != null && !response) {
@@ -80,12 +93,17 @@ public class UserServiceImpl implements UserService {
      * @return UserResponse of updated user.
      */
     @Override
+    @Transactional
     public UserResponse update(HttpServletRequest request, Long userId, UserDTO userDTO) {
         Optional<User> optionalUser = userRepository.findById(userId);
 
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
+                if(userRepository.existsByUsernameAndDeletedIsFalse(userDTO.getUsername()))
+                {
+                    throw new UserAlreadyExistsException("Username is taken!");
+                }
                 String bearer = extractToken(request);
                 Boolean updated = webClientBuilder.build().put()
                         .uri("http://verification-authorization-service/auth/update/{oldUsername}",
@@ -93,7 +111,24 @@ public class UserServiceImpl implements UserService {
                         .headers(auth -> auth.setBearerAuth(bearer))
                         .bodyValue(userDTO.getUsername())
                         .retrieve()
-                        .bodyToMono(Boolean.class).block();
+                        .onStatus(HttpStatusCode::isError, response->{
+                            if(response.statusCode()==HttpStatus.CONFLICT)
+                            {
+                                throw new UserAlreadyExistsException
+                                        ("Username already exists in verification-authorization-service");
+                            }
+                            else if(response.statusCode()==HttpStatus.NOT_FOUND)
+                            {
+                                throw new UserNotFoundException
+                                        ("Username not found in verification-authorization-service.");
+                            }
+                            else{
+                                throw new UnexpectedException
+                                        ("Unexpected exception in verification-authorization-service");
+                            }
+                        })
+                        .bodyToMono(Boolean.class)
+                        .block();
                 if (updated != null && updated)
                     user.setUsername(userDTO.getUsername());
                 else {
@@ -102,6 +137,10 @@ public class UserServiceImpl implements UserService {
                 }
             }
             if (userDTO.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
+                if(userRepository.existsByEmailAndDeletedIsFalse(userDTO.getEmail()))
+                {
+                    throw new UserAlreadyExistsException("Email is taken!");
+                }
                 user.setEmail(userDTO.getEmail());
             }
             if (userDTO.getFirstname() != null && !user.getFirstname().equals(userDTO.getFirstname())) {
@@ -142,6 +181,15 @@ public class UserServiceImpl implements UserService {
                     .headers(h -> h.setBearerAuth(bearer))
                     .bodyValue(user.getUsername())
                     .retrieve()
+                    .onStatus(HttpStatusCode::isError, response->{
+                        if(response.statusCode()==HttpStatus.NOT_FOUND)
+                        {
+                            throw new UserNotFoundException("User not found in verification-authorization service");
+                        }
+                        else{
+                            throw new UnexpectedException("Unexpected exception in verification service");
+                        }
+                    })
                     .bodyToMono(Boolean.class)
                     .block();
             if (deleteFromAuth != null && deleteFromAuth) {
@@ -212,6 +260,23 @@ public class UserServiceImpl implements UserService {
                     .headers(h -> h.setBearerAuth(authToken))
                     .bodyValue(role.toString())
                     .retrieve()
+                    .onStatus(HttpStatusCode::isError, response ->{
+                        HttpHeaders headers=response.headers().asHttpHeaders();
+                        String exceptionType=headers.getFirst("exception-type");
+                        if(response.statusCode()==HttpStatus.NOT_FOUND
+                                && Objects.equals(exceptionType, "RoleNotFound"))
+                        {
+                            throw new RoleNotFoundException("Role not found in verification-authorization-service");
+                        }
+                        else if(response.statusCode()==HttpStatus.NOT_FOUND
+                                && Objects.equals(exceptionType, "UserNotFound"))
+                        {
+                            throw new UserNotFoundException("User not found in verification-authorization-service.");
+                        }
+                        else{
+                            throw new UnexpectedException("Unexpected exception in verification-authorization-service");
+                        }
+                    } )
                     .bodyToMono(Boolean.class)
                     .block();
             if (success != null && success) {
@@ -259,6 +324,23 @@ public class UserServiceImpl implements UserService {
                     .headers(h -> h.setBearerAuth(authToken))
                     .bodyValue(role.toString())
                     .retrieve()
+                    .onStatus(HttpStatusCode::isError, response ->{
+                        HttpHeaders headers=response.headers().asHttpHeaders();
+                        String exceptionType=headers.getFirst("exception-type");
+                        if(response.statusCode()==HttpStatus.NOT_FOUND
+                                && Objects.equals(exceptionType, "RoleNotFound"))
+                        {
+                            throw new RoleNotFoundException("Role not found in verification-authorization-service");
+                        }
+                        else if(response.statusCode()==HttpStatus.NOT_FOUND
+                                && Objects.equals(exceptionType, "UserNotFound"))
+                        {
+                            throw new UserNotFoundException("User not found in verification-authorization-service");
+                        }
+                        else{
+                            throw new UnexpectedException("Unexpected exception in verification-authorization-service");
+                        }
+                    } )
                     .bodyToMono(Boolean.class)
                     .block();
             if (success != null && success) {

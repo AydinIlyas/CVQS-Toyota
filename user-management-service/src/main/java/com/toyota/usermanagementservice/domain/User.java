@@ -23,9 +23,9 @@ public class User {
 
     private String firstname;
     private String lastname;
-    @Column(unique = true)
+
     private String username;
-    @Column(unique = true)
+
     private String email;
     private Set<Role> role;
     @Enumerated(EnumType.STRING)

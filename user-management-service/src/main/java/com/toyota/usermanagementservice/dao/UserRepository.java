@@ -17,7 +17,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
             "concat('%',UPPER(?3),'%') and upper(u.username) like concat('%',UPPER(?4),'%') ")
     Page<User> getUsersFiltered(String firstname, String lastName, String email, String username, Pageable pageable);
 
-    boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
+    boolean existsByUsernameAndDeletedIsFalse(String username);
+    boolean existsByEmailAndDeletedIsFalse(String email);
 
 }

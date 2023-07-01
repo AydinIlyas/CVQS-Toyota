@@ -8,9 +8,7 @@ import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
 import com.toyota.verificationauthorizationservice.dto.PasswordsDTO;
 import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
-import com.toyota.verificationauthorizationservice.exception.IncorrectPasswordException;
-import com.toyota.verificationauthorizationservice.exception.InvalidAuthenticationException;
-import com.toyota.verificationauthorizationservice.exception.NoRolesException;
+import com.toyota.verificationauthorizationservice.exception.*;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import com.toyota.verificationauthorizationservice.service.abstracts.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,6 +43,10 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Boolean register(RegisterRequest request) {
+        if(userRepository.existsByUsernameAndDeletedIsFalse(request.getUsername()))
+        {
+           throw new UsernameTakenException("Username is taken!");
+        }
         if (request.getRoles().size() < 1) {
             logger.warn("NO ROLE FOUND FOR REGISTRATION!");
             throw new NoRolesException("NO ROLE FOUND FOR REGISTRATION");
@@ -135,7 +137,7 @@ public class UserServiceImpl implements UserService {
             return true;
         }
         logger.warn("Delete failed. User not Found!");
-        return false;
+        throw new UserNotFoundException("User not found!");
     }
 
     /**
@@ -147,6 +149,10 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Boolean updateUsername(String newUsername, String oldUsername) {
+        if(userRepository.existsByUsernameAndDeletedIsFalse(newUsername))
+        {
+            throw new UsernameTakenException("Username is taken!");
+        }
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(oldUsername);
 
         if (optionalUser.isPresent()) {
@@ -157,9 +163,8 @@ public class UserServiceImpl implements UserService {
             return true;
         } else {
             logger.warn("User Not Found!");
-
+            throw new UserNotFoundException("Username not found!");
         }
-        return false;
     }
 
     /**
@@ -187,7 +192,7 @@ public class UserServiceImpl implements UserService {
             }
         } else {
             logger.warn("User Not Found!");
-            return false;
+            throw new UserNotFoundException("Username not found!");
         }
     }
 
@@ -240,11 +245,11 @@ public class UserServiceImpl implements UserService {
                 return true;
             } else {
                 logger.warn("Role not found! Role: {}", role);
-                return false;
+                throw new RoleNotFoundException("Role not found in verification-authorization-service!");
             }
         }
         logger.warn("User not found!");
-        return false;
+        throw new UserNotFoundException("User not found in verification-authorization-service!");
     }
 
     /**
@@ -266,11 +271,11 @@ public class UserServiceImpl implements UserService {
                 return true;
             } else {
                 logger.warn("Role not Found! Role: {}", role);
-                return false;
+                throw new RoleNotFoundException("Role not Found.");
             }
         }
         logger.warn("User not Found!");
-        return false;
+        throw new UserNotFoundException("User not found.");
     }
 
 

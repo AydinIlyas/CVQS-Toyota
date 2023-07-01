@@ -1,9 +1,7 @@
 package com.toyota.verificationauthorizationservice.advice;
 
 
-import com.toyota.verificationauthorizationservice.exception.IncorrectPasswordException;
-import com.toyota.verificationauthorizationservice.exception.InvalidAuthenticationException;
-import com.toyota.verificationauthorizationservice.exception.NoRolesException;
+import com.toyota.verificationauthorizationservice.exception.*;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +26,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     Logger logger= LogManager.getLogger(GlobalExceptionHandler.class);
 
     /**
+     * Handles UsernameTakenException by returning a ResponseEntity with an appropriate error response.
+     * @param e UsernameTakenException thrown when username is already taken
+     * @return ResponseEntity with an ErrorResponse containing details of the error
+     */
+    @ExceptionHandler(UsernameTakenException.class)
+    public ResponseEntity<Object> handleUsernameTakenException(UsernameTakenException e)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.CONFLICT,e.getMessage());
+        return new ResponseEntity<>(errorResponse,HttpStatus.CONFLICT);
+    }
+
+    /**
+     * Handles UserNotFoundException by returning a ResponseEntity with an appropriate error response.
+     * @param e UserNotFoundException thrown when user not found
+     * @return ResponseEntity with an ErrorResponse containing details of the error
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException e)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.NOT_FOUND,e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).header("exception-type","UserNotFound")
+                .body(errorResponse);
+    }
+    /**
      * Handles NoRolesException by returning a ResponseEntity with an appropriate error response.
      * @param e NoRolesException thrown when the user tries to register with no roles
      * @return ResponseEntity with an ErrorResponse containing details of the error
@@ -35,10 +57,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NoRolesException.class)
     public ResponseEntity<Object> handleNoRolesException(NoRolesException e)
     {
-        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.NOT_FOUND,e.getMessage());
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,e.getMessage());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
-
+    /**
+     * Handles RoleNotFoundException by returning a ResponseEntity with an appropriate error response.
+     * @param e RoleNotFoundException thrown when no role is found
+     * @return ResponseEntity with an ErrorResponse containing details of the error
+     */
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<Object> handleRoleNotFoundException(RoleNotFoundException e)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.NOT_FOUND,e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).header("exception-type","RoleNotFound")
+                .body(errorResponse);
+    }
     /**
      * Handles IncorrectPasswordException by returning a ResponseEntity with an appropriate error response.
      * @param e IncorrectPasswordException thrown when user tries to update password with wrong password
