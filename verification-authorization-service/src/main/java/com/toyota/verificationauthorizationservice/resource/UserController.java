@@ -59,7 +59,12 @@ public class UserController {
                           @PathVariable("oldUsername") String oldUsername) {
         return userService.updateUsername(newUsername, oldUsername);
     }
-
+    @PostMapping("/logout")
+    public ResponseEntity<Entity> logout(@RequestHeader("Authorization") String token)
+    {
+        userService.logout(token);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
     @PutMapping("/addRole/{username}")
     public boolean addRole(@PathVariable("username")String username,@RequestBody String role)
     {

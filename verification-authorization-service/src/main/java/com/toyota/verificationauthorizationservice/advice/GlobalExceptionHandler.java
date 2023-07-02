@@ -50,6 +50,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(errorResponse);
     }
     /**
+     * Handles InvalidBearerToken by returning a ResponseEntity with an appropriate error response.
+     * @param e InvalidBearerToken thrown when bearer token is invalid
+     * @return ResponseEntity with an ErrorResponse containing details of the error
+     */
+    @ExceptionHandler(InvalidBearerToken.class)
+    public ResponseEntity<Object> handleBearerTokenNotFound(InvalidBearerToken e)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.NOT_FOUND,e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+    /**
      * Handles NoRolesException by returning a ResponseEntity with an appropriate error response.
      * @param e NoRolesException thrown when the user tries to register with no roles
      * @return ResponseEntity with an ErrorResponse containing details of the error

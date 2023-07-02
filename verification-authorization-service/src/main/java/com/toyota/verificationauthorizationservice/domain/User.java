@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,6 +34,8 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name="role_id")
     )
     private Set<Role> roles;
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
 
     /**
      * @return

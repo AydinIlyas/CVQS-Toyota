@@ -1,5 +1,6 @@
 package com.toyota.verificationauthorizationservice.config;
 
+import com.toyota.verificationauthorizationservice.dao.TokenRepository;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +24,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
-
+    private final TokenRepository tokenRepository;
     private final JwtService jwtService;
     private final Logger logger= LogManager.getLogger(JwtAuthenticationFilter.class);
     /**
@@ -54,8 +55,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         {
             logger.debug("EXTRACTED USERNAME: {}",username);
             UserDetails userDetails=this.userDetailsService.loadUserByUsername(username);
-
-            if(jwtService.isTokenValid(jwt,userDetails))
+            boolean isTokenValid=tokenRepository.findByToken(jwt).map(token->!token.isExpired()&&!token.isRevoked())
+                    .orElse(false);
+            if(jwtService.isTokenValid(jwt,userDetails)&& isTokenValid)
             {
                 UsernamePasswordAuthenticationToken authToken=new UsernamePasswordAuthenticationToken(
                         userDetails,

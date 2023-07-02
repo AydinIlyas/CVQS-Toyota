@@ -1,8 +1,10 @@
 package com.toyota.verificationauthorizationservice.service.impl;
 
 import com.toyota.verificationauthorizationservice.dao.RoleRepository;
+import com.toyota.verificationauthorizationservice.dao.TokenRepository;
 import com.toyota.verificationauthorizationservice.dao.UserRepository;
 import com.toyota.verificationauthorizationservice.domain.Role;
+import com.toyota.verificationauthorizationservice.domain.Token;
 import com.toyota.verificationauthorizationservice.domain.User;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
@@ -33,7 +35,9 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final TokenRepository tokenRepository;
     private final Logger logger = LogManager.getLogger(UserServiceImpl.class);
+
 
     /**
      * Checks if a role is assigned and adds user.
@@ -91,12 +95,34 @@ public class UserServiceImpl implements UserService {
         }
         User user = userRepository.findByUsernameAndDeletedIsFalse(request.getUsername()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
+        revokeUserTokens(user);
+        saveUserToken(user,jwtToken);
         logger.info("Successfully Authenticated! Username: {}", user.getUsername());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
     }
 
+    private void saveUserToken(User user,String jwt)
+    {
+        Token token=Token.builder()
+                .token(jwt)
+                .user(user)
+                .expired(false)
+                .revoked(false)
+                .build();
+        tokenRepository.save(token);
+    }
+    private void revokeUserTokens(User user)
+    {
+        List<Token> tokens=tokenRepository.findAllValidTokensByUser(user.getId());
+
+        tokens.forEach(t->{
+            t.setRevoked(true);
+            t.setExpired(true);
+        });
+        tokenRepository.saveAll(tokens);
+    }
 
     /**
      * Verification
@@ -118,6 +144,28 @@ public class UserServiceImpl implements UserService {
         }
         logger.warn("User not found for authorization! Username: {}", username);
         return null;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void logout(String jwtToken) {
+        if(jwtToken==null||!jwtToken.startsWith("Bearer "))
+        {
+            throw new InvalidBearerToken("Invalid Bearer token.");
+        }
+        Optional<Token> optionalToken=tokenRepository.findByToken(jwtToken.substring(7));
+        if(optionalToken.isPresent())
+        {
+            Token token=optionalToken.get();
+            token.setExpired(true);
+            token.setRevoked(true);
+            tokenRepository.save(token);
+        }
+        else{
+            throw new  UserNotFoundException("No user with this token exist");
+        }
     }
 
     /**

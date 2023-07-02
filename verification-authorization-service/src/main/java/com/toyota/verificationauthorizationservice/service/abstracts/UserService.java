@@ -16,6 +16,7 @@ public interface UserService {
     Boolean register(RegisterRequest request);
     AuthenticationResponse login(AuthenticationRequest request);
     Set<String> verify(HttpServletRequest request);
+    void logout(String jwtToken);
 
     Boolean delete(String username);
 
@@ -28,4 +29,5 @@ public interface UserService {
     boolean addRole(String username,String role);
 
     boolean removeRole(String username, String role);
+
 }
