@@ -1,9 +1,11 @@
 package com.toyota.verificationauthorizationservice.service.impl;
 
 import com.toyota.verificationauthorizationservice.dao.RoleRepository;
+import com.toyota.verificationauthorizationservice.dao.TokenRepository;
 import com.toyota.verificationauthorizationservice.dao.UserRepository;
 import com.toyota.verificationauthorizationservice.domain.Permission;
 import com.toyota.verificationauthorizationservice.domain.Role;
+import com.toyota.verificationauthorizationservice.domain.Token;
 import com.toyota.verificationauthorizationservice.domain.User;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationRequest;
 import com.toyota.verificationauthorizationservice.dto.AuthenticationResponse;
@@ -41,6 +43,8 @@ class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private RoleRepository roleRepository;
+    @Mock
+    private TokenRepository tokenRepository;
     @InjectMocks
     private UserServiceImpl userService;
     @Test
@@ -91,12 +95,12 @@ class UserServiceImplTest {
     void login_Success() {
         //given
         AuthenticationRequest authenticationRequest=new AuthenticationRequest("tim","test");
-        User user=new User(1L,"tim","test",false,Set.of(new Role()));
+        User user=new User(1L,"tim","test",false,Set.of(new Role()),List.of(new Token()));
 
         //when
         when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.of(user));
         when(jwtService.generateToken(any(User.class))).thenReturn("token");
-
+        when(tokenRepository.findAllValidTokensByUser(any())).thenReturn(List.of(new Token()));
         AuthenticationResponse response=userService.login(authenticationRequest);
 
         //then
@@ -123,7 +127,7 @@ class UserServiceImplTest {
         HttpServletRequest request=mock(HttpServletRequest.class);
         String permission1="UserManagement";
         String permission2="ErrorLogin";
-        User user=new User(1L,"username","password",false,null);
+        User user=new User(1L,"username","password",false,null,List.of(new Token()));
         Set<Permission> permissions=Set.of(new Permission(1L,permission1,"")
         ,new Permission(2L,permission2,""));
         Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user),permissions),
@@ -159,7 +163,7 @@ class UserServiceImplTest {
     void delete_Success() {
         //given
         String username="username";
-        User user=new User(1L,"username","password",false,null);
+        User user=new User(1L,"username","password",false,null,List.of(new Token()));
         //when
         when(userRepository.findByUsernameAndDeletedIsFalse(username)).thenReturn(Optional.of(user));
 
@@ -184,7 +188,7 @@ class UserServiceImplTest {
     @Test
     void updateUsername_Success() {
         //given
-        User user=new User(1L,"username","password",false,null);
+        User user=new User(1L,"username","password",false,null,List.of(new Token()));
         String username="username";
         String newUsername="updatedUser";
         //when
@@ -226,7 +230,7 @@ class UserServiceImplTest {
     void changePassword() {
         //given
         HttpServletRequest request=mock(HttpServletRequest.class);
-        User user=new User(1L,"username","password",false,null);
+        User user=new User(1L,"username","password",false,null,List.of(new Token()));
         String username="username";
         PasswordsDTO passwordsDTO=new PasswordsDTO("password","newPassword");
         //when
@@ -246,7 +250,7 @@ class UserServiceImplTest {
     void changePassword_FalsePassword() {
         //given
         HttpServletRequest request=mock(HttpServletRequest.class);
-        User user=new User(1L,"username","password",false,null);
+        User user=new User(1L,"username","password",false,null,List.of(new Token()));
         String username="username";
         PasswordsDTO passwordsDTO=new PasswordsDTO("passwords","newPassword");
         //when
@@ -292,7 +296,7 @@ class UserServiceImplTest {
         HttpServletRequest request=mock(HttpServletRequest.class);
         String permission1="UserManagement";
         String permission2="ErrorLogin";
-        User user=new User(1L,"username","password",false,null);
+        User user=new User(1L,"username","password",false,null,List.of(new Token()));
         Set<Permission> permissions=Set.of(new Permission(1L,permission1,"")
                 ,new Permission(2L,permission2,""));
         Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user),permissions),
@@ -329,7 +333,7 @@ class UserServiceImplTest {
         //given
         Set<Role> roles=new HashSet<>();
         roles.add(new Role());
-        User user=new User(1L,"username","password",false,roles);
+        User user=new User(1L,"username","password",false,roles,List.of(new Token()));
         Role role=new Role(1L,"Admin","",null,null);
         String username="username";
         String roleStr="Admin";
@@ -357,7 +361,7 @@ class UserServiceImplTest {
         //given
         Set<Role> roles=new HashSet<>();
         roles.add(new Role());
-        User user=new User(1L,"username","password",false,roles);
+        User user=new User(1L,"username","password",false,roles,List.of(new Token()));
         String username="username";
         String roleStr="Admin";
         //when
@@ -376,7 +380,7 @@ class UserServiceImplTest {
         Role role=new Role(1L,"Admin","",null,null);
         roles.add(new Role());
         roles.add(role);
-        User user=new User(1L,"username","password",false,roles);
+        User user=new User(1L,"username","password",false,roles,List.of(new Token()));
         String username="username";
         String roleStr="Admin";
         //when
@@ -406,7 +410,7 @@ class UserServiceImplTest {
         //given
         Set<Role> roles=new HashSet<>();
         roles.add(new Role());
-        User user=new User(1L,"username","password",false,roles);
+        User user=new User(1L,"username","password",false,roles,List.of(new Token()));
         String username="username";
         String roleStr="Admin";
 

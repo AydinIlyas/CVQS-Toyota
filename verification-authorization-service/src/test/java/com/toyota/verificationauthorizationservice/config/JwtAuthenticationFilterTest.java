@@ -1,5 +1,7 @@
 package com.toyota.verificationauthorizationservice.config;
 
+import com.toyota.verificationauthorizationservice.dao.TokenRepository;
+import com.toyota.verificationauthorizationservice.domain.Token;
 import com.toyota.verificationauthorizationservice.service.abstracts.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,6 +32,8 @@ class JwtAuthenticationFilterTest {
     private JwtService jwtService;
     @Mock
     private UserDetails userDetails;
+    @Mock
+    private TokenRepository tokenRepository;
     @InjectMocks
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     @Test
@@ -39,12 +44,13 @@ class JwtAuthenticationFilterTest {
         FilterChain filterChain=Mockito.mock(FilterChain.class);
         String jwt="Token";
         String username="username";
+        Token token=new Token(1L,"Bearer token",false,false,null);
         //when
         Mockito.when(request.getHeader("Authorization")).thenReturn("Bearer Token");
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn(username);
         Mockito.when(userDetailsService.loadUserByUsername(anyString())).thenReturn(userDetails);
         Mockito.when(jwtService.isTokenValid(anyString(),any())).thenReturn(true);
-
+        Mockito.when(tokenRepository.findByToken(anyString())).thenReturn(Optional.of(token));
         jwtAuthenticationFilter.doFilterInternal(request,response,filterChain);
 
         //then
