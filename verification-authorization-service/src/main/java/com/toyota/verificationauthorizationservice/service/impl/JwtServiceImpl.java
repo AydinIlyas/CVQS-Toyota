@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -29,6 +29,16 @@ public class JwtServiceImpl implements JwtService {
     public String extractUsername(String jwt)
     {
         return extractClaim(jwt,Claims::getSubject);
+    }
+
+    /**
+     * @param jwt
+     * @return
+     */
+    @Override
+    public String extractTokenId(String jwt) {
+        Claims claims=extractAllClaims(jwt);
+        return claims.get("jti").toString();
     }
 
 
@@ -58,7 +68,8 @@ public class JwtServiceImpl implements JwtService {
     }
     @Override
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(),userDetails);
+        Map<String,Object> claims=Map.of("jti",UUID.randomUUID().toString());
+        return generateToken(claims,userDetails);
     }
 
     /**

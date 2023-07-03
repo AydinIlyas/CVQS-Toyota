@@ -109,8 +109,9 @@ public class UserServiceImpl implements UserService {
 
     private void saveUserToken(User user,String jwt)
     {
+        String tokenId=jwtService.extractTokenId(jwt);
         Token token=Token.builder()
-                .token(jwt)
+                .tokenId(tokenId)
                 .user(user)
                 .expired(false)
                 .revoked(false)
@@ -163,7 +164,9 @@ public class UserServiceImpl implements UserService {
             logger.warn("User has no bearer token or an invalid token.");
             throw new InvalidBearerToken("User has no bearer token or an invalid token.");
         }
-        Optional<Token> optionalToken=tokenRepository.findByToken(jwtToken.substring(7));
+        String authHeader=jwtToken.substring(7);
+        String tokenId=jwtService.extractTokenId(authHeader);
+        Optional<Token> optionalToken=tokenRepository.findById(tokenId);
         if(optionalToken.isPresent())
         {
             Token token=optionalToken.get();
@@ -171,7 +174,7 @@ public class UserServiceImpl implements UserService {
             token.setRevoked(true);
             tokenRepository.save(token);
             logger.info("User logged out successfully. Username: {}"
-                    ,jwtService.extractUsername(token.getToken()));
+                    ,jwtService.extractUsername(authHeader));
         }
         else{
             logger.warn("No user found with the provided token!");

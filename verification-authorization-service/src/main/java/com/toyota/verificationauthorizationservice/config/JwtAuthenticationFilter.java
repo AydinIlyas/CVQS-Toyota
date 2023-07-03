@@ -55,7 +55,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         {
             logger.debug("EXTRACTED USERNAME: {}",username);
             UserDetails userDetails=this.userDetailsService.loadUserByUsername(username);
-            boolean isTokenValid=tokenRepository.findByToken(jwt).map(token->!token.isExpired()&&!token.isRevoked())
+            boolean isTokenValid=tokenRepository.findById(jwtService.extractTokenId(jwt))
+                    .map(token->!token.isExpired()&&!token.isRevoked())
                     .orElse(false);
             if(jwtService.isTokenValid(jwt,userDetails)&& isTokenValid)
             {
