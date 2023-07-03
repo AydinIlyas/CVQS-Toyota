@@ -42,7 +42,7 @@ public class TerminalServiceImpl implements TerminalService {
     {
         Pageable pageable= PageRequest.of(page,size,Sort.by(createSortOrder(sortBy,sortDirection)));
         Page<Terminal> terminals=terminalRepository.getTerminalsFiltered(depName,depCode,shopCode,isActive,pageable);
-        logger.info("Terminal Page created! Page: {}, Size: {}, Sorted By: {}, Total Pages: {}," +
+        logger.info("Fetched terminals. Page: {}, Size: {}, Sorted By: {}, Total Pages: {}," +
                         "Total Elements: {}",
                 terminals.getPageable().getPageNumber(),terminals.getNumberOfElements(),terminals.getPageable().getSort(),
                 terminals.getTotalPages(),terminals.getTotalElements());
@@ -70,10 +70,11 @@ public class TerminalServiceImpl implements TerminalService {
     @Override
     public void createTerminal(TerminalDTO terminalDTO)
     {
+        logger.info("Creating Terminal. Department name: {}",terminalDTO.getDepName());
         Terminal terminal=convertToTerminal(terminalDTO);
         terminal.setActive(true);
         Terminal saved=terminalRepository.save(terminal);
-        logger.info("CREATED Terminal Successfully! Department Code: {}",saved.getDepCode());
+        logger.info("Terminal created successfully! Department Code: {}",saved.getDepCode());
     }
 
     /**
@@ -82,17 +83,17 @@ public class TerminalServiceImpl implements TerminalService {
      */
     @Override
     public void activateTerminal(String depCode) {
-
+        logger.info("Activating terminal. Department Code: {}",depCode);
         Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
         if(optionalTerminal.isPresent())
         {
             Terminal terminal=optionalTerminal.get();
             terminal.setActive(true);
             terminalRepository.save(terminal);
-            logger.info("Terminal CREATED successfully");
+            logger.info("Terminal activated successfully. Department Code: {}",depCode);
         }
         else{
-            logger.warn("Terminal Not Found! Department Code: {}",depCode);
+            logger.warn("Terminal not found! Department Code: {}",depCode);
             throw new TerminalNotFoundException("Terminal Not Found! Department Code: "+depCode);
         }
 
@@ -105,6 +106,7 @@ public class TerminalServiceImpl implements TerminalService {
      */
     @Override
     public void disableTerminal(String depCode) {
+        logger.info("Disabling terminal. Department Code: {}",depCode);
         Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
 
         if(optionalTerminal.isPresent())
@@ -112,11 +114,11 @@ public class TerminalServiceImpl implements TerminalService {
             Terminal terminal=optionalTerminal.get();
             terminal.setActive(false);
             terminalRepository.save(terminal);
-            logger.info("Terminal ACTIVATED successfully");
+            logger.info("Terminal disabled successfully");
         }
         else{
-            logger.warn("Terminal Not Found! Department Code: {}",depCode);
-            throw new TerminalNotFoundException("Terminal Not Found! Department Code: "+depCode);
+            logger.warn("Terminal not found! Department Code: {}",depCode);
+            throw new TerminalNotFoundException("Terminal not found! Department Code: "+depCode);
         }
     }
 
@@ -126,15 +128,17 @@ public class TerminalServiceImpl implements TerminalService {
      */
     @Override
     public void delete(String depCode) {
+        logger.info("Deleting terminal. Department Code: {}",depCode);
         Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
         if(optionalTerminal.isPresent())
         {
             Terminal terminal=optionalTerminal.get();
             terminal.setDeleted(true);
             terminalRepository.save(terminal);
+            logger.info("Terminal deleted successfully. Departmend Code: {}",depCode);
         }
         else{
-            logger.warn("Terminal Not Found! Department code: {}",depCode);
+            logger.warn("Terminal not found! Department Code: {}",depCode);
             throw new TerminalNotFoundException("Terminal Not Found! Department Code: "+depCode);
         }
     }
