@@ -43,18 +43,19 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponse create(UserDTO userDTO) {
-
+        logger.info("Creating new User. Username: {}, Email: {}",userDTO.getUsername(),userDTO.getEmail());
         if (userRepository.existsByUsernameAndDeletedIsFalse(userDTO.getUsername())) {
-            logger.warn("USERNAME IS ALREADY TAKEN! USERNAME: {}", userDTO.getUsername());
+            logger.warn("Username is already taken! Username: {}", userDTO.getUsername());
             throw new UserAlreadyExistsException("Username '" + userDTO.getUsername() + "' is already taken!");
         }
 
         if (userRepository.existsByEmailAndDeletedIsFalse(userDTO.getEmail())) {
-            logger.warn("EMAIL IS ALREADY TAKEN! EMAIL: {}", userDTO.getEmail());
-            throw new UserAlreadyExistsException("EMAIL '" + userDTO.getEmail() + "' is already taken!");
+            logger.warn("Email is already taken! Email: {}", userDTO.getEmail());
+            throw new UserAlreadyExistsException("Email '" + userDTO.getEmail() + "' is already taken!");
         }
         User user = convertDtoToEntity(userDTO);
         Set<String> roles = userDTO.getRole().stream().map(Enum::toString).collect(Collectors.toSet());
+        logger.debug("Sending request for creating user in verification-authorization-service!");
         Boolean response = webClientBuilder.build().post()
                 .uri("http://verification-authorization-service/auth/register")
                 .bodyValue(new RegisterRequest(userDTO.getUsername(), userDTO.getPassword(), roles))
@@ -62,25 +63,28 @@ public class UserServiceImpl implements UserService {
                 .onStatus(HttpStatusCode::isError, clientResponse->{
                     if(clientResponse.statusCode()==HttpStatus.CONFLICT)
                     {
+                        logger.warn("User already exists in verification-authorization-service.");
                         throw new UserAlreadyExistsException("User already exists in verification-authorization-service");
                     }
                     else if(clientResponse.statusCode()==HttpStatus.BAD_REQUEST)
                     {
+                        logger.warn("Problem with roles in verification-authorization-service");
                         throw new RoleNotFoundException("Problem with roles in verification-authorization-service");
                     }
                     else{
+                        logger.warn("Unexpected exception in verification-authorization-service");
                         throw new UnexpectedException("Unexpected exception in verification-authorization-service");
                     }
                 })
                 .bodyToMono(Boolean.class)
                 .block();
         if (response != null && !response) {
-            logger.warn("USER COULDN'T CREATED!");
-            throw new UnexpectedException("USER COULDN'T CREATED!");
+            logger.warn("Failed to create user! Reason: Unexpected problem in verification service");
+            throw new UnexpectedException("Failed to create user! Reason: Unexpected problem in verification service");
         }
         User saved = userRepository.save(user);
-        logger.info("USER SUCCESSFULLY CREATED! USERNAME: {}"
-                ,saved.getUsername());
+        logger.info("User created successfully! Username:{}, Email: {}"
+                ,saved.getUsername(),saved.getEmail());
         return convertToResponse(saved);
     }
 
@@ -95,6 +99,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse update(HttpServletRequest request, Long userId, UserDTO userDTO) {
+        logger.info("Updating user. User ID: {}",userId);
         Optional<User> optionalUser = userRepository.findById(userId);
 
         if (optionalUser.isPresent()) {
@@ -102,16 +107,20 @@ public class UserServiceImpl implements UserService {
             if (userDTO.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
                 if(userRepository.existsByEmailAndDeletedIsFalse(userDTO.getEmail()))
                 {
-                    throw new UserAlreadyExistsException("Email is taken!");
+                    logger.warn("Email is already taken!");
+                    throw new UserAlreadyExistsException("Email is already taken!");
                 }
                 user.setEmail(userDTO.getEmail());
+                logger.debug("User email updated: {}",user.getEmail());
             }
             if (userDTO.getUsername() != null && !user.getUsername().equals(userDTO.getUsername())) {
                 if(userRepository.existsByUsernameAndDeletedIsFalse(userDTO.getUsername()))
                 {
+                    logger.warn("Username is already taken!");
                     throw new UserAlreadyExistsException("Username is taken!");
                 }
                 String bearer = extractToken(request);
+                logger.debug("Sending request for updating username in verification-authorization-service!");
                 Boolean updated = webClientBuilder.build().put()
                         .uri("http://verification-authorization-service/auth/update/{oldUsername}",
                                 user.getUsername())
@@ -121,15 +130,18 @@ public class UserServiceImpl implements UserService {
                         .onStatus(HttpStatusCode::isError, response->{
                             if(response.statusCode()==HttpStatus.CONFLICT)
                             {
+                                logger.warn("Username already exists in verification-authorization-service");
                                 throw new UserAlreadyExistsException
                                         ("Username already exists in verification-authorization-service");
                             }
                             else if(response.statusCode()==HttpStatus.NOT_FOUND)
                             {
+                                logger.warn("Username not found in verification-authorization-service.");
                                 throw new UserNotFoundException
                                         ("Username not found in verification-authorization-service.");
                             }
                             else{
+                                logger.warn("Unexpected exception in verification-authorization-service");
                                 throw new UnexpectedException
                                         ("Unexpected exception in verification-authorization-service");
                             }
@@ -137,29 +149,35 @@ public class UserServiceImpl implements UserService {
                         .bodyToMono(Boolean.class)
                         .block();
                 if (updated != null && updated)
+                {
                     user.setUsername(userDTO.getUsername());
+                    logger.debug("User username updated: {}",user.getUsername());
+                }
                 else {
-                    logger.warn("Username couldn't changed in verification service!");
-                    throw new UnexpectedException("Username couldn't changed in verification service!");
+                    logger.warn("Unexpected Failure to change username in verification-authorization service!");
+                    throw new UnexpectedException("Unexpected Failure to change username in verification-authorization service!");
                 }
             }
 
             if (userDTO.getFirstname() != null && !user.getFirstname().equals(userDTO.getFirstname())) {
                 user.setFirstname(userDTO.getFirstname());
+                logger.debug("User firstname updated: {}",user.getFirstname());
             }
             if (userDTO.getLastname() != null && !user.getLastname().equals(userDTO.getLastname())) {
                 user.setLastname(userDTO.getLastname());
+                logger.debug("User lastname updated: {}",user.getLastname());
             }
             if (userDTO.getGender() != null && !user.getGender().equals(userDTO.getGender())) {
                 user.setGender(userDTO.getGender());
+                logger.debug("User Gender updated: {}",user.getGender());
             }
             User saved = userRepository.save(user);
-            logger.info("User Successfully Updated! USER ID: {}, USERNAME: {}"
+            logger.info("User updated successfully! USER ID: {}, USERNAME: {}"
                     ,saved.getId(),saved.getUsername());
             return convertToResponse(saved);
         } else {
-            logger.warn("USER NOT FOUND! ID: {}", userId);
-            throw new UserNotFoundException("USER NOT FOUND! ID: " + userId);
+            logger.warn("User not found! ID: {}", userId);
+            throw new UserNotFoundException("User not found! ID: " + userId);
         }
     }
 
@@ -173,10 +191,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponse deleteUser(HttpServletRequest request, Long userId) {
+        logger.info("Deleting user. User ID: {}",userId);
         String bearer = extractToken(request);
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
+            logger.debug("Sending request for updating username in verification-authorization-service!");
             Boolean deleteFromAuth = webClientBuilder.build().put()
                     .uri("http://verification-authorization-service/auth/delete")
                     .headers(h -> h.setBearerAuth(bearer))
@@ -185,9 +205,11 @@ public class UserServiceImpl implements UserService {
                     .onStatus(HttpStatusCode::isError, response->{
                         if(response.statusCode()==HttpStatus.NOT_FOUND)
                         {
+                            logger.warn("User not found in verification-authorization service");
                             throw new UserNotFoundException("User not found in verification-authorization service");
                         }
                         else{
+                            logger.warn("Unexpected exception in verification service");
                             throw new UnexpectedException("Unexpected exception in verification service");
                         }
                     })
@@ -196,16 +218,16 @@ public class UserServiceImpl implements UserService {
             if (deleteFromAuth != null && deleteFromAuth) {
                 user.setDeleted(true);
                 User saved = userRepository.save(user);
-                logger.info("DELETED Successfully User! USER ID: {}, USERNAME: {}"
+                logger.info("User deleted successfully! USER ID: {}, USERNAME: {}"
                         ,saved.getId(),saved.getUsername());
                 return convertToResponse(saved);
             } else {
-                logger.warn("USER COULDN'T FOUND IN AUTHENTICATION SERVICE! ID: {}", userId);
-                throw new UnexpectedException("USER COULDN'T FOUND IN AUTHENTICATION SERVICE! ID: " + userId);
+                logger.warn("User not found in verification-authorization-service! User ID: {}", userId);
+                throw new UnexpectedException("User not found in verification-authorization-service! User ID: " + userId);
             }
         } else {
-            logger.warn("USER NOT FOUND. Id: {}", userId);
-            throw new UserNotFoundException("USER NOT FOUND. Id: " + userId);
+            logger.warn("User not found. ID: {}", userId);
+            throw new UserNotFoundException("User not found. ID: " + userId);
         }
     }
 
@@ -228,10 +250,11 @@ public class UserServiceImpl implements UserService {
                                      String username, String email,
                                      int page, int size, List<String> sortList,
                                      String sortOrder) {
-
+        logger.info("Fetching users");
         Pageable pageable = PageRequest.of(page, size, Sort.by(createSortOrder(sortList, sortOrder)));
         Page<User> entities = userRepository.getUsersFiltered(firstname, lastname, email
                 , username, pageable);
+        logger.info("Fetched {} users",entities.getContent().size());
         return entities.map(this::convertToResponse);
 
     }
@@ -245,15 +268,17 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponse addRole(HttpServletRequest request, Long userId, Role role) {
+        logger.info("Adding role to user. User ID: {}, New Role: {}",userId,role);
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             String authToken = extractToken(request);
             User user = optionalUser.get();
 
             if (user.getRole().contains(role)) {
-                logger.warn("USER ALREADY HAVE THIS ROLE! Role: {}",role);
-                throw new RoleAlreadyExistsException("User already have this Role. Role: " + role.toString());
+                logger.warn("User already has this role! Role: {}",role);
+                throw new RoleAlreadyExistsException("User already has this Role. Role: " + role.toString());
             }
+            logger.debug("Sending request for adding role to user in verification-authorization-service!");
             Boolean success = webClientBuilder.build()
                     .put()
                     .uri("http://verification-authorization-service/auth/addRole/{username}",
@@ -267,14 +292,17 @@ public class UserServiceImpl implements UserService {
                         if(response.statusCode()==HttpStatus.NOT_FOUND
                                 && Objects.equals(exceptionType, "RoleNotFound"))
                         {
+                            logger.warn("Role not found in verification-authorization-service");
                             throw new RoleNotFoundException("Role not found in verification-authorization-service");
                         }
                         else if(response.statusCode()==HttpStatus.NOT_FOUND
                                 && Objects.equals(exceptionType, "UserNotFound"))
                         {
+                            logger.warn("User not found in verification-authorization-service.");
                             throw new UserNotFoundException("User not found in verification-authorization-service.");
                         }
                         else{
+                            logger.warn("Unexpected exception in verification-authorization-service");
                             throw new UnexpectedException("Unexpected exception in verification-authorization-service");
                         }
                     } )
@@ -283,16 +311,16 @@ public class UserServiceImpl implements UserService {
             if (success != null && success) {
                 user.getRole().add(role);
                 userRepository.save(user);
-                logger.info(" ADDED NEW ROLE: {},USER ID: {}, USERNAME: {}",
-                        user.getId(), user.getUsername(), role);
+                logger.info(" Added new role to user. Username: {}, Role: {}",
+                        user.getUsername(), role);
                 return convertToResponse(user);
             } else {
-                throw new UnexpectedException("Add Role Failed in verification service!");
+                throw new UnexpectedException("Failed to add role in verification service!");
             }
 
         } else {
-            logger.warn("USER NOT FOUND! ID: {}", userId);
-            throw new UserNotFoundException("USER NOT FOUND! ID: " + userId);
+            logger.warn("User not found! ID: {}", userId);
+            throw new UserNotFoundException("User not found! ID: " + userId);
         }
 
     }
@@ -306,18 +334,20 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponse removeRole(HttpServletRequest request, Long userId, Role role) {
+        logger.info("Adding role to user. User ID: {}, New Role: {}",userId,role);
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             String authToken = extractToken(request);
             User user = optionalUser.get();
             if (user.getRole().size() <= 1) {
-                logger.warn("USER ONLY HAVE SINGLE ROLE!");
+                logger.warn("User only have single role! Username: {}",user.getUsername());
                 throw new SingleRoleRemovalException();
             }
             if (!user.getRole().contains(role)) {
-                logger.warn("USER DOES NOT HAVE THIS ROLE! ROLE: {}", role.toString());
-                throw new RoleNotFoundException("User does not have this role! Role: " + role);
+                logger.warn("The user does not own this role! Role: {}", role.toString());
+                throw new RoleNotFoundException("The user does not own this role! Role: " + role);
             }
+            logger.debug("Sending request for removing role from user in verification-authorization-service!");
             Boolean success = webClientBuilder.build()
                     .put()
                     .uri("http://verification-authorization-service/auth/removeRole/{username}",
@@ -347,17 +377,17 @@ public class UserServiceImpl implements UserService {
             if (success != null && success) {
                 user.getRole().remove(role);
                 userRepository.save(user);
-                logger.info("REMOVED ROLE: {}, USER ID: {}, USERNAME: {}",
+                logger.info("Removed role from user successfully. USER ID: {}, USERNAME: {}, ROLE: {},",
                         user.getId(), user.getUsername(), role);
                 return convertToResponse(user);
             } else {
-                logger.warn("UNEXPECTED EXCEPTION IN VERIFICATION SERVICE!");
+                logger.warn("Unexpected exception while removing role in verification service!");
                 throw new UnexpectedException("Remove Role failed in verification Service!");
             }
 
         } else {
-            logger.warn("USER NOT FOUND! ID: {}", userId);
-            throw new UserNotFoundException("USER NOT FOUND! ID: " + userId);
+            logger.warn("User not found! ID: {}", userId);
+            throw new UserNotFoundException("User not found! ID: " + userId);
         }
 
     }
