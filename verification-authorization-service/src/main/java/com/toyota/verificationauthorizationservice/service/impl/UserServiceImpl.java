@@ -47,13 +47,15 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Boolean register(RegisterRequest request) {
+        logger.info("Registering User. {}",request.getUsername());
         if(userRepository.existsByUsernameAndDeletedIsFalse(request.getUsername()))
         {
-           throw new UsernameTakenException("Username is taken!");
+            logger.warn("Username is already taken. Username: {}",request.getUsername());
+           throw new UsernameTakenException("Username is already taken! Username: "+request.getUsername());
         }
         if (request.getRoles().size() < 1) {
-            logger.warn("NO ROLE FOUND FOR REGISTRATION!");
-            throw new NoRolesException("NO ROLE FOUND FOR REGISTRATION");
+            logger.warn("No Role Found for registration!");
+            throw new NoRolesException("No role found for registration!");
         }
         User user = User.builder()
                 .username(request.getUsername())
@@ -91,6 +93,8 @@ public class UserServiceImpl implements UserService {
                     )
             );
         } catch (AuthenticationException e) {
+            logger.warn("Authentication failed! Invalid Username or password! Username: {}"
+                    ,request.getUsername());
             throw new InvalidAuthenticationException();
         }
         User user = userRepository.findByUsernameAndDeletedIsFalse(request.getUsername()).orElseThrow();
@@ -112,6 +116,7 @@ public class UserServiceImpl implements UserService {
                 .revoked(false)
                 .build();
         tokenRepository.save(token);
+        logger.debug("Token saved successfully!");
     }
     private void revokeUserTokens(User user)
     {
@@ -122,6 +127,7 @@ public class UserServiceImpl implements UserService {
             t.setExpired(true);
         });
         tokenRepository.saveAll(tokens);
+        logger.debug("Token revoked successfully");
     }
 
     /**
@@ -151,9 +157,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void logout(String jwtToken) {
+        logger.info("Logging user out.");
         if(jwtToken==null||!jwtToken.startsWith("Bearer "))
         {
-            throw new InvalidBearerToken("Invalid Bearer token.");
+            logger.warn("User has no bearer token or an invalid token.");
+            throw new InvalidBearerToken("User has no bearer token or an invalid token.");
         }
         Optional<Token> optionalToken=tokenRepository.findByToken(jwtToken.substring(7));
         if(optionalToken.isPresent())
@@ -162,9 +170,12 @@ public class UserServiceImpl implements UserService {
             token.setExpired(true);
             token.setRevoked(true);
             tokenRepository.save(token);
+            logger.info("User logged out successfully. Username: {}"
+                    ,jwtService.extractUsername(token.getToken()));
         }
         else{
-            throw new  UserNotFoundException("No user with this token exist");
+            logger.warn("No user found with the provided token!");
+            throw new  UserNotFoundException("No user found with the provided token!");
         }
     }
 
@@ -176,12 +187,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Boolean delete(String username) {
+        logger.info("Deleting user. Username: {}",username);
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setDeleted(true);
             userRepository.save(user);
-            logger.info("Successfully deleted user. {}", user.getUsername());
+            logger.info("User deleted successfully. {}", user.getUsername());
             return true;
         }
         logger.warn("Delete failed. User not Found!");
@@ -197,9 +209,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Boolean updateUsername(String newUsername, String oldUsername) {
+        logger.info("Updating username. Old Username:{}, New Username: {}",oldUsername,newUsername);
         if(userRepository.existsByUsernameAndDeletedIsFalse(newUsername))
         {
-            throw new UsernameTakenException("Username is taken!");
+            logger.warn("Username is already taken! Username: {}",newUsername);
+            throw new UsernameTakenException("Username is already taken! Username: "+newUsername);
         }
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(oldUsername);
 
@@ -222,6 +236,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public boolean changePassword(HttpServletRequest request, PasswordsDTO passwordsDTO) {
+        logger.info("Changing password.");
         String authHeader = extractToken(request);
         if (authHeader == null) return false;
         String username = jwtService.extractUsername(authHeader);
@@ -239,8 +254,8 @@ public class UserServiceImpl implements UserService {
                 throw new IncorrectPasswordException("Password is incorrect!");
             }
         } else {
-            logger.warn("User Not Found!");
-            throw new UserNotFoundException("Username not found!");
+            logger.warn("User not found! User may not be logged in.");
+            throw new UserNotFoundException("User not found! User may not be logged in.");
         }
     }
 
@@ -252,6 +267,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Map<String, String> verifyAndUsername(HttpServletRequest request) {
+        logger.info("Verifying request.");
         String authHeader = extractToken(request);
         String username = jwtService.extractUsername(authHeader);
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
@@ -265,10 +281,10 @@ public class UserServiceImpl implements UserService {
                             GrantedAuthority::getAuthority
                     ));
             map.put("Username", username);
-            logger.info("User verified and returned with username");
+            logger.info("User verified successfully! Username: {}",username);
             return map;
         }
-        logger.warn("User Not Found!");
+        logger.warn("User not found while verifying request!");
         return null;
     }
 
@@ -281,6 +297,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public boolean addRole(String username, String role) {
+        logger.info("Adding new role to user. Role:{}",role);
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
 
         if (optionalUser.isPresent()) {
@@ -289,7 +306,7 @@ public class UserServiceImpl implements UserService {
             if (foundRole.isPresent()) {
                 user.getRoles().add(foundRole.get());
                 userRepository.save(user);
-                logger.info("ADDED new Role to User. User: {}, Role: {}", user.getUsername(), role);
+                logger.info("Added new Role to User. User: {}, Role: {}", user.getUsername(), role);
                 return true;
             } else {
                 logger.warn("Role not found! Role: {}", role);
@@ -307,6 +324,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public boolean removeRole(String username, String role) {
+        logger.info("Removing role from user. Role:{}",role);
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(username);
 
         if (optionalUser.isPresent()) {
@@ -315,7 +333,7 @@ public class UserServiceImpl implements UserService {
             if (foundRole.isPresent()) {
                 user.getRoles().remove(foundRole.get());
                 userRepository.save(user);
-                logger.info("REMOVED role from user! User: {}, Role: {}", user.getUsername(), role);
+                logger.info("Removed role from user successfully! User: {}, Role: {}", user.getUsername(), role);
                 return true;
             } else {
                 logger.warn("Role not Found! Role: {}", role);
