@@ -3,6 +3,7 @@ package com.toyota.verificationauthorizationservice.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -45,7 +46,7 @@ public class User implements UserDetails {
         Set<GrantedAuthority> authorities=new HashSet<>();
         for(Role role: roles)
         {
-            authorities.addAll(role.getPermissions());
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
         }
         return authorities;
     }
