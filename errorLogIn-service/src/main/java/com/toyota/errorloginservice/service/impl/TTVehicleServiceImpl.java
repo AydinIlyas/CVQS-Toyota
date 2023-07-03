@@ -50,13 +50,16 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     public PaginationResponse<TTVehicleDTO> getVehiclesFiltered(int page,int size,List<String> sortBy, String sortOrder,
                                                   String model, String vin, String yearOfProduction,
                                                   String transmissionType, String engineType, String color) {
+        logger.info("Fetching vehicles.");
         Pageable pageable= PageRequest.of(page,size,Sort.by(SortUtil.createSortOrder(sortBy,sortOrder)));
         Page<TTVehicle> pageResponse=ttVehicleRepository.getVehiclesFiltered(model,vin,yearOfProduction,
                 transmissionType,engineType
         ,color,pageable);
+        logger.debug("Retrieved {} vehicles.",pageResponse.getContent().size());
         List<TTVehicleDTO>ttVehicleDTOS=pageResponse.stream().map(
                 mapUtil::convertVehicleWithAllToDTO
         ).collect(Collectors.toList());
+        logger.info("Retrieved and converted {} vehicles to dto.",ttVehicleDTOS.size());
         return new PaginationResponse<>(ttVehicleDTOS,pageResponse);
     }
 
@@ -69,13 +72,16 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      */
     @Override
     public TTVehicleDTO addVehicle(TTVehicleDTO ttVehicleDTO) {
+        logger.info("Adding vehicle. VIN: {}",ttVehicleDTO.getVin());
         if(ttVehicleRepository.existsByVinAndDeletedIsFalse(ttVehicleDTO.getVin()))
         {
+            logger.warn("Vehicle create failed due to VIN conflict: Vehicle with this VIN already exists!" +
+                    " VIN: {}",ttVehicleDTO.getVin());
             throw new VehicleAlreadyExistsException("Vehicle with this vin already exists. Vin: "+ttVehicleDTO.getVin());
         }
         TTVehicle ttVehicle = mapUtil.convertVehicleDTOToEntity(ttVehicleDTO);
         TTVehicle saved = ttVehicleRepository.save(ttVehicle);
-        logger.info("Successfully added Vehicle! ID: {}",saved.getId());
+        logger.info("Vehicle added successfully! ID: {}, VIN: {}",saved.getId(),saved.getVin());
         return mapUtil.convertVehicleWithAllToDTO(saved);
     }
 
@@ -88,46 +94,55 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     @Override
     public TTVehicleDTO updateVehicle(Long id,TTVehicleDTO ttVehicleDTO)
     {
+        logger.info("Updating vehicle with ID: {}",id);
         Optional<TTVehicle> optionalTTVehicle=ttVehicleRepository.findById(id);
         if(optionalTTVehicle.isPresent())
         {
             TTVehicle vehicle=optionalTTVehicle.get();
 
-            if(ttVehicleDTO.getModel()!=null&&!vehicle.getModel().equals(ttVehicleDTO.getModel()))
-            {
-                vehicle.setModel(ttVehicleDTO.getModel());
-            }
             if(ttVehicleDTO.getVin()!=null&&!vehicle.getVin().equals(ttVehicleDTO.getVin()))
             {
                 if(ttVehicleRepository.existsByVinAndDeletedIsFalse(ttVehicleDTO.getVin()))
                 {
+                    String message="Vehicle with this VIN already exists! VIN: "+ttVehicleDTO.getVin();
+                    logger.warn("Vehicle update failed due to VIN conflict: {}",message);
                     throw new VehicleAlreadyExistsException("Vehicle with this vin already exists. Vin: "+ttVehicleDTO.getVin());
                 }
                 vehicle.setVin(ttVehicleDTO.getVin());
+                logger.debug("Vehicle vin updated: {}",vehicle.getVin());
+            }
+            if(ttVehicleDTO.getModel()!=null&&!vehicle.getModel().equals(ttVehicleDTO.getModel()))
+            {
+                vehicle.setModel(ttVehicleDTO.getModel());
+                logger.debug("Vehicle model updated: {}",vehicle.getModel());
             }
             if(ttVehicleDTO.getColor()!=null&&!vehicle.getColor().equals(ttVehicleDTO.getColor()))
             {
                 vehicle.setColor(ttVehicleDTO.getColor());
+                logger.debug("Vehicle color updated: {}",vehicle.getColor());
             }
             if(ttVehicleDTO.getYearOfProduction()!=null&&!vehicle.getYearOfProduction().equals(ttVehicleDTO.getYearOfProduction()))
             {
                 vehicle.setYearOfProduction(ttVehicleDTO.getYearOfProduction());
+                logger.debug("Vehicle year of production updated: {}",vehicle.getYearOfProduction());
             }
             if(ttVehicleDTO.getEngineType()!=null&&!vehicle.getEngineType().equals(ttVehicleDTO.getEngineType()))
             {
                 vehicle.setEngineType(ttVehicleDTO.getEngineType());
+                logger.debug("Vehicle engine type updated: {}",vehicle.getEngineType());
             }
             if(ttVehicleDTO.getTransmissionType()!=null&&!vehicle.getTransmissionType().equals(ttVehicleDTO.getTransmissionType()))
             {
                 vehicle.setTransmissionType(ttVehicleDTO.getTransmissionType());
+                logger.debug("Vehicle transmission type updated: {}",vehicle.getTransmissionType());
             }
             ttVehicleRepository.save(vehicle);
-            logger.info("UPDATED VEHICLE SUCCESSFULLY! ID: {}",id);
+            logger.info("Vehicle updated successfully. ID: {}",id);
             return mapUtil.convertToDTO(vehicle);
         }
         else{
-            logger.warn("VEHICLE NOT FOUND! Id: {}",id);
-            throw new EntityNotFoundException("VEHICLE NOT FOUND! ID: "+id);
+            logger.warn("Vehicle not found! ID: {}",id);
+            throw new EntityNotFoundException("Vehicle not found! ID: "+id);
         }
     }
 
@@ -140,7 +155,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     @Transactional
     public TTVehicleDTO deleteVehicle(Long vehicleId) {
         Optional<TTVehicle> optionalTTVehicle = ttVehicleRepository.findById(vehicleId);
-
+        logger.info("Deleting vehicle with ID: {}",vehicleId);
         if (optionalTTVehicle.isPresent()) {
             TTVehicle ttVehicle = optionalTTVehicle.get();
             List<TTVehicleDefect> defect = ttVehicle.getDefect();
@@ -151,11 +166,10 @@ public class TTVehicleServiceImpl implements TTVehicleService {
             });
             ttVehicle.setDeleted(true);
             TTVehicleDTO response = mapUtil.convertToDTO(ttVehicle);
-            logger.info("Soft Deleted Vehicle with ID: {}", vehicleId);
+            logger.info("Vehicle deleted with ID: {}", vehicleId);
             return response;
         } else {
             logger.warn("Vehicle with ID {} does not exits", vehicleId);
-
             throw new EntityNotFoundException("Vehicle with ID " + vehicleId + " does not exist.");
         }
     }

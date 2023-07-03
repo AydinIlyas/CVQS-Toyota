@@ -65,13 +65,15 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     public PaginationResponse<TTVehicleDefectDTO> getAllFiltered(int page,int size, String type, String state, String reportTime,
                                                    String reportedBy, String vin, String sortOrder,
                                                    List<String> sortBy) {
+        logger.info("Fetching vehicles.");
         Pageable pageable= PageRequest.of(page,size,Sort.by(SortUtil.createSortOrder(sortBy,sortOrder)));
         Page<TTVehicleDefect> pageResponse=ttVehicleDefectRepository
                 .getDefectsFiltered(type,state,reportTime,reportedBy,vin,pageable);
+        logger.debug("Retrieved {} defects.",pageResponse.getContent().size());
         List<TTVehicleDefectDTO> ttVehicleDefectDTOS=pageResponse.stream().map(
                 mapUtil::convertDefectToDTO
         ).collect(Collectors.toList());
-
+        logger.info("Retrieved and converted {} vehicles to dto.",ttVehicleDefectDTOS.size());
         return new PaginationResponse<>(ttVehicleDefectDTOS,pageResponse);
     }
 
@@ -156,6 +158,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     @Override
     public TTVehicleDefectDTO addDefect(String username,Long vehicleId,
                                              TTVehicleDefectDTO defectDTO) {
+        logger.info("Adding defect to vehicle. Vehicle ID: {}, Defect Type: {}",vehicleId,defectDTO.getType());
         Optional<TTVehicle> optionalTTVehicle = ttVehicleRepository.findById(vehicleId);
         if (optionalTTVehicle.isPresent()) {
             TTVehicleDefect defect = mapUtil.convertDefectDTOToEntity(defectDTO);
@@ -164,16 +167,13 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             TTVehicle ttVehicle = optionalTTVehicle.get();
             ttVehicle.getDefect().add(defect);
             defect.setTt_vehicle(ttVehicle);
-            if(defect.getLocation()!=null)
-                for(TTVehicleDefectLocation location : defect.getLocation())
-                    location.setTt_vehicle_defect(defect);
             TTVehicleDefect saved=ttVehicleDefectRepository.save(defect);
-            logger.info("Created defect successfully! Vehicle ID: {}, Defect ID: {}",vehicleId,defect);
+            logger.info("Defect created successfully! Vehicle ID: {}, Defect ID: {}",vehicleId,defect.getId());
             return mapUtil.convertDefectToDTO(saved);
         }
         else{
-            logger.warn("Vehicle with id {} couldn't found!",vehicleId);
-            throw new EntityNotFoundException("There is no Vehicle with the id: "+vehicleId);
+            logger.warn("Vehicle not found! Vehicle ID: {}",vehicleId);
+            throw new EntityNotFoundException("Vehicle not found! Vehicle ID: "+vehicleId);
         }
 
     }
@@ -186,6 +186,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
      */
     @Override
     public TTVehicleDefectDTO update(Long id, TTVehicleDefectDTO defectDTO) {
+        logger.info("Updating defect with ID: {}",id);
         Optional<TTVehicleDefect> optionalDefect=ttVehicleDefectRepository.findById(id);
         if(optionalDefect.isPresent())
         {
@@ -193,22 +194,25 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
             if(defectDTO.getType()!=null&&!defect.getType().equals(defectDTO.getType()))
             {
                 defect.setType(defectDTO.getType());
+                logger.debug("Defect type updated: {}",defect.getType());
             }
 
             if(defectDTO.getDescription()!=null&&!defect.getDescription().equals(defectDTO.getDescription()))
             {
                 defect.setDescription(defectDTO.getDescription());
+                logger.debug("Defect description updated: {}",defect.getDescription());
             }
             if(defectDTO.getState()!=null&&!defect.getState().equals(defectDTO.getState()))
             {
                 defect.setState(defectDTO.getState());
+                logger.debug("Defect state updated: {}",defect.getState());
             }
             ttVehicleDefectRepository.save(defect);
-            logger.info("DEFECT UPDATED SUCCESSFULLY! DEFECT ID: {}",id);
+            logger.info("Defect updated successfully! Defect ID: {}",id);
             return mapUtil.convertDefectToDTO(defect);
         }
-        logger.warn("DEFECT WITH NOT FOUND! DEFECT ID: {}",id);
-        throw new EntityNotFoundException("DEFECT WITH NOT FOUND! DEFECT ID: "+id);
+        logger.warn("Defect not found! Defect ID: {}",id);
+        throw new EntityNotFoundException("Defect not found! DEFECT ID: "+id);
     }
 
 
@@ -222,19 +226,23 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     @Override
     @Transactional
     public TTVehicleDefectDTO deleteDefect(Long defectId) {
+        logger.info("Deleting defect with ID: {}",defectId);
         Optional<TTVehicleDefect> optionalDefect = ttVehicleDefectRepository.findById(defectId);
         if (optionalDefect.isPresent()) {
             TTVehicleDefect defect = optionalDefect.get();
             List<TTVehicleDefectLocation> locations = defect.getLocation();
-            locations.forEach(l -> l.setDeleted(true));
+            locations.forEach(l ->{
+                l.setDeleted(true);
+                logger.info("Deleted with defect associated locations. Location ID: {}",l.getId());
+            });
             defect.setDeleted(true);
             TTVehicleDefect saved=ttVehicleDefectRepository.save(defect);
-            logger.info("Soft deleted defect successfully! DEFECT ID: {}",defectId);
+            logger.info("Deleted defect and all associated locations  successfully! Defect ID: {}",defectId);
             return mapUtil.convertDefectToDTO(saved);
         }
         else{
-            logger.warn("Defect couldn't found! ID: {}",defectId);
-            throw new EntityNotFoundException("Defect with id "+defectId+"couldn't found!");
+            logger.warn("Defect not found! ID: {}",defectId);
+            throw new EntityNotFoundException("Defect not found! ID: "+defectId);
         }
     }
 

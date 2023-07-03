@@ -42,6 +42,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
      */
     @Override
     public void add(Long defectId, TTVehicleDefectLocationDTO defectLocationDTO) {
+        logger.info("Adding location to defect. Defect ID: {}",defectId);
         Optional<TTVehicleDefect> optionalDefect = defectRepository.findById(defectId);
 
         if (optionalDefect.isPresent()) {
@@ -49,6 +50,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
             TTVehicleDefect defect = optionalDefect.get();
             if(defect.getDefectImage()==null)
             {
+                logger.warn("Defect has no image!");
                 throw new ImageNotFoundException("Defect has no image!");
             }
             isLocationValid(defect,defectLocationDTO);
@@ -60,11 +62,12 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
                 defect.setLocation(new ArrayList<>());
             defect.getLocation().add(location);
             location.setTt_vehicle_defect(defect);
-            defectLocationRepository.save(location);
-            logger.info("Successfully added Location to defect with id {}",defectId);
+            TTVehicleDefectLocation saved=defectLocationRepository.save(location);
+            logger.info("Successfully added location to defect. Location ID: {}, Defect ID: {}",
+                    saved.getId(),defectId);
         } else {
-            logger.warn("There is no defect with id: {}",defectId);
-            throw new EntityNotFoundException("There is no defect with id: " + defectId);
+            logger.warn("Defect not found! ID:{}",defectId);
+            throw new EntityNotFoundException("Defect not found! ID: " + defectId);
         }
 
     }
@@ -77,17 +80,18 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
     @Override
     @Transactional
     public void delete(Long locationId) {
+        logger.info("Deleting location. ID: {}",locationId);
         Optional<TTVehicleDefectLocation> optionalLocation = defectLocationRepository.findById(locationId);
         if (optionalLocation.isPresent()) {
             TTVehicleDefectLocation location = optionalLocation.get();
             location.setDeleted(true);
             defectLocationRepository.save(location);
-            logger.info("Deleted location successfully! LOCATION ID: {}, DEFECT ID:{}",
+            logger.info("Deleted location successfully! Location ID: {}, Defect ID:{}",
                     location.getId(),location.getTt_vehicle_defect().getId());
         }
         else{
-            logger.warn("Delete failed! Location couldn't found! Id: {}",locationId);
-            throw new EntityNotFoundException("Location with id "+locationId+"couldn't be found");
+            logger.warn("Location not found! Location ID: {}",locationId);
+            throw new EntityNotFoundException("Location not found! Location ID: "+locationId);
         }
     }
 
@@ -97,6 +101,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
      */
     @Override
     public void update(Long id, TTVehicleDefectLocationDTO locationDTO) {
+        logger.info("Updating Location. ID: {}",id);
         Optional<TTVehicleDefectLocation> optionalLocation=defectLocationRepository.findById(id);
         if(optionalLocation.isPresent())
         {
@@ -105,15 +110,19 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
             if(locationDTO.getX_Axis()!=null&&locationDTO.getX_Axis()!=location.getX_Axis())
             {
                 location.setX_Axis(locationDTO.getX_Axis());
+                logger.debug("Location x-axis updated: {}",location.getX_Axis());
             }
             if(locationDTO.getY_Axis()!=null&&locationDTO.getY_Axis()!=location.getY_Axis())
             {
                 location.setY_Axis(locationDTO.getY_Axis());
+                logger.debug("Location y-axis updated: {}",location.getX_Axis());
             }
             defectLocationRepository.save(location);
+            logger.info("Updated location successfully. Location ID: {}",id);
         }
         else{
-            throw new EntityNotFoundException("TTVehicleDefectLocation not found! ID: "+id);
+            logger.warn("Location not found. Location ID: {}",id);
+            throw new EntityNotFoundException("Location not found! ID: "+id);
         }
 
     }
@@ -125,17 +134,22 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
             BufferedImage bufferedImage= ImageIO.read(new ByteArrayInputStream(defect.getDefectImage()));
             if(bufferedImage.getHeight()<defectLocationDTO.getY_Axis())
             {
-                throw new InvalidLocationException("Y Axis of location is exceeding maximum height of image. Max: "
+                logger.warn("Y-Axis of location is exceeding maximum width of image. Max: {}",
+                        bufferedImage.getWidth());
+                throw new InvalidLocationException("Y-Axis of location is exceeding maximum height of image. Max: "
                         +bufferedImage.getHeight());
             }
             if(bufferedImage.getWidth()<defectLocationDTO.getX_Axis())
             {
-                throw new InvalidLocationException("X Axis of location is exceeding maximum width of image. Max: "
+                logger.warn("X-Axis of location is exceeding maximum width of image. Max: {}",
+                        bufferedImage.getWidth());
+                throw new InvalidLocationException("X-Axis of location is exceeding maximum width of image. Max: "
                         +bufferedImage.getWidth());
             }
         }
         catch(IOException e){
-            throw new ImageProcessingException("Image reading failed!");
+            logger.warn("IOException while reading image. {}",e.getMessage());
+            throw new ImageProcessingException("Image reading failed! "+e.getMessage());
         }
     }
 }
