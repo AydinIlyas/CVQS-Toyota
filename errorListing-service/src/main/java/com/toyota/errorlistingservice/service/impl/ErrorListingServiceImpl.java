@@ -25,7 +25,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     private final Logger logger= LogManager.getLogger(ErrorListingServiceImpl.class);
 
     /**
-     * Getting all vehicles with paging,filtering and sorting
+     * Gets vehicles with paging,filtering and sorting
      * @param request request for adding bearer tokens
      * @param model desired vehicle model
      * @param vin desired vehicle identity number
@@ -44,7 +44,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                                     String sortOrder, String model, String vin, String yearOfProduction,
                                     String transmissionType, String engineType, String color) {
         String authHeader=extractToken(request);
-        logger.info("Request for getAll sent");
+        logger.info("Sending request for fetching vehicles to errorLogin-service");
         PaginationResponse<Object> response = webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicle/getAll",uriBuilder ->
                         uriBuilder
@@ -64,16 +64,16 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {})
                 .block();
-        logger.info("Vehicles Successfully received!");
+        logger.debug("Vehicles successfully fetched from errorLogin-service.");
         if(response!=null)
             logger.info("Page: {} Size: {}, Total:{}",page,size,response.getPageable().getTotalElements());
         return response;
     }
 
     /**
-     * Getting vehicles with paging, filtering and sorting. Sends request to errorLogin.
+     * Gets defects with paging, filtering and sorting. Sends request to errorLogin.
      * @param request request for sending token to errorLogin
-     * @param page page Number starts from 0
+     * @param page page number starts from 0
      * @param size entity amount on a page
      * @param type desired type of defect
      * @param state desired state of defect
@@ -89,7 +89,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                                    String reportTime, String reportedBy, String vin,
                                    String sortOrder, String sortBy) {
         String authHeader=extractToken(request);
-        logger.info("Request for getAll sent");
+        logger.info("Sending request for fetching defects to errorLogin-service");
         PaginationResponse<Object> response = webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicleDefect/getAll",uriBuilder ->
                         uriBuilder
@@ -108,7 +108,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {})
                 .block();
-        logger.info("Vehicles Successfully received!");
+        logger.info("Defects successfully fetched from errorLogin-service.");
         if(response!=null)
             logger.info("Page: {} Size: {}, Total:{}",page,size,response.getPageable().getTotalElements());
         return response;
@@ -123,8 +123,8 @@ public class ErrorListingServiceImpl implements ErrorListingService {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7);
         }
-        logger.warn("USER IS UNAUTHORIZED!");
-        throw new BearerTokenNotFoundException("USER IS UNAUTHORIZED");
+        logger.warn("No Bearer found to sent request to errorLogin");
+        throw new BearerTokenNotFoundException("No Bearer found to sent request to errorLogin");
     }
 }
 
