@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
     <Properties>
-        <Property name="LOG_DIR">/logs/errorListing-service</Property>
+        <Property name="LOG_DIR">/logs/apiGateway-service</Property>
     </Properties>
     <Appenders>
         <Console name="LogToConsole" target="SYSTEM_OUT">
@@ -9,8 +9,8 @@
         </Console>
         <RollingFile
                 name="rollingFile"
-                fileName="${LOG_DIR}/error-listing.log"
-                filePattern="${LOG_DIR}/error-listing.%i.log.gz"
+                fileName="${LOG_DIR}/api-gateway.log"
+                filePattern="${LOG_DIR}/api-gateway.%i.log.gz"
                 ignoreExceptions="false">
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p - [%C] - %m%n</Pattern>
@@ -20,14 +20,14 @@
             </Policies>
             <DefaultRolloverStrategy max="5">
                 <Delete basePath="${LOG_DIR}" maxDepth="2">
-                    <IfFileName glob="*/error-listing.*.log.gz" />
+                    <IfFileName glob="*/api-gateway.*.log.gz" />
                     <IfLastModified age="P30D" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="com.toyota.errorlistingservice" level="debug" additivity="false">
+        <Logger name="com.toyota.apigateway" level="debug" additivity="false">
             <AppenderRef ref="rollingFile"/>
             <AppenderRef ref="LogToConsole"/>
         </Logger>

@@ -1,18 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
+<Configuration status="INFO">
+    <Properties>
+        <Property name="LOG_DIR">/logs/verificationAuthorization-service</Property>
+    </Properties>
     <Appenders>
         <Console name="LogToConsole" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - [%C] - %msg%n"/>
         </Console>
+        <RollingFile
+                name="rollingFile"
+                fileName="${LOG_DIR}/verification-authorization.log"
+                filePattern="${LOG_DIR}/verification-authorization.%i.log.gz"
+                ignoreExceptions="false">
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p - [%C] - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="5">
+                <Delete basePath="${LOG_DIR}" maxDepth="2">
+                    <IfFileName glob="*/verification-authorization.*.log.gz" />
+                    <IfLastModified age="P30D" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="com.toyota.verificationauthorizationservice" level="info" additivity="false">
+        <Logger name="com.toyota.verificationauthorizationservice" level="debug" additivity="false">
+            <AppenderRef ref="rollingFile"/>
             <AppenderRef ref="LogToConsole"/>
         </Logger>
-
-        <Root level="error">
+        <Root level="info">
             <AppenderRef ref="LogToConsole"/>
         </Root>
     </Loggers>
-
 </Configuration>

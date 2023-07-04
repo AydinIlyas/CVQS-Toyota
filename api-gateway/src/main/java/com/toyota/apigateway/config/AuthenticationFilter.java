@@ -2,6 +2,8 @@ package com.toyota.apigateway.config;
 
 import com.toyota.apigateway.exception.MissingBearerToken;
 import com.toyota.apigateway.exception.UnauthorizedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.cloud.gateway.route.Route;
@@ -18,7 +20,7 @@ import java.util.Map;
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config>{
     private final WebClient.Builder webClientBuilder;
     private final RouteValidator routeValidator;
-
+    private final Logger logger= LogManager.getLogger(AuthenticationFilter.class);
 
     public AuthenticationFilter(WebClient.Builder webClientBuilder, RouteValidator routeValidator) {
         super(Config.class);
@@ -32,6 +34,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             if (routeValidator.isSecured.test(exchange.getRequest())) {
                 String authHeader = extractToken(exchange.getRequest());
                 if (authHeader == null) {
+                    logger.warn("Bearer Token is missing!");
                     throw new MissingBearerToken("Bearer Token is missing");
                 }
 
@@ -40,29 +43,37 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 assert route != null;
                 String requiredRole=route.getMetadata().get("requiredRole").toString();
                 String verificationUrl = "http://verification-authorization-service/auth/verifyAndUsername";
+
+                logger.debug("Verifying user and role: {}",requiredRole);
+
                 return webClientBuilder.build().get().uri(verificationUrl)
                         .headers(headers -> headers.setBearerAuth(authHeader))
                         .retrieve()
                         .bodyToMono(Map.class)
                         .flatMap(result -> {
                             if(result==null){
+                                logger.warn("User not found");
                                 return Mono.error(new UnauthorizedException("User Not Found"));
                             }
                             else if (result.containsKey(requiredRole)) {
+                                logger.info("User authorized: {}",result.get("Username").toString());
                                 return chain.filter(exchange.mutate().request(
                                                 exchange.getRequest().mutate()
                                                         .header("Username",result.get("Username").toString())
                                                         .build())
                                         .build());
                             } else {
+                                logger.warn("User not authorized: {}",result.get("Username".toString()));
                                 return Mono.error(new UnauthorizedException("User not authorized!"));
                             }
                         })
                         .onErrorResume(UnauthorizedException.class,ex-> {
+                            logger.warn("Unauthorized exception occured: {}",ex.getMessage());
                             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                             throw new UnauthorizedException("User not authorized");
                         })
                         .onErrorResume(WebClientResponseException.class,ex->{
+                            logger.warn("WebClient response exception occured: {}",ex.getMessage());
                             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                             throw new UnauthorizedException("User not Found");
                         });
