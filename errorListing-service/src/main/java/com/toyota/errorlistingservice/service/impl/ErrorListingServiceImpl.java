@@ -1,18 +1,32 @@
 package com.toyota.errorlistingservice.service.impl;
 
 
+import com.toyota.errorlistingservice.dto.ImageDTO;
 import com.toyota.errorlistingservice.dto.PaginationResponse;
+import com.toyota.errorlistingservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorlistingservice.exceptions.BearerTokenNotFoundException;
+import com.toyota.errorlistingservice.exceptions.DefectNotFoundException;
+import com.toyota.errorlistingservice.exceptions.ImageNotFoundException;
+import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
 import com.toyota.errorlistingservice.service.abstracts.ErrorListingService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.*;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Service class for listing errors with filtering,sorting and paging.
@@ -115,6 +129,67 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     }
 
     /**
+     * @param defectId
+     * @param format
+     * @param width
+     * @param height
+     * @param colorHex
+     * @param processed
+     * @return
+     */
+    @Override
+    public byte[] getImage(String authHeader,
+                           Long defectId,
+                           String format,
+                           int width,
+                           int height,
+                           String colorHex,
+                           boolean processed) {
+
+        String token=authHeader.substring(7);
+        ImageDTO imageDTO= webClientBuilder.build().get()
+                .uri("http://error-login-service/ttvehicleDefect/get/image/{defectId}",defectId)
+                .headers(h -> h.setBearerAuth(token))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, clientResponse -> {
+                        logger.warn("Defect not found. ID: {}",defectId);
+                        throw new DefectNotFoundException("Defect not found. ID: "+defectId);
+                })
+                .bodyToMono(ImageDTO.class)
+                .block();
+        if(imageDTO!=null)
+        {
+            if(!processed)
+                return imageDTO.getImage();
+            try {
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(imageDTO.getImage());
+                BufferedImage image = ImageIO.read(inputStream);
+                Graphics2D g=(Graphics2D) image.getGraphics();
+                g.setStroke(new BasicStroke(3));
+                Color color=Color.decode(isValidColorHex(colorHex));
+                g.setColor(color);
+                for(TTVehicleDefectLocationDTO location:imageDTO.getLocationDTO())
+                {
+                    int x=location.getX_Axis()-width/2;
+                    int y=location.getY_Axis()-height/2;
+                    g.fillRect(x,y,width,height);
+                }
+                g.dispose();
+                ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+                String formatName=format.equalsIgnoreCase("png")?"png":"jpeg";
+                ImageIO.write(image,formatName,outputStream);
+                return outputStream.toByteArray();
+            }
+            catch (IOException e)
+            {
+                throw new ImageProcessingException("Failed to read Input-stream");
+            }
+        }
+        logger.warn("Defect has no image! Defect ID: {}",defectId);
+        throw new ImageNotFoundException("Defect has no image! Defect ID: "+defectId);
+    }
+
+    /**
      * @param request For extracting the token.
      * @return  Bearer Token
      */
@@ -125,6 +200,18 @@ public class ErrorListingServiceImpl implements ErrorListingService {
         }
         logger.warn("No Bearer found to sent request to errorLogin");
         throw new BearerTokenNotFoundException("No Bearer found to sent request to errorLogin");
+    }
+
+    private String isValidColorHex(String color)
+    {
+        String regex="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+        Pattern pattern=Pattern.compile(regex);
+        Matcher matcher=pattern.matcher(color);
+        if(matcher.matches())
+            return color;
+        else
+            return "#FF0000";
+
     }
 }
 

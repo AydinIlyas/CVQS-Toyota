@@ -50,7 +50,7 @@ public class MapUtil {
         }
         return defectDTO;
     }
-    private TTVehicleDefectLocationDTO convertLocationDTO(TTVehicleDefectLocation location)
+    public TTVehicleDefectLocationDTO convertLocationDTO(TTVehicleDefectLocation location)
     {
         return modelMapper.map(location,TTVehicleDefectLocationDTO.class);
     }

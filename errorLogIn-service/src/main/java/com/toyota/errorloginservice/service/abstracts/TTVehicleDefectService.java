@@ -1,5 +1,6 @@
 package com.toyota.errorloginservice.service.abstracts;
 
+import com.toyota.errorloginservice.dto.ImageDTO;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,5 +22,7 @@ public interface TTVehicleDefectService {
 
     void addImage(Long defectId, MultipartFile image);
 
-    byte[] getImage(Long defectId,String format,int width,int height,String colorHex,boolean processed);
+    ImageDTO getImage(Long defectId);
+
+    void removeImage(Long defectId);
 }

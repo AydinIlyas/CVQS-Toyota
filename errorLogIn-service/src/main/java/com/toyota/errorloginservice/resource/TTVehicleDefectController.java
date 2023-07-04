@@ -1,6 +1,7 @@
 package com.toyota.errorloginservice.resource;
 
 
+import com.toyota.errorloginservice.dto.ImageDTO;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.dto.UpdateValidation;
@@ -90,22 +91,15 @@ public class TTVehicleDefectController {
         ttVehicleDefectService.addImage(defectId,image);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
-    @GetMapping("/get/image/{defectId}")
-    public ResponseEntity<byte[]> getImage(@PathVariable("defectId") Long defectId,
-                                           @RequestParam(defaultValue = "jpeg") String format,
-                                           @RequestParam(defaultValue="10")int width,
-                                           @RequestParam(defaultValue = "10") int height,
-                                           @RequestParam(defaultValue = "#FF0000") String colorHex,
-                                           @RequestParam(defaultValue = "true") boolean processed)
+    @PutMapping("delete/image")
+    public ResponseEntity<Entity> removeImage(@RequestBody Long defectId)
     {
-        HttpHeaders headers=new HttpHeaders();
-        byte[] imageData=ttVehicleDefectService.getImage(defectId,format,width,height,colorHex,processed);
-        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        if (format.equalsIgnoreCase("png")) {
-            headers.setContentType(MediaType.IMAGE_PNG);
-        } else {
-            headers.setContentType(MediaType.IMAGE_JPEG);
-        }
-        return new ResponseEntity<>(imageData,headers,HttpStatus.OK);
+        ttVehicleDefectService.removeImage(defectId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+    @GetMapping("/get/image/{defectId}")
+    public ImageDTO getImage(@PathVariable("defectId") Long defectId)
+    {
+        return ttVehicleDefectService.getImage(defectId);
     }
 }

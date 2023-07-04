@@ -15,4 +15,6 @@ public interface ErrorListingService {
 
     PaginationResponse<Object> getDefects(HttpServletRequest request,int page,int size,String type, String state, String reportTime, String reportedBy,
                             String vin, String sortOrder, String sortBy);
+
+    byte[] getImage(String authHeader,Long defectId, String format, int width, int height, String colorHex, boolean processed);
 }

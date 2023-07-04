@@ -5,10 +5,8 @@ import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.service.impl.ErrorListingServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -88,6 +86,26 @@ public class ErrorController {
     {
         return service.getDefects(request,page,size,type, state, reportTime, reportedBy,
                 vin, sortOrder, sortBy);
+    }
+
+    @GetMapping("/get/image/{defectId}")
+    public ResponseEntity<byte[]> getImage(@RequestHeader("Authorization")String authHeader,
+                                           @PathVariable("defectId") Long defectId,
+                                           @RequestParam(defaultValue = "jpeg") String format,
+                                           @RequestParam(defaultValue="10")int width,
+                                           @RequestParam(defaultValue = "10") int height,
+                                           @RequestParam(defaultValue = "#FF0000") String colorHex,
+                                           @RequestParam(defaultValue = "true") boolean processed)
+    {
+        HttpHeaders headers=new HttpHeaders();
+        byte[] imageData=service.getImage(authHeader,defectId,format,width,height,colorHex,processed);
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        if (format.equalsIgnoreCase("png")) {
+            headers.setContentType(MediaType.IMAGE_PNG);
+        } else {
+            headers.setContentType(MediaType.IMAGE_JPEG);
+        }
+        return new ResponseEntity<>(imageData,headers, HttpStatus.OK);
     }
 
 
