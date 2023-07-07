@@ -3,7 +3,6 @@ package com.toyota.verificationauthorizationservice.service.impl;
 import com.toyota.verificationauthorizationservice.dao.RoleRepository;
 import com.toyota.verificationauthorizationservice.dao.TokenRepository;
 import com.toyota.verificationauthorizationservice.dao.UserRepository;
-import com.toyota.verificationauthorizationservice.domain.Permission;
 import com.toyota.verificationauthorizationservice.domain.Role;
 import com.toyota.verificationauthorizationservice.domain.Token;
 import com.toyota.verificationauthorizationservice.domain.User;
@@ -128,10 +127,8 @@ class UserServiceImplTest {
         String permission1="UserManagement";
         String permission2="ErrorLogin";
         User user=new User(1L,"username","password",false,null,List.of(new Token()));
-        Set<Permission> permissions=Set.of(new Permission(1L,permission1,"")
-        ,new Permission(2L,permission2,""));
-        Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user),permissions),
-                new Role(1L,"Operator","", List.of(user),permissions));
+        Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user)),
+                new Role(1L,"Operator","", List.of(user)));
         user.setRoles(roles);
         //when
         when(request.getHeader("Authorization")).thenReturn("Bearer Token");
@@ -140,8 +137,8 @@ class UserServiceImplTest {
         Set<String> result=userService.verify(request);
 
         //then
-        assertTrue(result.contains(permission1));
-        assertTrue(result.contains(permission2));
+        assertTrue(result.contains("Operator"));
+        assertTrue(result.contains("Admin"));
 
     }
 
@@ -297,10 +294,9 @@ class UserServiceImplTest {
         String permission1="UserManagement";
         String permission2="ErrorLogin";
         User user=new User(1L,"username","password",false,null,List.of(new Token()));
-        Set<Permission> permissions=Set.of(new Permission(1L,permission1,"")
-                ,new Permission(2L,permission2,""));
-        Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user),permissions),
-                new Role(1L,"Operator","", List.of(user),permissions));
+
+        Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user)),
+                new Role(1L,"Operator","", List.of(user)));
         user.setRoles(roles);
         //when
         when(request.getHeader("Authorization")).thenReturn("Bearer Token");
@@ -309,8 +305,6 @@ class UserServiceImplTest {
         Map<String,String> result=userService.verifyAndUsername(request);
 
         //then
-        assertTrue(result.containsKey(permission1));
-        assertTrue(result.containsKey(permission2));
         assertTrue(result.containsKey("Username"));
         assertEquals(user.getUsername(),result.get("Username"));
     }
@@ -334,7 +328,7 @@ class UserServiceImplTest {
         Set<Role> roles=new HashSet<>();
         roles.add(new Role());
         User user=new User(1L,"username","password",false,roles,List.of(new Token()));
-        Role role=new Role(1L,"Admin","",null,null);
+        Role role=new Role(1L,"Admin","",null);
         String username="username";
         String roleStr="Admin";
         //when
@@ -377,7 +371,7 @@ class UserServiceImplTest {
     void removeRole_Success() {
         //given
         Set<Role> roles=new HashSet<>();
-        Role role=new Role(1L,"Admin","",null,null);
+        Role role=new Role(1L,"Admin","",null);
         roles.add(new Role());
         roles.add(role);
         User user=new User(1L,"username","password",false,roles,List.of(new Token()));

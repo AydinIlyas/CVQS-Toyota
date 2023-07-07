@@ -44,13 +44,15 @@ class JwtAuthenticationFilterTest {
         FilterChain filterChain=Mockito.mock(FilterChain.class);
         String jwt="Token";
         String username="username";
-        Token token=new Token(1L,"Bearer token",false,false,null);
+        Token token=new Token("1",false,false,null);
+        String jti="jti";
         //when
         Mockito.when(request.getHeader("Authorization")).thenReturn("Bearer Token");
         Mockito.when(jwtService.extractUsername(anyString())).thenReturn(username);
         Mockito.when(userDetailsService.loadUserByUsername(anyString())).thenReturn(userDetails);
         Mockito.when(jwtService.isTokenValid(anyString(),any())).thenReturn(true);
-        Mockito.when(tokenRepository.findByToken(anyString())).thenReturn(Optional.of(token));
+        Mockito.when(jwtService.extractTokenId(anyString())).thenReturn(jti);
+        Mockito.when(tokenRepository.findById(anyString())).thenReturn(Optional.of(token));
         jwtAuthenticationFilter.doFilterInternal(request,response,filterChain);
 
         //then

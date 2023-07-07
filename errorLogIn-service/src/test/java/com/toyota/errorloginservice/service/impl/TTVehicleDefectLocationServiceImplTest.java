@@ -13,6 +13,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,15 +37,18 @@ class TTVehicleDefectLocationServiceImplTest {
         defectLocationService=new TTVehicleDefectLocationServiceImpl(locationRepository,defectRepository);
     }
     @Test
-    void add() {
+    void add() throws IOException {
 
         //given
         TTVehicleDefect existingDefect=new TTVehicleDefect();
+        existingDefect.setDefectImage(new byte[]{1});
+        BufferedImage bufferedImage = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
         int xAxis=150;
         int yAxis=200;
         TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis);
-
         //when
+        Mockito.mockStatic(ImageIO.class);
+        Mockito.when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(bufferedImage);
         Mockito.when(defectRepository.findById(any())).thenReturn(Optional.of(existingDefect));
         Mockito.when(locationRepository.save(any(TTVehicleDefectLocation.class))).thenAnswer(
                 invocationOnMock -> invocationOnMock.getArgument(0));

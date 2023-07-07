@@ -14,17 +14,7 @@ class RoleTest {
     private Role role;
     @BeforeEach
     void setUp() {
-        Permission permission=new Permission();
-        permission.setName("permission");
-        role=new Role(1L,"role","description", List.of(new User()),
-                Set.of(permission));
-    }
-
-    @Test
-    void getPermissions() {
-        Set<GrantedAuthority> set=role.getPermissions();
-        assertEquals(1,set.size());
-        assertTrue(set.contains(new SimpleGrantedAuthority("permission")));
+        role=new Role(1L,"role","description", List.of(new User()));
     }
 
     @Test
@@ -74,9 +64,4 @@ class RoleTest {
         assertNull(role.getUsers());
     }
 
-    @Test
-    void setPermissions() {
-        role.setPermissions(null);
-        assertNull(role.getPermissions());
-    }
 }
