@@ -1,5 +1,6 @@
 package com.toyota.terminalservice.advice;
 
+import com.toyota.terminalservice.exception.TerminalAlreadyExistsException;
 import com.toyota.terminalservice.exception.TerminalNotFoundException;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +34,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.NOT_FOUND,ex.getMessage());
         return new ResponseEntity<>(errorResponse,HttpStatus.NOT_FOUND);
+    }
+    /**
+     * Handles TerminalAlreadyExistsException by returning a ResponseEntity with an appropriate error response.
+     * @param ex TerminalAlreadyExistsException thrown when terminal already exists
+     * @return ResponseEntity with an ErrorResponse containing details of the error
+     */
+    @ExceptionHandler(TerminalAlreadyExistsException.class)
+    public ResponseEntity<Object> handleTerminalAlreadyExistsException(TerminalAlreadyExistsException ex)
+    {
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.CONFLICT,ex.getMessage());
+        return new ResponseEntity<>(errorResponse,HttpStatus.CONFLICT);
     }
     /**
      * Handles MethodArgumentNotValidException by returning a ResponseEntity with an appropriate error response.

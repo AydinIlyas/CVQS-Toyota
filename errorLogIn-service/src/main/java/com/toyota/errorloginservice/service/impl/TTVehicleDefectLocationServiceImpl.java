@@ -29,7 +29,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocationService {
-    private final TTVehicleDefectLocationRepository defectLocationRepository;
+    private final TTVehicleDefectLocationRepository locationRepository;
     private final TTVehicleDefectRepository defectRepository;
     private final Logger logger= LogManager.getLogger(TTVehicleDefectLocationServiceImpl.class);
 
@@ -62,7 +62,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
                 defect.setLocation(new ArrayList<>());
             defect.getLocation().add(location);
             location.setTt_vehicle_defect(defect);
-            TTVehicleDefectLocation saved=defectLocationRepository.save(location);
+            TTVehicleDefectLocation saved= locationRepository.save(location);
             logger.info("Successfully added location to defect. Location ID: {}, Defect ID: {}",
                     saved.getId(),defectId);
         } else {
@@ -81,11 +81,11 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
     @Transactional
     public void delete(Long locationId) {
         logger.info("Deleting location. ID: {}",locationId);
-        Optional<TTVehicleDefectLocation> optionalLocation = defectLocationRepository.findById(locationId);
+        Optional<TTVehicleDefectLocation> optionalLocation = locationRepository.findById(locationId);
         if (optionalLocation.isPresent()) {
             TTVehicleDefectLocation location = optionalLocation.get();
             location.setDeleted(true);
-            defectLocationRepository.save(location);
+            locationRepository.save(location);
             logger.info("Deleted location successfully! Location ID: {}, Defect ID:{}",
                     location.getId(),location.getTt_vehicle_defect().getId());
         }
@@ -102,7 +102,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
     @Override
     public void update(Long id, TTVehicleDefectLocationDTO locationDTO) {
         logger.info("Updating Location. ID: {}",id);
-        Optional<TTVehicleDefectLocation> optionalLocation=defectLocationRepository.findById(id);
+        Optional<TTVehicleDefectLocation> optionalLocation= locationRepository.findById(id);
         if(optionalLocation.isPresent())
         {
             TTVehicleDefectLocation location=optionalLocation.get();
@@ -117,7 +117,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
                 location.setY_Axis(locationDTO.getY_Axis());
                 logger.debug("Location y-axis updated: {}",location.getX_Axis());
             }
-            defectLocationRepository.save(location);
+            locationRepository.save(location);
             logger.info("Updated location successfully. Location ID: {}",id);
         }
         else{

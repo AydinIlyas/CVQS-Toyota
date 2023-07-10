@@ -51,11 +51,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         .retrieve()
                         .bodyToMono(Map.class)
                         .flatMap(result -> {
+                            String routeId=route.getId();
                             if(result==null){
                                 logger.warn("User not found");
                                 return Mono.error(new UnauthorizedException("User Not Found"));
                             }
-                            else if (result.containsKey(requiredRole)) {
+                            else if (result.containsKey(requiredRole)||(routeId.equals("terminal-service")
+                                    &&result.size()>0)) {
                                 logger.info("User authorized: {}",result.get("Username").toString());
                                 return chain.filter(exchange.mutate().request(
                                                 exchange.getRequest().mutate()
@@ -63,17 +65,17 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                                                         .build())
                                         .build());
                             } else {
-                                logger.warn("User not authorized: {}",result.get("Username".toString()));
+                                logger.warn("User not authorized: {}",result.get("Username"));
                                 return Mono.error(new UnauthorizedException("User not authorized!"));
                             }
                         })
                         .onErrorResume(UnauthorizedException.class,ex-> {
-                            logger.warn("Unauthorized exception occured: {}",ex.getMessage());
+                            logger.warn("Unauthorized exception occurred: {}",ex.getMessage());
                             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                             throw new UnauthorizedException("User not authorized");
                         })
                         .onErrorResume(WebClientResponseException.class,ex->{
-                            logger.warn("WebClient response exception occured: {}",ex.getMessage());
+                            logger.warn("WebClient response exception occurred: {}",ex.getMessage());
                             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                             throw new UnauthorizedException("User not Found");
                         });

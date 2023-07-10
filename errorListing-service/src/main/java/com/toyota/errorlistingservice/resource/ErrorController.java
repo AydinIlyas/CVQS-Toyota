@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -36,17 +37,17 @@ public class ErrorController {
      * @return vehicle objects
      */
     @GetMapping("/getVehicles")
-    public PaginationResponse<Object> getAllVehiclesFiltered(HttpServletRequest request,
-                                             @RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "5") int size,
-                                             @RequestParam(defaultValue = "") List<String> sortBy,
-                                             @RequestParam(defaultValue = "ASC") String sortOrder,
-                                             @RequestParam(defaultValue = "") String filterModel,
-                                             @RequestParam(defaultValue = "") String filterVin,
-                                             @RequestParam(defaultValue = "") String filterYearOfProduction,
-                                             @RequestParam(defaultValue = "") String filterTransmissionType,
-                                             @RequestParam(defaultValue = "") String filterEngineType,
-                                             @RequestParam(defaultValue = "") String filterColor
+    public Mono<PaginationResponse<Object>> getAllVehiclesFiltered(HttpServletRequest request,
+                                                                   @RequestParam(defaultValue = "0") int page,
+                                                                   @RequestParam(defaultValue = "5") int size,
+                                                                   @RequestParam(defaultValue = "") List<String> sortBy,
+                                                                   @RequestParam(defaultValue = "ASC") String sortOrder,
+                                                                   @RequestParam(defaultValue = "") String filterModel,
+                                                                   @RequestParam(defaultValue = "") String filterVin,
+                                                                   @RequestParam(defaultValue = "") String filterYearOfProduction,
+                                                                   @RequestParam(defaultValue = "") String filterTransmissionType,
+                                                                   @RequestParam(defaultValue = "") String filterEngineType,
+                                                                   @RequestParam(defaultValue = "") String filterColor
     )
     {
         return service.getVehicles(request, page, size, sortBy, sortOrder,
@@ -69,7 +70,7 @@ public class ErrorController {
      * @return Custom paging response
      */
     @GetMapping("getDefects")
-    public PaginationResponse<Object> getAllDefectsFiltered(
+    public Mono<PaginationResponse<Object>> getAllDefectsFiltered(
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,

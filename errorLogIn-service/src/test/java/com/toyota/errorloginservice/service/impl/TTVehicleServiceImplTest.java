@@ -5,6 +5,7 @@ import com.toyota.errorloginservice.domain.*;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
+import com.toyota.errorloginservice.exception.VehicleAlreadyExistsException;
 import com.toyota.errorloginservice.service.common.MapUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,12 +66,13 @@ class TTVehicleServiceImplTest {
     }
 
     @Test
-    void addVehicle() {
+    void addVehicle_Success() {
 
         //given
         TTVehicleDTO vehicleDTO = new TTVehicleDTO(1L, "Supra", "0001", LocalDate.now(), EngineType.DIESEL,
                 TransmissionType.MANUAL, "Red", new ArrayList<>());
         //when
+        when(ttVehicleRepository.existsByVinAndDeletedIsFalse(anyString())).thenReturn(false);
         when(ttVehicleRepository.save(Mockito.any(TTVehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
         TTVehicleDTO result=ttVehicleService.addVehicle(vehicleDTO);
 
@@ -81,6 +84,18 @@ class TTVehicleServiceImplTest {
         assertEquals(vehicleDTO.getEngineType(),result.getEngineType());
         assertEquals(vehicleDTO.getTransmissionType(),result.getTransmissionType());
         assertEquals(vehicleDTO.getColor(),result.getColor());
+    }
+    @Test
+    void addVehicle_VehicleAlreadyExists() {
+
+        //given
+        TTVehicleDTO vehicleDTO = new TTVehicleDTO(1L, "Supra", "0001", LocalDate.now(), EngineType.DIESEL,
+                TransmissionType.MANUAL, "Red", new ArrayList<>());
+        //when
+        when(ttVehicleRepository.existsByVinAndDeletedIsFalse(anyString())).thenReturn(true);
+
+        //then
+        assertThrows(VehicleAlreadyExistsException.class,()->ttVehicleService.addVehicle(vehicleDTO));
     }
 
     @Test
@@ -96,6 +111,7 @@ class TTVehicleServiceImplTest {
                 TransmissionType.AUTOMATIC, "Red",false,new ArrayList<>());
 
         //when
+        when(ttVehicleRepository.existsByVinAndDeletedIsFalse(anyString())).thenReturn(false);
         when(ttVehicleRepository.findById(vehicleId)).thenReturn(Optional.of(existingVehicle));
         when(ttVehicleRepository.save(Mockito.any(TTVehicle.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -112,7 +128,7 @@ class TTVehicleServiceImplTest {
         assertEquals(updatedVehicleDTO.getColor(),result.getColor());
     }
     @Test
-    void updateVehicle_Fail() {
+    void updateVehicle_VehicleNotFound() {
         // given
         long vehicleId = 1L;
         TTVehicleDTO updatedVehicleDTO = new TTVehicleDTO(vehicleId, "Updated Supra", "0002",
@@ -124,7 +140,26 @@ class TTVehicleServiceImplTest {
         // then
         assertThrows(EntityNotFoundException.class,()-> ttVehicleService.updateVehicle(vehicleId,updatedVehicleDTO));
     }
+    @Test
+    void updateVehicle_VehicleAlreadyExists() {
+        // given
+        long vehicleId = 1L;
+        TTVehicleDTO updatedVehicleDTO = new TTVehicleDTO(vehicleId, "Updated Supra", "0002",
+                LocalDate.of(2003,3,31), EngineType.DIESEL,
+                TransmissionType.MANUAL, "Blue", new ArrayList<>());
 
+        TTVehicle existingVehicle=new TTVehicle(vehicleId, "Supra", "0001",
+                LocalDate.now(), EngineType.ELECTRIC,
+                TransmissionType.AUTOMATIC, "Red",false,new ArrayList<>());
+
+        //when
+        when(ttVehicleRepository.existsByVinAndDeletedIsFalse(anyString())).thenReturn(true);
+        when(ttVehicleRepository.findById(vehicleId)).thenReturn(Optional.of(existingVehicle));
+
+        // then
+        assertThrows(VehicleAlreadyExistsException.class,
+                ()->ttVehicleService.updateVehicle(vehicleId, updatedVehicleDTO));
+    }
     @Test
     void deleteVehicle_Success() {
         //given
@@ -146,7 +181,7 @@ class TTVehicleServiceImplTest {
         assertTrue(existingVehicle.getDefect().get(0).getLocation().get(0).isDeleted());
     }
     @Test
-    void deleteVehicle_Fail() {
+    void deleteVehicle_VehicleNotFound() {
         //given
         Long vehicleId=1L;
 

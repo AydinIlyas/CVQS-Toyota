@@ -21,5 +21,6 @@ public interface TerminalRepository extends JpaRepository<Terminal,Long> {
     Page<Terminal> getTerminalsFiltered(String depName,String depCode,String shopCode, boolean isActive,
                                         Pageable pageable);
 
-    Optional<Terminal> findByDepCode(String depCode);
+    Optional<Terminal> findByDepCodeAndDeletedIsFalse(String depCode);
+    boolean existsByDepCodeAndDeletedIsFalse(String depCode);
 }

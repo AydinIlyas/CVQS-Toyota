@@ -13,6 +13,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.Collections;
 import java.util.List;
@@ -80,14 +81,19 @@ class ErrorListingServiceImplTest {
         when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
                 .thenReturn(monoSpy);
 
-        PaginationResponse<Object> result=errorListingService.getVehicles(request,page,size,sortBy,sortOrder,model
+        Mono<PaginationResponse<Object>> resultMono=errorListingService.getVehicles(request,page,size,sortBy,sortOrder,model
                 ,vin,yearOfProduction,transmissionType,engineType,color);
 
         //then
-        assertNotNull(result);
-        assertEquals(page,result.getPageable().getPageNumber());
-        assertEquals(size,result.getPageable().getPageSize());
-        assertEquals(content,result.getContent());
+        StepVerifier.create(resultMono)
+                        .expectNextMatches(result-> {
+                            assertNotNull(result);
+                            assertEquals(page, result.getPageable().getPageNumber());
+                            assertEquals(size, result.getPageable().getPageSize());
+                            assertEquals(content, result.getContent());
+                            return true;
+                                })
+                .verifyComplete();
     }
 
     @Test
@@ -125,13 +131,19 @@ class ErrorListingServiceImplTest {
         when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
                 .thenReturn(monoSpy);
 
-        PaginationResponse<Object> result=errorListingService.getDefects(request,page,size,type
+        Mono<PaginationResponse<Object>> resultMono=errorListingService.getDefects(request,page,size,type
                 ,state,reportTime,reportedBy,vin,sortOrder,sortBy);
 
         //then
-        assertNotNull(result);
-        assertEquals(page,result.getPageable().getPageNumber());
-        assertEquals(size,result.getPageable().getPageSize());
-        assertEquals(content,result.getContent());
+        StepVerifier.create(resultMono)
+                .expectNextMatches(result-> {
+                    assertNotNull(result);
+                    assertEquals(page,result.getPageable().getPageNumber());
+                    assertEquals(size,result.getPageable().getPageSize());
+                    assertEquals(content,result.getContent());
+                    return true;
+                })
+                .verifyComplete();
+
     }
 }

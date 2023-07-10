@@ -17,6 +17,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -54,12 +55,12 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @return vehicle objects
      */
     @Override
-    public PaginationResponse<Object> getVehicles(HttpServletRequest request, int page, int size, List<String> sortBy,
-                                    String sortOrder, String model, String vin, String yearOfProduction,
-                                    String transmissionType, String engineType, String color) {
+    public Mono<PaginationResponse<Object>> getVehicles(HttpServletRequest request, int page, int size, List<String> sortBy,
+                                                        String sortOrder, String model, String vin, String yearOfProduction,
+                                                        String transmissionType, String engineType, String color) {
         String authHeader=extractToken(request);
         logger.info("Sending request for fetching vehicles to errorLogin-service");
-        PaginationResponse<Object> response = webClientBuilder.build().get()
+        return webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicle/getAll",uriBuilder ->
                         uriBuilder
                                 .queryParam("page",page)
@@ -77,11 +78,12 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                 .headers(h -> h.setBearerAuth(authHeader))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {})
-                .block();
-        logger.debug("Vehicles successfully fetched from errorLogin-service.");
-        if(response!=null)
-            logger.info("Page: {} Size: {}, Total:{}",page,size,response.getPageable().getTotalElements());
-        return response;
+                        .doOnSuccess(response->{
+                            logger.debug("Vehicles successfully fetched from errorLogin-service.");
+                            if(response!=null)
+                                logger.info("Page: {} Size: {}, Total:{}"
+                                        ,page,size,response.getPageable().getTotalElements());
+                        });
     }
 
     /**
@@ -99,12 +101,12 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @return Custom paging response
      */
     @Override
-    public PaginationResponse<Object> getDefects(HttpServletRequest request,int page, int size,String type, String state,
+    public Mono<PaginationResponse<Object>> getDefects(HttpServletRequest request,int page, int size,String type, String state,
                                    String reportTime, String reportedBy, String vin,
                                    String sortOrder, String sortBy) {
         String authHeader=extractToken(request);
         logger.info("Sending request for fetching defects to errorLogin-service");
-        PaginationResponse<Object> response = webClientBuilder.build().get()
+        return webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicleDefect/getAll",uriBuilder ->
                         uriBuilder
                                 .queryParam("page",page)
@@ -121,11 +123,11 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                 .headers(h -> h.setBearerAuth(authHeader))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {})
-                .block();
-        logger.info("Defects successfully fetched from errorLogin-service.");
-        if(response!=null)
-            logger.info("Page: {} Size: {}, Total:{}",page,size,response.getPageable().getTotalElements());
-        return response;
+                        .doOnSuccess(response->{
+                            logger.info("Defects successfully fetched from errorLogin-service.");
+                            if(response!=null)
+                                logger.info("Page: {} Size: {}, Total:{}",page,size,response.getPageable().getTotalElements());
+                        });
     }
 
     /**
@@ -145,7 +147,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                            int height,
                            String colorHex,
                            boolean processed) {
-
         String token=authHeader.substring(7);
         ImageDTO imageDTO= webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicleDefect/get/image/{defectId}",defectId)

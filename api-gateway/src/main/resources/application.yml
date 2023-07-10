@@ -69,6 +69,10 @@ spring:
           uri: lb://terminal-service
           predicates:
             - Path=/terminal/**
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: ""
         - id:  verification-authorization-service
           uri: lb://verification-authorization-service
           predicates:

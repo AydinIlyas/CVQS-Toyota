@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,15 +43,22 @@ class ErrorControllerTest {
         List<Object> content= Collections.emptyList();
         CustomPageable pageable=new CustomPageable(page,size,2,3);
         PaginationResponse<Object> pageMock=new PaginationResponse<>(content,pageable);
+        Mono<PaginationResponse<Object>> monoPage=Mono.just(pageMock);
         //when
         when(errorListingService.getVehicles(request,page,size,sortBy,sortOrder,model
-                ,vin,yearOfProduction,transmissionType,engineType,color)).thenReturn(pageMock);
-        PaginationResponse<Object> response=errorController.getAllVehiclesFiltered(request,page,size,sortBy,sortOrder,model
+                ,vin,yearOfProduction,transmissionType,engineType,color)).thenReturn(monoPage);
+        Mono<PaginationResponse<Object>> responseMono=errorController.getAllVehiclesFiltered(request,page,size,sortBy,sortOrder,model
                 ,vin,yearOfProduction,transmissionType,engineType,color);
 
         //then
-        assertNotNull(response);
-        assertEquals(pageMock,response);
+        StepVerifier.create(responseMono)
+                .expectNextMatches(response-> {
+                    assertNotNull(response);
+                    assertEquals(pageMock,response);
+                    return true;
+                })
+                .verifyComplete();
+
 
     }
 
@@ -69,14 +78,20 @@ class ErrorControllerTest {
         List<Object> content= Collections.emptyList();
         CustomPageable pageable=new CustomPageable(page,size,2,3);
         PaginationResponse<Object> pageMock=new PaginationResponse<>(content,pageable);
+        Mono<PaginationResponse<Object>> monoPage=Mono.just(pageMock);
         //when
         when(errorListingService.getDefects(request,page,size,type
-                ,state,reportTime,reportedBy,vin,sortOrder,sortBy)).thenReturn(pageMock);
-        PaginationResponse<Object> response=errorController.getAllDefectsFiltered(request,page,size,type
+                ,state,reportTime,reportedBy,vin,sortOrder,sortBy)).thenReturn(monoPage);
+        Mono<PaginationResponse<Object>> responseMono=errorController.getAllDefectsFiltered(request,page,size,type
                 ,state,reportTime,reportedBy,vin,sortOrder,sortBy);
 
         //then
-        assertNotNull(response);
-        assertEquals(pageMock,response);
+        StepVerifier.create(responseMono)
+                .expectNextMatches(response-> {
+                    assertNotNull(response);
+                    assertEquals(pageMock,response);
+                    return true;
+                })
+                .verifyComplete();
     }
 }

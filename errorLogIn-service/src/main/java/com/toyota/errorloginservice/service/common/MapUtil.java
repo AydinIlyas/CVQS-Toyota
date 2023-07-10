@@ -19,13 +19,11 @@ public class MapUtil {
     }
 
         /**
-     * Converts ttVehicle to ttVehicleResponse.
-     *
-     * @param ttVehicle Vehicle object which will be converted to Response
-     * @return TTVehicleResponse
+     * Converts ttVehicle to ttVehicleDTO.
+     * @param ttVehicle Vehicle object which will be converted to DTO
+     * @return TTVehicleDTO
      */
     public TTVehicleDTO convertToDTO(TTVehicle ttVehicle) {
-        if(ttVehicle==null) return null;
         return modelMapper.map(ttVehicle, TTVehicleDTO.class);
     }
     public TTVehicleDTO convertVehicleWithAllToDTO(TTVehicle ttVehicle)

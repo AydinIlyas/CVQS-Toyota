@@ -21,7 +21,6 @@ public class Terminal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String depName;
-    @Column(unique = true)
     private String depCode;
     private String shopCode;
 

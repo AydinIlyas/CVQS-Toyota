@@ -3,6 +3,7 @@ package com.toyota.terminalservice.service.impl;
 import com.toyota.terminalservice.dao.TerminalRepository;
 import com.toyota.terminalservice.domain.Terminal;
 import com.toyota.terminalservice.dto.TerminalDTO;
+import com.toyota.terminalservice.exception.TerminalAlreadyExistsException;
 import com.toyota.terminalservice.exception.TerminalNotFoundException;
 import com.toyota.terminalservice.service.abstracts.TerminalService;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +72,12 @@ public class TerminalServiceImpl implements TerminalService {
     public void createTerminal(TerminalDTO terminalDTO)
     {
         logger.info("Creating Terminal. Department name: {}",terminalDTO.getDepName());
+        if(terminalRepository.existsByDepCodeAndDeletedIsFalse(terminalDTO.getDepCode()))
+        {
+            logger.warn("Failed creating terminal due to conflict of depCode. Department Code: {}"
+                    ,terminalDTO.getDepCode());
+            throw new TerminalAlreadyExistsException("Terminal already exists. Department Code: "+terminalDTO.getDepCode());
+        }
         Terminal terminal=convertToTerminal(terminalDTO);
         terminal.setActive(true);
         Terminal saved=terminalRepository.save(terminal);
@@ -84,7 +91,7 @@ public class TerminalServiceImpl implements TerminalService {
     @Override
     public void activateTerminal(String depCode) {
         logger.info("Activating terminal. Department Code: {}",depCode);
-        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
+        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCodeAndDeletedIsFalse(depCode);
         if(optionalTerminal.isPresent())
         {
             Terminal terminal=optionalTerminal.get();
@@ -107,7 +114,7 @@ public class TerminalServiceImpl implements TerminalService {
     @Override
     public void disableTerminal(String depCode) {
         logger.info("Disabling terminal. Department Code: {}",depCode);
-        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
+        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCodeAndDeletedIsFalse(depCode);
 
         if(optionalTerminal.isPresent())
         {
@@ -129,7 +136,7 @@ public class TerminalServiceImpl implements TerminalService {
     @Override
     public void delete(String depCode) {
         logger.info("Deleting terminal. Department Code: {}",depCode);
-        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCode(depCode);
+        Optional<Terminal> optionalTerminal=terminalRepository.findByDepCodeAndDeletedIsFalse(depCode);
         if(optionalTerminal.isPresent())
         {
             Terminal terminal=optionalTerminal.get();

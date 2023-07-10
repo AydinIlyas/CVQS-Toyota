@@ -3,10 +3,13 @@ package com.toyota.errorloginservice.service.impl;
 import com.toyota.errorloginservice.dao.TTVehicleDefectRepository;
 import com.toyota.errorloginservice.dao.TTVehicleRepository;
 import com.toyota.errorloginservice.domain.*;
+import com.toyota.errorloginservice.dto.ImageDTO;
 import com.toyota.errorloginservice.dto.PaginationResponse;
 import com.toyota.errorloginservice.dto.TTVehicleDefectDTO;
 import com.toyota.errorloginservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorloginservice.exception.EntityNotFoundException;
+import com.toyota.errorloginservice.exception.ImageNotFoundException;
+import com.toyota.errorloginservice.exception.ImageProcessingException;
 import com.toyota.errorloginservice.service.common.MapUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +19,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -186,5 +191,133 @@ class TTVehicleDefectServiceImplTest {
 
         //then
         assertThrows(EntityNotFoundException.class,()->ttVehicleDefectService.deleteDefect(defectId));
+    }
+
+    @Test
+    void addImage() throws IOException {
+        //given
+        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",State.MAJOR,LocalDateTime.now()
+                ,"User",null,false,null,new ArrayList<>());
+        MultipartFile imageMock=Mockito.mock(MultipartFile.class);
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.of(defect));
+        when(defectRepository.save(any(TTVehicleDefect.class))).thenAnswer(
+                invocation -> invocation.getArgument(0)
+        );
+        when(imageMock.getBytes()).thenReturn(new byte[1]);
+        ttVehicleDefectService.addImage(defectId,imageMock);
+
+        //then
+        assertNotNull(defect.getDefectImage());
+    }
+
+    @Test
+    void addImage_ImageNotFound() throws IOException {
+        //given
+        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",State.MAJOR,LocalDateTime.now()
+                ,"User",null,false,null,new ArrayList<>());
+        MultipartFile imageMock=Mockito.mock(MultipartFile.class);
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.of(defect));
+        when(imageMock.getBytes()).thenReturn(new byte[0]);
+
+        //then
+        assertThrows(ImageNotFoundException.class,()->ttVehicleDefectService.addImage(defectId,imageMock));
+    }
+
+    @Test
+    void addImage_DefectNotFound()  {
+        //given
+        MultipartFile imageMock=Mockito.mock(MultipartFile.class);
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(EntityNotFoundException.class,()->ttVehicleDefectService.addImage(defectId,imageMock));
+    }
+
+    @Test
+    void addImage_IOException() throws IOException {
+        //given
+        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",State.MAJOR,LocalDateTime.now()
+                ,"User",null,false,null,new ArrayList<>());
+        MultipartFile imageMock=Mockito.mock(MultipartFile.class);
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.of(defect));
+        when(imageMock.getBytes()).thenThrow(new IOException());
+
+        //then
+        assertThrows(ImageProcessingException.class,()->ttVehicleDefectService.addImage(defectId,imageMock));
+    }
+    @Test
+    void getImage_Success()
+    {
+        //given
+        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",State.MAJOR,LocalDateTime.now()
+                ,"User",new byte[2],false,null,List.of(new TTVehicleDefectLocation()));
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.of(defect));
+        ImageDTO result=ttVehicleDefectService.getImage(defectId);
+
+        //then
+        assertEquals(defect.getDefectImage(),result.getImage());
+        assertEquals(defect.getLocation().size(),result.getLocationDTO().size());
+    }
+
+    @Test
+    void getImage_DefectNotFound()
+    {
+        //given
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(EntityNotFoundException.class,()->ttVehicleDefectService.getImage(defectId));
+    }
+
+    @Test
+    void getImage_ImageNotFound()
+    {
+        //given
+        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",State.MAJOR,LocalDateTime.now()
+                ,"User",null,false,null,List.of(new TTVehicleDefectLocation()));
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.of(defect));
+        ImageDTO imageDTO=ttVehicleDefectService.getImage(defectId);
+        //then
+        assertNull(imageDTO);
+    }
+
+    @Test
+    void removeImage_Success()
+    {
+        //given
+        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",State.MAJOR,LocalDateTime.now()
+                ,"User",new byte[2],false,null,List.of(new TTVehicleDefectLocation()));
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.of(defect));
+        ttVehicleDefectService.removeImage(defectId);
+
+        //then
+        assertNull(defect.getDefectImage());
+    }
+    @Test
+    void removeImage_DefectNotFound()
+    {
+        //given
+        Long defectId=1L;
+        //when
+        when(defectRepository.findById(any())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(EntityNotFoundException.class,()->ttVehicleDefectService.removeImage(defectId));
     }
 }
