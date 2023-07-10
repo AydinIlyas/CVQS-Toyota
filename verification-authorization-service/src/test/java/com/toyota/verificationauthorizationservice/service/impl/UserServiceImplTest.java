@@ -53,6 +53,7 @@ class UserServiceImplTest {
         Role existingRole=new Role();
 
         //when
+        when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("...");
         when(roleRepository.findByName(anyString())).thenReturn(Optional.of(existingRole));
         when(userRepository.save(any(User.class))).thenAnswer(
@@ -62,6 +63,18 @@ class UserServiceImplTest {
 
         //then
         assertTrue(success);
+
+    }
+    @Test
+    void register_UserAlreadyExists() {
+        //given
+        RegisterRequest registerRequest=new RegisterRequest("Ahmet","test",Set.of(""));
+
+        //when
+        when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(true);
+
+        //then
+        assertThrows(UsernameTakenException.class,()->userService.register(registerRequest));
 
     }
     @Test
@@ -124,8 +137,6 @@ class UserServiceImplTest {
     void verify_success() {
         //given
         HttpServletRequest request=mock(HttpServletRequest.class);
-        String permission1="UserManagement";
-        String permission2="ErrorLogin";
         User user=new User(1L,"username","password",false,null,List.of(new Token()));
         Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user)),
                 new Role(1L,"Operator","", List.of(user)));
@@ -291,8 +302,6 @@ class UserServiceImplTest {
     void verifyAndUsername() {
         //given
         HttpServletRequest request=mock(HttpServletRequest.class);
-        String permission1="UserManagement";
-        String permission2="ErrorLogin";
         User user=new User(1L,"username","password",false,null,List.of(new Token()));
 
         Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user)),
@@ -415,5 +424,42 @@ class UserServiceImplTest {
         //then
         assertThrows(RoleNotFoundException.class,()->userService.removeRole(username,roleStr));
         assertEquals(1,user.getRoles().size());
+    }
+
+    @Test
+    void logout() {
+        //given
+        String jwtToken="Bearer token";
+        User user=new User();
+        Token token=new Token("id",false,false,user);
+        //when
+        when(jwtService.extractTokenId(anyString())).thenReturn("jti");
+        when(tokenRepository.findById(anyString())).thenReturn(Optional.of(token));
+
+        userService.logout(jwtToken);
+
+        //then
+        assertTrue(token.isExpired());
+        assertTrue(token.isRevoked());
+    }
+    @Test
+    void logout_NoUserForProvidedToken() {
+        //given
+        String jwtToken="Bearer token";
+        //when
+        when(jwtService.extractTokenId(anyString())).thenReturn("jti");
+        when(tokenRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(UserNotFoundException.class,()->userService.logout(jwtToken));
+    }
+    @Test
+    void logout_InvalidBearer() {
+        //given
+        String jwtToken="";
+        //when
+
+        //then
+        assertThrows(InvalidBearerToken.class,()->userService.logout(jwtToken));
     }
 }

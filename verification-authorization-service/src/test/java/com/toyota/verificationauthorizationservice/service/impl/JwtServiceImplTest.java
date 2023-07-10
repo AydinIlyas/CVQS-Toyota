@@ -4,11 +4,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+
 @ExtendWith(MockitoExtension.class)
 class JwtServiceImplTest {
 
@@ -59,4 +64,22 @@ class JwtServiceImplTest {
         assertTrue(valid);
     }
 
+    @Test
+    void extractTokenId() {
+        //given
+        MockedStatic<UUID> mockedStatic=Mockito.mockStatic(UUID.class);
+        String jti="1234a";
+        UUID uuid=mock(UUID.class);
+        Mockito.when(UUID.randomUUID())
+                .thenReturn(uuid);
+        Mockito.when(uuid.toString()).thenReturn(jti);
+        String token=jwtService.generateToken(userDetails);
+
+        //when
+        String result=jwtService.extractTokenId(token);
+
+        //then
+        assertEquals(jti,result);
+        mockedStatic.close();
+    }
 }

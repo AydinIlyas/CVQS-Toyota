@@ -159,4 +159,16 @@ class UserControllerTest {
         //then
         assertTrue(result);
     }
+
+    @Test
+    void logout() {
+        //given
+        String token="Bearer token";
+
+        //when
+        ResponseEntity<Entity> response=userController.logout(token);
+
+        //then
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+    }
 }
