@@ -3,6 +3,7 @@ package com.toyota.terminalservice.service.impl;
 import com.toyota.terminalservice.dao.TerminalRepository;
 import com.toyota.terminalservice.domain.Terminal;
 import com.toyota.terminalservice.dto.TerminalDTO;
+import com.toyota.terminalservice.exception.TerminalAlreadyExistsException;
 import com.toyota.terminalservice.exception.TerminalNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class TerminalServiceImplTest {
     }
 
     @Test
-    void getTerminals() {
+    void getTerminals_ASC() {
         //given
         int page=0;
         int size=5;
@@ -57,13 +58,40 @@ class TerminalServiceImplTest {
         assertEquals(size,result.getPageable().getPageSize());
         assertEquals(TerminalDTO.class,result.getContent().get(0).getClass());
     }
+    @Test
+    void getTerminals_DESC() {
+        //given
+        int page=0;
+        int size=5;
+        String depName="depName";
+        String depCode="depCode";
+        String shopCode="shopCode";
+        boolean isActive=true;
+        String sortBy="depName";
+        String sortDirection="DESC";
+        List<Terminal> content=List.of(new Terminal());
+        Sort.Order sort=new Sort.Order(Sort.Direction.ASC,sortBy);
+        Pageable pageable= PageRequest.of(page,size,Sort.by(sort));
+        Page<Terminal> pageMock=new PageImpl<>(content,pageable,1);
+
+        //when
+        when(terminalRepository.getTerminalsFiltered(anyString(),anyString(),anyString(),anyBoolean(),any()))
+                .thenReturn(pageMock);
+        Page<TerminalDTO> result=terminalService.getTerminals(page,size,depName,depCode,shopCode,isActive,sortBy
+                ,sortDirection);
+
+        //then
+        assertEquals(page,result.getPageable().getPageNumber());
+        assertEquals(size,result.getPageable().getPageSize());
+        assertEquals(TerminalDTO.class,result.getContent().get(0).getClass());
+    }
 
     @Test
     void createTerminal() {
         //given
-        TerminalDTO terminalDTO=new TerminalDTO();
-
+        TerminalDTO terminalDTO=new TerminalDTO("A","B","C");
         //when
+        when(terminalRepository.existsByDepCodeAndDeletedIsFalse(anyString())).thenReturn(false);
         when(terminalRepository.save(any(Terminal.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         terminalService.createTerminal(terminalDTO);
@@ -73,12 +101,23 @@ class TerminalServiceImplTest {
     }
 
     @Test
+    void createTerminal_AlreadyExists() {
+        //given
+        TerminalDTO terminalDTO=new TerminalDTO();
+        terminalDTO.setDepCode("A");
+        //when
+        when(terminalRepository.existsByDepCodeAndDeletedIsFalse(anyString())).thenReturn(true);
+        //then
+        assertThrows(TerminalAlreadyExistsException.class,()->terminalService.createTerminal(terminalDTO));
+
+    }
+    @Test
     void activateTerminal() {
         //given
         String depCode="1";
         Terminal terminal=new Terminal();
         //when
-        when(terminalRepository.findByDepCode(anyString())).thenReturn(Optional.of(terminal));
+        when(terminalRepository.findByDepCodeAndDeletedIsFalse(anyString())).thenReturn(Optional.of(terminal));
         when(terminalRepository.save(any(Terminal.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         terminalService.activateTerminal(depCode);
@@ -91,7 +130,7 @@ class TerminalServiceImplTest {
     @Test
     void activateTerminal_NotFound() {
         //when
-        when(terminalRepository.findByDepCode(anyString())).thenReturn(Optional.empty());
+        when(terminalRepository.findByDepCodeAndDeletedIsFalse(anyString())).thenReturn(Optional.empty());
 
         //then
         assertThrows(TerminalNotFoundException.class,()->terminalService.activateTerminal(anyString()));
@@ -105,7 +144,7 @@ class TerminalServiceImplTest {
         Terminal terminal=new Terminal();
         terminal.setActive(true);
         //when
-        when(terminalRepository.findByDepCode(anyString())).thenReturn(Optional.of(terminal));
+        when(terminalRepository.findByDepCodeAndDeletedIsFalse(anyString())).thenReturn(Optional.of(terminal));
         when(terminalRepository.save(any(Terminal.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         terminalService.disableTerminal(depCode);
@@ -117,7 +156,7 @@ class TerminalServiceImplTest {
     @Test
     void disableTerminal_NotFound() {
         //when
-        when(terminalRepository.findByDepCode(anyString())).thenReturn(Optional.empty());
+        when(terminalRepository.findByDepCodeAndDeletedIsFalse(anyString())).thenReturn(Optional.empty());
 
         //then
         assertThrows(TerminalNotFoundException.class,()->terminalService.disableTerminal(anyString()));
@@ -129,7 +168,7 @@ class TerminalServiceImplTest {
         String depCode="1";
         Terminal terminal=new Terminal();
         //when
-        when(terminalRepository.findByDepCode(anyString())).thenReturn(Optional.of(terminal));
+        when(terminalRepository.findByDepCodeAndDeletedIsFalse(anyString())).thenReturn(Optional.of(terminal));
         when(terminalRepository.save(any(Terminal.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         terminalService.delete(depCode);
@@ -141,7 +180,7 @@ class TerminalServiceImplTest {
     @Test
     void delete_NotFound() {
         //when
-        when(terminalRepository.findByDepCode(anyString())).thenReturn(Optional.empty());
+        when(terminalRepository.findByDepCodeAndDeletedIsFalse(anyString())).thenReturn(Optional.empty());
         //then
 
         assertThrows(TerminalNotFoundException.class
