@@ -1,12 +1,16 @@
 package com.toyota.errorlistingservice.service.impl;
 
 import com.toyota.errorlistingservice.dto.CustomPageable;
+import com.toyota.errorlistingservice.dto.ImageDTO;
 import com.toyota.errorlistingservice.dto.PaginationResponse;
+import com.toyota.errorlistingservice.dto.TTVehicleDefectLocationDTO;
+import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
@@ -15,13 +19,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -145,5 +153,72 @@ class ErrorListingServiceImplTest {
                 })
                 .verifyComplete();
 
+    }
+
+    @Test
+    void getImage() throws IOException {
+        //given
+        ImageDTO imageDTO=new ImageDTO(new byte[10],List.of(new TTVehicleDefectLocationDTO(1L,100,120),
+                new TTVehicleDefectLocationDTO(2L,140,30)));
+        //when
+        when(webClientBuilder.build()).thenReturn(webClient);
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec
+                .uri(anyString(),any(Object.class))).thenReturn(requestHeadersSpec);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth("Token");
+        doAnswer(invocation -> {
+            Consumer<HttpHeaders> headersConsumer = invocation.getArgument(0);
+            headersConsumer.accept(headers);
+            return requestHeadersSpec;
+        }).when(requestHeadersSpec).headers(any(Consumer.class));
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
+        Mono<ImageDTO> mono=Mono.just(imageDTO);
+        Mono<ImageDTO> monoSpy=Mockito.spy(mono);
+        when(responseSpec.bodyToMono(ImageDTO.class))
+                .thenReturn(monoSpy);
+
+        MockedStatic<ImageIO> mockedStatic=mockStatic(ImageIO.class);
+        BufferedImage buffImageMock=mock(BufferedImage.class);
+        when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(buffImageMock);
+        Graphics2D mockGraphics2D=mock(Graphics2D.class);
+        when(buffImageMock.getGraphics()).thenReturn(mockGraphics2D);
+        errorListingService.getImage("Bearer Token",1L,"png",10,10,"#FF0000",
+                true);
+        //then
+        verify(mockGraphics2D,times(2)).fillRect(anyInt(),anyInt(),anyInt(),anyInt());
+        mockedStatic.close();
+    }
+    @Test
+    void getImage_ImageProcessingException() throws IOException {
+        //given
+        ImageDTO imageDTO=new ImageDTO(new byte[10],List.of(new TTVehicleDefectLocationDTO(1L,100,120),
+                new TTVehicleDefectLocationDTO(2L,140,30)));
+        //when
+        when(webClientBuilder.build()).thenReturn(webClient);
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec
+                .uri(anyString(),any(Object.class))).thenReturn(requestHeadersSpec);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth("Token");
+        doAnswer(invocation -> {
+            Consumer<HttpHeaders> headersConsumer = invocation.getArgument(0);
+            headersConsumer.accept(headers);
+            return requestHeadersSpec;
+        }).when(requestHeadersSpec).headers(any(Consumer.class));
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
+        Mono<ImageDTO> mono=Mono.just(imageDTO);
+        Mono<ImageDTO> monoSpy=Mockito.spy(mono);
+        when(responseSpec.bodyToMono(ImageDTO.class))
+                .thenReturn(monoSpy);
+
+        MockedStatic<ImageIO> mockedStatic=mockStatic(ImageIO.class);
+        when(ImageIO.read(any(ByteArrayInputStream.class))).thenThrow(new IOException());
+        //then
+        assertThrows(ImageProcessingException.class,()->errorListingService.getImage("Bearer Token",
+                1L,"png",10,10,"#FF0000", true));
+        mockedStatic.close();
     }
 }
