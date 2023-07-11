@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +22,8 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
     @Mock
@@ -128,24 +129,12 @@ class UserControllerTest {
     @Test
     void verify() {
         //given
-        HttpServletRequest servletRequest=mock(HttpServletRequest.class);
-        Set<String> set=new HashSet<>();
-        //when
-        when(userService.verify(any())).thenReturn(set);
-        Set<String> result=userController.verify(servletRequest);
-        //then
-        assertEquals(set,result);
-    }
-
-    @Test
-    void verifyAndUsername() {
-        //given
-        HttpServletRequest servletRequest=mock(HttpServletRequest.class);
         Map<String,String> map=new HashMap<>();
         //when
-        when(userService.verifyAndUsername(any())).thenReturn(map);
-        Map<String,String> result=userController.verifyAndUsername(servletRequest);
+        when(userService.verify()).thenReturn(map);
+        Map<String,String> result=userController.verify();
         //then
+        Mockito.verify(userService).verify();
         assertEquals(map,result);
     }
 

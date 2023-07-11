@@ -17,9 +17,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.*;
@@ -131,40 +135,6 @@ class UserServiceImplTest {
         //then
         assertThrows(InvalidAuthenticationException.class,
                 ()->userService.login(authenticationRequest));
-    }
-
-    @Test
-    void verify_success() {
-        //given
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        User user=new User(1L,"username","password",false,null,List.of(new Token()));
-        Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user)),
-                new Role(1L,"Operator","", List.of(user)));
-        user.setRoles(roles);
-        //when
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-        when(jwtService.extractUsername(anyString())).thenReturn("username");
-        when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.of(user));
-        Set<String> result=userService.verify(request);
-
-        //then
-        assertTrue(result.contains("Operator"));
-        assertTrue(result.contains("Admin"));
-
-    }
-
-    @Test
-    void verify_fail() {
-        //given
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        //when
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-        when(jwtService.extractUsername(anyString())).thenReturn("username");
-        when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.empty());
-        Set<String> result=userService.verify(request);
-
-        //then
-        assertNull(result);
     }
 
     @Test
@@ -299,36 +269,24 @@ class UserServiceImplTest {
         assertFalse(success);
     }
     @Test
-    void verifyAndUsername() {
+    void verify() {
         //given
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        User user=new User(1L,"username","password",false,null,List.of(new Token()));
-
-        Set<Role> roles=Set.of(new Role(1L,"Admin","", List.of(user)),
-                new Role(1L,"Operator","", List.of(user)));
-        user.setRoles(roles);
+        String username="username";
+        MockedStatic<SecurityContextHolder> securityContextHolder=mockStatic(SecurityContextHolder.class);
+        SecurityContext securityContext=mock(SecurityContext.class);
+        Authentication authentication=mock(Authentication.class);
         //when
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-        when(jwtService.extractUsername(anyString())).thenReturn("username");
-        when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.of(user));
-        Map<String,String> result=userService.verifyAndUsername(request);
+        when(SecurityContextHolder.getContext()).thenReturn(securityContext);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getName()).thenReturn(username);
+        when(authentication.getAuthorities()).thenReturn(new ArrayList<>());
+        Map<String,String> result=userService.verify();
 
         //then
         assertTrue(result.containsKey("Username"));
-        assertEquals(user.getUsername(),result.get("Username"));
-    }
-    @Test
-    void verifyAndUsername_UserNotFound() {
-        //given
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        //when
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-        when(jwtService.extractUsername(anyString())).thenReturn("username");
-        when(userRepository.findByUsernameAndDeletedIsFalse(anyString())).thenReturn(Optional.empty());
-        Map<String,String> result=userService.verifyAndUsername(request);
-
-        //then
-        assertNull(result);
+        assertEquals(username,result.get("Username"));
+        assertEquals(1,result.size());
+        securityContextHolder.close();
     }
 
     @Test

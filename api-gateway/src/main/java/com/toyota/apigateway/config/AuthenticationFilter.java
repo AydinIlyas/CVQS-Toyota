@@ -42,7 +42,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         (org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
                 assert route != null;
                 String requiredRole=route.getMetadata().get("requiredRole").toString();
-                String verificationUrl = "http://verification-authorization-service/auth/verifyAndUsername";
+                String verificationUrl = "http://verification-authorization-service/auth/verify";
 
                 logger.debug("Verifying user and role: {}",requiredRole);
 

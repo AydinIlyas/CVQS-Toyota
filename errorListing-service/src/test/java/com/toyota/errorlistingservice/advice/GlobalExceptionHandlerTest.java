@@ -2,6 +2,7 @@ package com.toyota.errorlistingservice.advice;
 
 import com.toyota.errorlistingservice.exceptions.BearerTokenNotFoundException;
 import com.toyota.errorlistingservice.exceptions.DefectNotFoundException;
+import com.toyota.errorlistingservice.exceptions.ImageNotFoundException;
 import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
@@ -63,6 +64,27 @@ class GlobalExceptionHandlerTest {
         Assertions.assertEquals(path,errorResponse.getPath());
     }
 
+    @Test
+    void handleImageNotFoundException() {
+        //given
+        String message="Image not found";
+        ImageNotFoundException imageNotFoundException=new ImageNotFoundException(message);
+
+        //when
+        String path="/test";
+        HttpServletRequest request= mock(HttpServletRequest.class);
+        Mockito.when(request.getRequestURI()).thenReturn(path);
+        ResponseEntity<Object> response=globalExceptionHandler.handleImageNotFoundException
+                (imageNotFoundException,request);
+        //then
+        ErrorResponse errorResponse=(ErrorResponse) response.getBody();
+        Assertions.assertNotNull(errorResponse);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND.name(),errorResponse.getError());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND.value(),errorResponse.getStatus());
+        Assertions.assertEquals(message,errorResponse.getMessage());
+        Assertions.assertEquals(path,errorResponse.getPath());
+
+    }
     @Test
     void handleImageProcessingException() {
         //given

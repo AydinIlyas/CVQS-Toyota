@@ -6,6 +6,7 @@ import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorlistingservice.exceptions.BearerTokenNotFoundException;
 import com.toyota.errorlistingservice.exceptions.DefectNotFoundException;
+import com.toyota.errorlistingservice.exceptions.ImageNotFoundException;
 import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
 import com.toyota.errorlistingservice.service.abstracts.ErrorListingService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -161,7 +162,11 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                 })
                 .bodyToMono(ImageDTO.class)
                 .block();
-
+        if(imageDTO==null)
+        {
+            logger.warn("Defect has no Image! Defect ID: {}",defectId);
+            throw new ImageNotFoundException("Defect has no Image! Defect ID: "+defectId);
+        }
         if (!processed)
             return imageDTO.getImage();
         try {

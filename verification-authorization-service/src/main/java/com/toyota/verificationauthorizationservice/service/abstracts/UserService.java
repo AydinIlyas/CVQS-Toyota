@@ -7,7 +7,6 @@ import com.toyota.verificationauthorizationservice.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Interface for UserService
@@ -15,7 +14,6 @@ import java.util.Set;
 public interface UserService {
     Boolean register(RegisterRequest request);
     AuthenticationResponse login(AuthenticationRequest request);
-    Set<String> verify(HttpServletRequest request);
     void logout(String jwtToken);
 
     Boolean delete(String username);
@@ -24,7 +22,7 @@ public interface UserService {
 
     boolean changePassword(HttpServletRequest request,PasswordsDTO passwordsDTO);
 
-    Map<String, String> verifyAndUsername(HttpServletRequest request);
+    Map<String, String> verify();
 
     boolean addRole(String username,String role);
 

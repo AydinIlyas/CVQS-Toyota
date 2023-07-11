@@ -2,6 +2,7 @@ package com.toyota.errorlistingservice.advice;
 
 import com.toyota.errorlistingservice.exceptions.BearerTokenNotFoundException;
 import com.toyota.errorlistingservice.exceptions.DefectNotFoundException;
+import com.toyota.errorlistingservice.exceptions.ImageNotFoundException;
 import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.NOT_FOUND);
     }
-
+    /**
+     * Handles exception ImageNotFoundException
+     * @param ex ImageNotFoundException
+     * @return ResponseEntity with error response
+     */
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<Object> handleImageNotFoundException(ImageNotFoundException ex,
+                                                               HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
     /**
      * Handles ImageProcessingException by returning a ResponseEntity with an appropriate error response.
      * @param e ImageProcessingException thrown when defect does not exist.

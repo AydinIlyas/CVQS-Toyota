@@ -91,23 +91,11 @@ public class UserController {
     /**
      * Verifies user bearer token
      *
-     * @param request Request
-     * @return Set of permissions of the user
-     */
-    @GetMapping("/verify")
-    public Set<String> verify(HttpServletRequest request) {
-        return userService.verify(request);
-    }
-
-    /**
-     * Verifies user bearer token
-     *
-     * @param request Request
      * @return Map of permissions and username
      */
-    @GetMapping("/verifyAndUsername")
-    public Map<String, String> verifyAndUsername(HttpServletRequest request) {
-        return userService.verifyAndUsername(request);
+    @GetMapping("/verify")
+    public Map<String, String> verify() {
+        return userService.verify();
     }
 
 
