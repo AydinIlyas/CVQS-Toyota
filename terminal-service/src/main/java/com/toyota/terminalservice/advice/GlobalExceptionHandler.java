@@ -2,9 +2,8 @@ package com.toyota.terminalservice.advice;
 
 import com.toyota.terminalservice.exception.TerminalAlreadyExistsException;
 import com.toyota.terminalservice.exception.TerminalNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -22,7 +21,6 @@ import java.util.List;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-    private final Logger logger= LogManager.getLogger(GlobalExceptionHandler.class);
 
     /**
      * Handles TerminalNotFoundException by returning a ResponseEntity with an appropriate error response.
@@ -30,9 +28,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(TerminalNotFoundException.class)
-    public ResponseEntity<Object> handleTerminalNotFoundException(TerminalNotFoundException ex)
+    public ResponseEntity<Object> handleTerminalNotFoundException(TerminalNotFoundException ex,
+                                                                  HttpServletRequest request)
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.NOT_FOUND,ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.NOT_FOUND);
     }
     /**
@@ -41,9 +41,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(TerminalAlreadyExistsException.class)
-    public ResponseEntity<Object> handleTerminalAlreadyExistsException(TerminalAlreadyExistsException ex)
+    public ResponseEntity<Object> handleTerminalAlreadyExistsException(TerminalAlreadyExistsException ex,
+                                                                       HttpServletRequest request)
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.CONFLICT,ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.CONFLICT);
     }
     /**
@@ -60,10 +62,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   @NonNull HttpHeaders headers,
                                                                   @NonNull HttpStatusCode status,
                                                                   @NonNull WebRequest request) {
+        ServletWebRequest servletWebRequest=(ServletWebRequest) request;
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
         errorResponse.addValidationError(fieldErrors);
-
+        errorResponse.setPath(servletWebRequest.getRequest().getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -81,9 +84,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                @NonNull HttpStatusCode status,
                                                                @NonNull WebRequest request) {
         ServletWebRequest servletWebRequest=(ServletWebRequest) request;
-        logger.info("{} to {}",servletWebRequest.getHttpMethod(),servletWebRequest.getRequest().getServletPath());
-
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,"Malformed Json Request",ex);
+        errorResponse.setPath(servletWebRequest.getRequest().getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
 

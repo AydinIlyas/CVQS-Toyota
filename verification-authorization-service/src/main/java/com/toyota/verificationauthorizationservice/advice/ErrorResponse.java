@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,7 +35,6 @@ public class ErrorResponse {
         this.status=status.value();
         this.error=status.name();
         this.message=message;
-        this.path=getRequestPath();
     }
     public ErrorResponse(HttpStatus status,String message,Exception ex)
     {
@@ -45,7 +43,6 @@ public class ErrorResponse {
         this.error=status.name();
         this.message=message;
         this.debugMessage=ex.getLocalizedMessage();
-        this.path=getRequestPath();
     }
     public void addValidationError(List<FieldError> errors)
     {
@@ -60,13 +57,5 @@ public class ErrorResponse {
             validationError.setRejectedValue(error.getRejectedValue());
             subErrors.add(validationError);
         }
-    }
-
-    /**
-     * @return Request path
-     */
-    private String getRequestPath() {
-        return ((ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes())
-                .getRequest().getRequestURI();
     }
 }

@@ -1,5 +1,6 @@
 package com.toyota.verificationauthorizationservice.service.impl;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,6 +9,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.UUID;
 
@@ -21,6 +23,12 @@ class JwtServiceImplTest {
     private UserDetails userDetails;
     @InjectMocks
     private JwtServiceImpl jwtService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(jwtService,"expirationDuration",3600000);
+    }
+
     @Test
     void extractUsername() {
         //given

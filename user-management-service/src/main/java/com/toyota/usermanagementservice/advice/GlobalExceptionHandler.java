@@ -1,9 +1,8 @@
 package com.toyota.usermanagementservice.advice;
 
 import com.toyota.usermanagementservice.exception.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -24,8 +23,6 @@ import java.util.List;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
-    private final Logger logger= LogManager.getLogger(GlobalExceptionHandler.class);
     /**
      * Handles UserNotFoundException by returning a ResponseEntity with an appropriate error response.
      *
@@ -33,8 +30,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
+    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex, HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
     /**
@@ -44,8 +42,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(UnexpectedException.class)
-    public ResponseEntity<Object> handleUnexpectedException(UnexpectedException ex) {
+    public ResponseEntity<Object> handleUnexpectedException(UnexpectedException ex, HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(),ex);
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     /**
@@ -55,9 +54,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistsException ex,
+                                                                   HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     /**
@@ -66,9 +67,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(SingleRoleRemovalException.class)
-    public ResponseEntity<Object> handleSingleRoleRemovalException(SingleRoleRemovalException ex)
+    public ResponseEntity<Object> handleSingleRoleRemovalException(SingleRoleRemovalException ex,
+                                                                   HttpServletRequest request)
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
 
@@ -78,10 +81,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(RoleAlreadyExistsException.class)
-    public ResponseEntity<Object> handleRoleAlreadyExistsException(RoleAlreadyExistsException ex)
+    public ResponseEntity<Object> handleRoleAlreadyExistsException(RoleAlreadyExistsException ex,
+                                                                   HttpServletRequest request)
     {
-        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,ex.getMessage());
-        return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.CONFLICT,ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
+        return new ResponseEntity<>(errorResponse,HttpStatus.CONFLICT);
     }
 
     /**
@@ -90,15 +95,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with an ErrorResponse containing details of the error
      */
     @ExceptionHandler(RoleNotFoundException.class)
-    public ResponseEntity<Object> handleRoleNotFoundException(RoleNotFoundException ex)
+    public ResponseEntity<Object> handleRoleNotFoundException(RoleNotFoundException ex,
+                                                              HttpServletRequest request)
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(BearerTokenNotFoundException.class)
-    public ResponseEntity<Object> handleBearerTokenNotFoundException(BearerTokenNotFoundException ex)
+    public ResponseEntity<Object> handleBearerTokenNotFoundException(BearerTokenNotFoundException ex,
+                                                                     HttpServletRequest request)
     {
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.INTERNAL_SERVER_ERROR);
     }
     /**
@@ -115,8 +124,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   @NonNull HttpHeaders headers,
                                                                   @NonNull HttpStatusCode status,
                                                                   @NonNull WebRequest request) {
+        ServletWebRequest servletWebRequest=(ServletWebRequest) request;
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+        errorResponse.setPath(servletWebRequest.getRequest().getRequestURI());
         errorResponse.addValidationError(fieldErrors);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -136,9 +147,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                @NonNull HttpStatusCode status,
                                                                @NonNull WebRequest request) {
         ServletWebRequest servletWebRequest=(ServletWebRequest) request;
-        logger.info("{} to {}",servletWebRequest.getHttpMethod(),servletWebRequest.getRequest().getServletPath());
-
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,"Malformed Json Request",ex);
+        errorResponse.setPath(servletWebRequest.getRequest().getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
 }

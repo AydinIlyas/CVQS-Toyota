@@ -431,7 +431,8 @@ class UserServiceImplTest {
         //given
         String jwtToken="Bearer token";
         User user=new User();
-        Token token=new Token("id",false,false,user);
+        Date currentDate=new Date();
+        Token token=new Token("id",false,new Date(currentDate.getTime()+60000),user);
         //when
         when(jwtService.extractTokenId(anyString())).thenReturn("jti");
         when(tokenRepository.findById(anyString())).thenReturn(Optional.of(token));
@@ -439,7 +440,7 @@ class UserServiceImplTest {
         userService.logout(jwtToken);
 
         //then
-        assertTrue(token.isExpired());
+        assertTrue(token.getExpirationDate().after(new Date()));
         assertTrue(token.isRevoked());
     }
     @Test

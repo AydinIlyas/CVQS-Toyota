@@ -1,9 +1,8 @@
 package com.toyota.errorloginservice.advice;
 
 import com.toyota.errorloginservice.exception.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -25,16 +24,16 @@ import java.util.List;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final Logger logger= LogManager.getLogger(GlobalExceptionHandler.class);
     /**
      * Handles exception when entity not found
      * @param ex EntityNotFoundException
      * @return ResponseEntity with error response.
      */
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -43,8 +42,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with error response.
      */
     @ExceptionHandler(VehicleAlreadyExistsException.class)
-    public ResponseEntity<Object> handleVehicleAlreadyExistsException(VehicleAlreadyExistsException ex) {
+    public ResponseEntity<Object> handleVehicleAlreadyExistsException(VehicleAlreadyExistsException ex,
+                                                                      HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
@@ -54,8 +55,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with error response.
      */
     @ExceptionHandler(ImageProcessingException.class)
-    public ResponseEntity<Object> handleImageProcessingException(ImageProcessingException ex) {
+    public ResponseEntity<Object> handleImageProcessingException(ImageProcessingException ex,
+                                                                 HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -65,9 +68,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with error response
      */
     @ExceptionHandler(ImageNotFoundException.class)
-    public ResponseEntity<Object> handleImageNotFoundException(ImageNotFoundException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> handleImageNotFoundException(ImageNotFoundException ex,
+                                                               HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -76,8 +81,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @return ResponseEntity with error response
      */
     @ExceptionHandler(InvalidLocationException.class)
-    public ResponseEntity<Object> handleInvalidLocationException(InvalidLocationException ex) {
+    public ResponseEntity<Object> handleInvalidLocationException(InvalidLocationException ex,
+                                                                 HttpServletRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+        errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     /**
@@ -94,10 +101,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   @NonNull HttpHeaders headers,
                                                                   @NonNull HttpStatusCode status,
                                                                   @NonNull WebRequest request) {
+        ServletWebRequest servletWebRequest=(ServletWebRequest) request;
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
         errorResponse.addValidationError(fieldErrors);
-
+        errorResponse.setPath(servletWebRequest.getRequest().getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -114,9 +122,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                @NonNull HttpStatusCode status,
                                                                @NonNull WebRequest request) {
         ServletWebRequest servletWebRequest=(ServletWebRequest) request;
-        logger.info("{} to {}",servletWebRequest.getHttpMethod(),servletWebRequest.getRequest().getServletPath());
 
         ErrorResponse errorResponse=new ErrorResponse(HttpStatus.BAD_REQUEST,"Malformed Json Request",ex);
+        errorResponse.setPath(servletWebRequest.getRequest().getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
 }

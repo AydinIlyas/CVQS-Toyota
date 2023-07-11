@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -18,6 +20,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ErrorControllerTest {
@@ -93,5 +96,49 @@ class ErrorControllerTest {
                     return true;
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void getImage_PNG() {
+        //given
+        String authHeader="Bearer Token";
+        Long defectId=1L;
+        String format="png";
+        int width=20;
+        int height=20;
+        String colorHex="#FFFFFF";
+        boolean processed=true;
+        byte[] imageData=new byte[10];
+        //when
+        when(errorListingService.getImage(anyString(),anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
+                .thenReturn(imageData);
+        ResponseEntity<byte[]> response=errorController.getImage(authHeader,defectId,format,width,height,
+                colorHex,processed);
+
+        //then
+        assertEquals(imageData,response.getBody());
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+    }
+
+    @Test
+    void getImage_JPEG() {
+        //given
+        String authHeader="Bearer Token";
+        Long defectId=1L;
+        String format="jpeg";
+        int width=20;
+        int height=20;
+        String colorHex="#FFFFFF";
+        boolean processed=true;
+        byte[] imageData=new byte[10];
+        //when
+        when(errorListingService.getImage(anyString(),anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
+                .thenReturn(imageData);
+        ResponseEntity<byte[]> response=errorController.getImage(authHeader,defectId,format,width,height,
+                colorHex,processed);
+
+        //then
+        assertEquals(imageData,response.getBody());
+        assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 }

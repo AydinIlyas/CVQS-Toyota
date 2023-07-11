@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +45,8 @@ class JwtAuthenticationFilterTest {
         FilterChain filterChain=Mockito.mock(FilterChain.class);
         String jwt="Token";
         String username="username";
-        Token token=new Token("1",false,false,null);
+        Date currentDate=new Date();
+        Token token=new Token("1",false,new Date(currentDate.getTime()+60000),null);
         String jti="jti";
         //when
         Mockito.when(request.getHeader("Authorization")).thenReturn("Bearer Token");
