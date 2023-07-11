@@ -64,6 +64,12 @@ class UserServiceImplTest {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(Mockito.anyString()))
                 .thenReturn(requestBodyUriSpec);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth("Token");
+        when(requestBodyUriSpec.headers(argThat(consumer -> {
+            consumer.accept(headers);
+            return true;
+        }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(any());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
@@ -75,8 +81,10 @@ class UserServiceImplTest {
         when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(false);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
+        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
 
-        UserResponse response=userService.create(userDTO);
+        UserResponse response=userService.create(request,userDTO);
 
         //then
         Mockito.verify(userRepository).save(any(User.class));
@@ -98,6 +106,12 @@ class UserServiceImplTest {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(Mockito.anyString()))
                 .thenReturn(requestBodyUriSpec);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth("Token");
+        when(requestBodyUriSpec.headers(argThat(consumer -> {
+            consumer.accept(headers);
+            return true;
+        }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(any());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
@@ -107,10 +121,11 @@ class UserServiceImplTest {
                 .thenReturn(monoSpy);
         when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(false);
         when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(false);
-
+        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
+        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
         //then
         assertThrows(UnexpectedException.class,
-                ()->userService.create(userDTO));
+                ()->userService.create(request,userDTO));
     }
     @Test
     void create_UsernameAlreadyExists() {
@@ -120,10 +135,10 @@ class UserServiceImplTest {
 
         //when
         when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(true);
-
+        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
         //then
         assertThrows(UserAlreadyExistsException.class,
-                ()->userService.create(userDTO));
+                ()->userService.create(request,userDTO));
     }
     @Test
     void create_EmailAlreadyExists() {
@@ -133,10 +148,10 @@ class UserServiceImplTest {
 
         //when
         when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(true);
-
+        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
         //then
         assertThrows(UserAlreadyExistsException.class,
-                ()->userService.create(userDTO));
+                ()->userService.create(request,userDTO));
     }
 
     @Test

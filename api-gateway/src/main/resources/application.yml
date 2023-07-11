@@ -77,6 +77,10 @@ spring:
           uri: lb://verification-authorization-service
           predicates:
             - Path=/auth/**
+          filters:
+            - AuthenticationFilter
+          metadata:
+            requiredRole: "ADMIN"
 
         - id:  user-management-service
           uri: lb://user-management-service

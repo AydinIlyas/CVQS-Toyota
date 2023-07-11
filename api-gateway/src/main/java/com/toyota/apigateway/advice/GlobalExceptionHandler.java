@@ -1,8 +1,8 @@
 package com.toyota.apigateway.advice;
 
 
-import com.toyota.apigateway.exception.MissingBearerToken;
 import com.toyota.apigateway.exception.UnauthorizedException;
+import com.toyota.apigateway.exception.UnexpectedException;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
@@ -44,12 +44,13 @@ public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler{
             return ServerResponse.status(HttpStatus.UNAUTHORIZED)
                     .bodyValue(new ErrorResponse(HttpStatus.UNAUTHORIZED,throwable.getMessage(),serverRequest.path()));
         }
-        else if(throwable instanceof MissingBearerToken)
+        else if(throwable instanceof UnexpectedException)
         {
-            return ServerResponse.status(HttpStatus.UNAUTHORIZED)
-                    .bodyValue(new ErrorResponse(HttpStatus.UNAUTHORIZED,throwable.getMessage(),serverRequest.path()));
+            return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).bodyValue(
+                    new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,throwable.getMessage(), serverRequest.path()));
         }
-        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).bodyValue(new ErrorResponse
+                (HttpStatus.INTERNAL_SERVER_ERROR,"Unexpected Exception", serverRequest.path()));
     }
 }
 

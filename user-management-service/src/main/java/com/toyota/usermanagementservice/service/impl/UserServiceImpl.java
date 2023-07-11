@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
      * @return UserResponse of saved new user.
      */
     @Override
-    public UserResponse create(UserDTO userDTO) {
+    public UserResponse create(HttpServletRequest request,UserDTO userDTO) {
         logger.info("Creating new User. Username: {}, Email: {}",userDTO.getUsername(),userDTO.getEmail());
         if (userRepository.existsByUsernameAndDeletedIsFalse(userDTO.getUsername())) {
             logger.warn("Username is already taken! Username: {}", userDTO.getUsername());
@@ -55,9 +55,11 @@ public class UserServiceImpl implements UserService {
         }
         User user = convertDtoToEntity(userDTO);
         Set<String> roles = userDTO.getRole().stream().map(Enum::toString).collect(Collectors.toSet());
+        String bearer = extractToken(request);
         logger.debug("Sending request for creating user in verification-authorization-service!");
         Boolean response = webClientBuilder.build().post()
                 .uri("http://verification-authorization-service/auth/register")
+                .headers(auth -> auth.setBearerAuth(bearer))
                 .bodyValue(new RegisterRequest(userDTO.getUsername(), userDTO.getPassword(), roles))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse->{
@@ -78,7 +80,7 @@ public class UserServiceImpl implements UserService {
                 })
                 .bodyToMono(Boolean.class)
                 .block();
-        if (response != null && !response) {
+        if (response == null || !response) {
             logger.warn("Failed to create user! Reason: Unexpected problem in verification service");
             throw new UnexpectedException("Failed to create user! Reason: Unexpected problem in verification service");
         }

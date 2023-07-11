@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface UserService {
-    UserResponse create(UserDTO userDTO);
+    UserResponse create(HttpServletRequest request,UserDTO userDTO);
     UserResponse update(HttpServletRequest request,Long userId,UserDTO userDTO);
     UserResponse deleteUser(HttpServletRequest request,Long userId);
 

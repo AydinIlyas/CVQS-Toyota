@@ -27,8 +27,9 @@ public class User {
     private String username;
 
     private String email;
+    @Enumerated(value = EnumType.STRING)
     private Set<Role> role;
-    @Enumerated(EnumType.STRING)
+    @Enumerated(value=EnumType.STRING)
     private Gender gender;
 
     private boolean deleted;

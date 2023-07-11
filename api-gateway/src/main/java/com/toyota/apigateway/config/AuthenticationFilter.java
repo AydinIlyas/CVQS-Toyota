@@ -1,7 +1,7 @@
 package com.toyota.apigateway.config;
 
-import com.toyota.apigateway.exception.MissingBearerToken;
 import com.toyota.apigateway.exception.UnauthorizedException;
+import com.toyota.apigateway.exception.UnexpectedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -17,10 +17,10 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @Component
-public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config>{
+public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
     private final WebClient.Builder webClientBuilder;
     private final RouteValidator routeValidator;
-    private final Logger logger= LogManager.getLogger(AuthenticationFilter.class);
+    private final Logger logger = LogManager.getLogger(AuthenticationFilter.class);
 
     public AuthenticationFilter(WebClient.Builder webClientBuilder, RouteValidator routeValidator) {
         super(Config.class);
@@ -35,55 +35,55 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 String authHeader = extractToken(exchange.getRequest());
                 if (authHeader == null) {
                     logger.warn("Bearer Token is missing!");
-                    throw new MissingBearerToken("Bearer Token is missing");
+                    throw new UnauthorizedException("Bearer Token is missing");
                 }
 
-                Route route=exchange.getAttribute
+                Route route = exchange.getAttribute
                         (org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
                 assert route != null;
-                String requiredRole=route.getMetadata().get("requiredRole").toString();
+                String requiredRole = route.getMetadata().get("requiredRole").toString();
                 String verificationUrl = "http://verification-authorization-service/auth/verify";
 
-                logger.debug("Verifying user and role: {}",requiredRole);
+                logger.debug("Verifying user and role: {}", requiredRole);
 
                 return webClientBuilder.build().get().uri(verificationUrl)
                         .headers(headers -> headers.setBearerAuth(authHeader))
                         .retrieve()
                         .bodyToMono(Map.class)
                         .flatMap(result -> {
-                            String routeId=route.getId();
-                            if(result==null){
-                                logger.warn("User not found");
-                                return Mono.error(new UnauthorizedException("User Not Found"));
-                            }
-                            else if (result.containsKey(requiredRole)||(routeId.equals("terminal-service")
-                                    &&result.size()>0)) {
-                                logger.info("User authorized: {}",result.get("Username").toString());
+                            String routeId = route.getId();
+                            if (result == null) {
+                                logger.warn("Invalid Bearer!");
+                                return Mono.error(new UnauthorizedException("Invalid Bearer Token!"));
+                            } else if (result.containsKey(requiredRole) || (routeId.equals("terminal-service")
+                                    && result.size() > 0)) {
+                                logger.info("User authorized: {}", result.get("Username").toString());
                                 return chain.filter(exchange.mutate().request(
                                                 exchange.getRequest().mutate()
-                                                        .header("Username",result.get("Username").toString())
+                                                        .header("Username", result.get("Username").toString())
                                                         .build())
                                         .build());
                             } else {
-                                logger.warn("User not authorized: {}",result.get("Username"));
+                                logger.warn("User not authorized! User: {}",result.get("Username").toString());
                                 return Mono.error(new UnauthorizedException("User not authorized!"));
                             }
                         })
-                        .onErrorResume(UnauthorizedException.class,ex-> {
-                            logger.warn("Unauthorized exception occurred: {}",ex.getMessage());
-                            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                            throw new UnauthorizedException("User not authorized");
-                        })
-                        .onErrorResume(WebClientResponseException.class,ex->{
-                            logger.warn("WebClient response exception occurred: {}",ex.getMessage());
-                            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                            throw new UnauthorizedException("User not Found");
+                        .onErrorResume(WebClientResponseException.class, ex -> {
+                            if (ex.getStatusCode() == HttpStatus.FORBIDDEN) {
+                                logger.warn("Invalid bearer token!");
+                                throw new UnauthorizedException("Invalid Bearer token!");
+                            } else {
+                                logger.warn("WebClient response exception occurred: {}", ex.getMessage());
+                                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                                throw new UnexpectedException("WebClient response exception occurred: "+ex.getMessage());
+                            }
                         });
 
             }
             return chain.filter(exchange);
         };
     }
+
     private String extractToken(ServerHttpRequest request) {
         String authorizationHeader = request.getHeaders().getFirst("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
@@ -93,6 +93,6 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
 
-    public static class Config{
+    public static class Config {
     }
 }

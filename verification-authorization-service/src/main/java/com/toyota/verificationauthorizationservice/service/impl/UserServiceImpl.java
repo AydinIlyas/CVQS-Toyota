@@ -193,12 +193,12 @@ public class UserServiceImpl implements UserService {
             throw new UsernameTakenException("Username is already taken! Username: " + newUsername);
         }
         Optional<User> optionalUser = userRepository.findByUsernameAndDeletedIsFalse(oldUsername);
-
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setUsername(newUsername);
             userRepository.save(user);
             logger.info("Updated username {} to {}", oldUsername, newUsername);
+            revokeUserTokens(user);
             return true;
         } else {
             logger.warn("User Not Found!");
@@ -225,6 +225,7 @@ public class UserServiceImpl implements UserService {
                 user.setPassword(passwordEncoder.encode(passwordsDTO.getNewPassword()));
                 userRepository.save(user);
                 logger.info("Password changed successfully!");
+                revokeUserTokens(user);
                 return true;
             } else {
                 logger.warn("Incorrect Password!");
