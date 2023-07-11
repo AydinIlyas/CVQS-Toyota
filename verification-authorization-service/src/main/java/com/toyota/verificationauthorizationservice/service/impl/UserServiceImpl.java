@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -38,7 +39,8 @@ public class UserServiceImpl implements UserService {
     private final TokenRepository tokenRepository;
     private final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
-
+    @Value("${application.security.jwt.expiration}")
+    private long expirationDuration;
     /**
      * Checks if a role is assigned and adds user.
      *
@@ -110,10 +112,11 @@ public class UserServiceImpl implements UserService {
     private void saveUserToken(User user,String jwt)
     {
         String tokenId=jwtService.extractTokenId(jwt);
+        Date currentDate=new Date();
         Token token=Token.builder()
                 .tokenId(tokenId)
                 .user(user)
-                .expired(false)
+                .expirationDate(new Date(currentDate.getTime()+expirationDuration))
                 .revoked(false)
                 .build();
         tokenRepository.save(token);
@@ -123,10 +126,7 @@ public class UserServiceImpl implements UserService {
     {
         List<Token> tokens=tokenRepository.findAllValidTokensByUser(user.getId());
 
-        tokens.forEach(t->{
-            t.setRevoked(true);
-            t.setExpired(true);
-        });
+        tokens.forEach(t-> t.setRevoked(true));
         tokenRepository.saveAll(tokens);
         logger.debug("Token revoked successfully");
     }
@@ -170,7 +170,6 @@ public class UserServiceImpl implements UserService {
         if(optionalToken.isPresent())
         {
             Token token=optionalToken.get();
-            token.setExpired(true);
             token.setRevoked(true);
             tokenRepository.save(token);
             logger.info("User logged out successfully. Username: {}"
