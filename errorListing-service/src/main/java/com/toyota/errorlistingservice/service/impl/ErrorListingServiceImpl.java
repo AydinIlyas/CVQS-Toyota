@@ -24,8 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Service class for listing errors with filtering,sorting and paging.
@@ -129,18 +127,12 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     /**
      * @param defectId
      * @param format
-     * @param width
-     * @param height
-     * @param colorHex
      * @param processed
      * @return
      */
     @Override
     public byte[] getImage(Long defectId,
                            String format,
-                           int width,
-                           int height,
-                           String colorHex,
                            boolean processed) {
         ImageDTO imageDTO = webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicleDefect/get/image/{defectId}", defectId)
@@ -163,12 +155,12 @@ public class ErrorListingServiceImpl implements ErrorListingService {
             BufferedImage image = ImageIO.read(inputStream);
             Graphics2D g = (Graphics2D) image.getGraphics();
             g.setStroke(new BasicStroke(3));
-            Color color = Color.decode(isValidColorHex(colorHex));
-            g.setColor(color);
             for (TTVehicleDefectLocationDTO location : imageDTO.getLocationDTO()) {
-                int x = location.getX_Axis() - width / 2;
-                int y = location.getY_Axis() - height / 2;
-                g.fillRect(x, y, width, height);
+                Color color = Color.decode(location.getColorHex());
+                g.setColor(color);
+                int x = location.getX_Axis() - location.getWidth() / 2;
+                int y = location.getY_Axis() - location.getHeight() / 2;
+                g.fillRect(x, y, location.getWidth(), location.getHeight());
             }
             g.dispose();
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -179,15 +171,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
             throw new ImageProcessingException("Failed to read Input-stream");
         }
     }
-    private String isValidColorHex(String color) {
-        String regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(color);
-        if (matcher.matches())
-            return color;
-        else
-            return "#FF0000";
 
-    }
 }
 

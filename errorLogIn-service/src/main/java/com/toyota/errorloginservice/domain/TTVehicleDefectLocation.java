@@ -22,7 +22,9 @@ public class TTVehicleDefectLocation {
     private Long id;
     private int x_Axis;
     private int y_Axis;
-
+    private int height;
+    private int width;
+    private String colorHex;
     private boolean deleted;
     @ManyToOne
     @JsonIgnore

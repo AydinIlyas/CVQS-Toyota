@@ -56,7 +56,10 @@ class TTVehicleDefectLocationServiceImplTest {
         BufferedImage bufferedImage = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
         int xAxis=150;
         int yAxis=200;
-        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis);
+        int height=20;
+        int width=20;
+        String color="FF0F00";
+        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis,width,height,color);
         //when
         Mockito.when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(bufferedImage);
         Mockito.when(defectRepository.findById(any())).thenReturn(Optional.of(existingDefect));
@@ -106,7 +109,10 @@ class TTVehicleDefectLocationServiceImplTest {
         BufferedImage bufferedImage = new BufferedImage(100, 300, BufferedImage.TYPE_INT_RGB);
         int xAxis=150;
         int yAxis=200;
-        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis);
+        int height=20;
+        int width=20;
+        String color="FF0F00";
+        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis,width,height,color);
         //when
         Mockito.when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(bufferedImage);
         Mockito.when(defectRepository.findById(any())).thenReturn(Optional.of(existingDefect));
@@ -124,7 +130,10 @@ class TTVehicleDefectLocationServiceImplTest {
         BufferedImage bufferedImage = new BufferedImage(300, 100, BufferedImage.TYPE_INT_RGB);
         int xAxis=150;
         int yAxis=200;
-        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis);
+        int height=20;
+        int width=20;
+        String color="FF0F00";
+        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis,width,height,color);
         //when
         Mockito.when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(bufferedImage);
         Mockito.when(defectRepository.findById(any())).thenReturn(Optional.of(existingDefect));
@@ -141,7 +150,10 @@ class TTVehicleDefectLocationServiceImplTest {
         existingDefect.setDefectImage(new byte[]{1});
         int xAxis=150;
         int yAxis=200;
-        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis);
+        int height=20;
+        int width=20;
+        String color="FF0F00";
+        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,xAxis,yAxis,width,height,color);
         //when
         Mockito.when(ImageIO.read(any(ByteArrayInputStream.class))).thenThrow(new IOException());
         Mockito.when(defectRepository.findById(any())).thenReturn(Optional.of(existingDefect));
@@ -155,7 +167,11 @@ class TTVehicleDefectLocationServiceImplTest {
         existingDefect.setId(22L);
         int xAxis=150;
         int yAxis=200;
-        TTVehicleDefectLocation location=new TTVehicleDefectLocation(1L,xAxis,yAxis,false,existingDefect);
+        int height=20;
+        int width=20;
+        String color="FF0F00";
+        TTVehicleDefectLocation location=new TTVehicleDefectLocation(1L,xAxis,yAxis,height,width,color,
+                false,existingDefect);
 
         //when
         Mockito.when(locationRepository.findById(any())).thenReturn(Optional.of(location));
@@ -186,8 +202,13 @@ class TTVehicleDefectLocationServiceImplTest {
         BufferedImage bufferedImage = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
         int xAxis=150;
         int yAxis=200;
-        TTVehicleDefectLocation location=new TTVehicleDefectLocation(1L,xAxis,yAxis,false,existingDefect);
-        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,100,120);
+        int height=20;
+        int width=20;
+        String color="FF0F00";
+        TTVehicleDefectLocation location=new TTVehicleDefectLocation(1L,xAxis,yAxis,height,width,color,
+                false,existingDefect);
+        TTVehicleDefectLocationDTO locationDTO=new TTVehicleDefectLocationDTO(1L,100,120,
+                width,height,color);
         //when
         Mockito.when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(bufferedImage);
         Mockito.when(locationRepository.findById(any())).thenReturn(Optional.of(location));

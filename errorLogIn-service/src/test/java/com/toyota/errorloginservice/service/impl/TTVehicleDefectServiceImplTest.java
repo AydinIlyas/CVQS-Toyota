@@ -75,7 +75,8 @@ class TTVehicleDefectServiceImplTest {
     @Test
     void addDefect_Success() {
         //given
-        List<TTVehicleDefectLocationDTO> locations= List.of(new TTVehicleDefectLocationDTO(1L,15,30));
+        List<TTVehicleDefectLocationDTO> locations= List.of(new TTVehicleDefectLocationDTO(1L,15,30,
+                20,20,"FFF000"));
         TTVehicleDefectDTO defectDTO=new TTVehicleDefectDTO(1L,"Broken Window","Windshield",
                 State.MAJOR,locations);
 
@@ -159,11 +160,11 @@ class TTVehicleDefectServiceImplTest {
     void deleteDefect_Success() {
 
         //given
-        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",State.MAJOR,LocalDateTime.now()
-                ,"User",null,false,null,null);
+        TTVehicleDefect defect=new TTVehicleDefect(1L,"Broken Window","Windshield",
+                State.MAJOR,LocalDateTime.now(),"User",null,false,null,null);
         List<TTVehicleDefectLocation> locations=List.of(
-                new TTVehicleDefectLocation(1L,30,40,false,defect),
-                new TTVehicleDefectLocation(2L,40,50,false,defect)
+                new TTVehicleDefectLocation(1L,30,40,30,30,"#00FF00",false,defect),
+                new TTVehicleDefectLocation(2L,40,50,30,30,"#00FFF0",false,defect)
         );
         defect.setLocation(locations);
 

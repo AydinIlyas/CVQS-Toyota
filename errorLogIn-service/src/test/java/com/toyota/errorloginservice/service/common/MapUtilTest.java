@@ -25,8 +25,8 @@ class MapUtilTest {
     }
     @Test
     void convertVehicleWithAllToDTO() {
-        TTVehicleDefectLocation location=new TTVehicleDefectLocation(1L,150,200,false
-                ,null);
+        TTVehicleDefectLocation location=new TTVehicleDefectLocation(1L,150,200,20,20,
+                "FF0000",false,null);
         TTVehicleDefect defect=new TTVehicleDefect(1L,"Flat tire","In front left", State.MAJOR,
                 LocalDateTime.now(), "User",null,false,null,null);
         TTVehicle ttVehicle=new TTVehicle(1L,"Supra","0001", LocalDate.of(2000,3,20),

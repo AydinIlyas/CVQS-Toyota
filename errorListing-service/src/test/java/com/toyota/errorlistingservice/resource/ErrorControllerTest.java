@@ -99,16 +99,12 @@ class ErrorControllerTest {
         //given
         Long defectId=1L;
         String format="png";
-        int width=20;
-        int height=20;
-        String colorHex="#FFFFFF";
         boolean processed=true;
         byte[] imageData=new byte[10];
         //when
-        when(errorListingService.getImage(anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
+        when(errorListingService.getImage(anyLong(),anyString(),anyBoolean()))
                 .thenReturn(imageData);
-        ResponseEntity<byte[]> response=errorController.getImage(defectId,format,width,height,
-                colorHex,processed);
+        ResponseEntity<byte[]> response=errorController.getImage(defectId,format,processed);
 
         //then
         assertEquals(imageData,response.getBody());
@@ -120,16 +116,12 @@ class ErrorControllerTest {
         //given
         Long defectId=1L;
         String format="jpeg";
-        int width=20;
-        int height=20;
-        String colorHex="#FFFFFF";
         boolean processed=true;
         byte[] imageData=new byte[10];
         //when
-        when(errorListingService.getImage(anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
+        when(errorListingService.getImage(anyLong(),anyString(),anyBoolean()))
                 .thenReturn(imageData);
-        ResponseEntity<byte[]> response=errorController.getImage(defectId,format,width,height,
-                colorHex,processed);
+        ResponseEntity<byte[]> response=errorController.getImage(defectId,format,processed);
 
         //then
         assertEquals(imageData,response.getBody());

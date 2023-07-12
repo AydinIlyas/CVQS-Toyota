@@ -137,8 +137,9 @@ class ErrorListingServiceImplTest {
     @Test
     void getImage() throws IOException {
         //given
-        ImageDTO imageDTO=new ImageDTO(new byte[10],List.of(new TTVehicleDefectLocationDTO(1L,100,120),
-                new TTVehicleDefectLocationDTO(2L,140,30)));
+        ImageDTO imageDTO=new ImageDTO(new byte[10],List.of(new TTVehicleDefectLocationDTO(1L,100,120,
+                        20,20,"#FF0000"),
+                new TTVehicleDefectLocationDTO(2L,140,30,30,30,"#FF0000")));
         //when
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
@@ -156,8 +157,7 @@ class ErrorListingServiceImplTest {
         when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(buffImageMock);
         Graphics2D mockGraphics2D=mock(Graphics2D.class);
         when(buffImageMock.getGraphics()).thenReturn(mockGraphics2D);
-        errorListingService.getImage(1L,"png",10,10,"#FF0000",
-                true);
+        errorListingService.getImage(1L,"png", true);
         //then
         verify(mockGraphics2D,times(2)).fillRect(anyInt(),anyInt(),anyInt(),anyInt());
         mockedStatic.close();
@@ -165,8 +165,9 @@ class ErrorListingServiceImplTest {
     @Test
     void getImage_ImageProcessingException() throws IOException {
         //given
-        ImageDTO imageDTO=new ImageDTO(new byte[10],List.of(new TTVehicleDefectLocationDTO(1L,100,120),
-                new TTVehicleDefectLocationDTO(2L,140,30)));
+        ImageDTO imageDTO=new ImageDTO(new byte[10],List.of(new TTVehicleDefectLocationDTO(1L,100,120,
+                        20,20,"FF0000"),
+                new TTVehicleDefectLocationDTO(2L,140,30,20,20,"FF0000")));
         //when
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
@@ -183,7 +184,7 @@ class ErrorListingServiceImplTest {
         when(ImageIO.read(any(ByteArrayInputStream.class))).thenThrow(new IOException());
         //then
         assertThrows(ImageProcessingException.class,()->errorListingService.getImage(
-                1L,"png",10,10,"#FF0000", true));
+                1L,"png", true));
         mockedStatic.close();
     }
 }

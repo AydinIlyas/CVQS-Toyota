@@ -22,6 +22,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Service class for managing tt_vehicle_defect_location data.
@@ -54,9 +56,13 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
                 throw new ImageNotFoundException("Defect has no image!");
             }
             isLocationValid(defect,defectLocationDTO);
+            String color=isValidColorHex(defectLocationDTO.getColorHex())? defectLocationDTO.getColorHex() : "#FF0000";
             TTVehicleDefectLocation location = TTVehicleDefectLocation.builder()
                     .x_Axis(defectLocationDTO.getX_Axis())
                     .y_Axis(defectLocationDTO.getY_Axis())
+                    .height(defectLocationDTO.getHeight())
+                    .width(defectLocationDTO.getWidth())
+                    .colorHex(color)
                     .build();
             if(defect.getLocation()==null)
                 defect.setLocation(new ArrayList<>());
@@ -117,6 +123,21 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
                 location.setY_Axis(locationDTO.getY_Axis());
                 logger.debug("Location y-axis updated: {}",location.getX_Axis());
             }
+            if(locationDTO.getWidth()!=null&&locationDTO.getWidth()!=location.getWidth())
+            {
+                location.setWidth(locationDTO.getWidth());
+                logger.debug("Location width updated: {}",location.getWidth());
+            }
+            if(locationDTO.getHeight()!=null&&locationDTO.getHeight()!=location.getHeight())
+            {
+                location.setHeight(locationDTO.getHeight());
+                logger.debug("Location height updated: {}",location.getHeight());
+            }
+            if(locationDTO.getColorHex()!=null&&isValidColorHex(locationDTO.getColorHex()))
+            {
+                location.setColorHex(locationDTO.getColorHex());
+                logger.debug("Location color updated: {}",location.getColorHex());
+            }
             locationRepository.save(location);
             logger.info("Updated location successfully. Location ID: {}",id);
         }
@@ -126,7 +147,14 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
         }
 
     }
+    private boolean isValidColorHex(String color) {
+        if(color==null)return false;
+        String regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(color);
+        return matcher.matches();
 
+    }
     private void isLocationValid(TTVehicleDefect defect, TTVehicleDefectLocationDTO defectLocationDTO)
     {
         try

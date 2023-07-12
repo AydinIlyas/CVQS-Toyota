@@ -1,7 +1,6 @@
 package com.toyota.errorlistingservice.service.abstracts;
 
 import com.toyota.errorlistingservice.dto.PaginationResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -18,5 +17,5 @@ public interface ErrorListingService {
     Mono<PaginationResponse<Object>> getDefects(int page,int size,String type, String state, String reportTime, String reportedBy,
                             String vin, String sortOrder, String sortBy);
 
-    byte[] getImage(Long defectId, String format, int width, int height, String colorHex, boolean processed);
+    byte[] getImage(Long defectId, String format, boolean processed);
 }
