@@ -1,6 +1,5 @@
 package com.toyota.errorlistingservice.advice;
 
-import com.toyota.errorlistingservice.exceptions.BearerTokenNotFoundException;
 import com.toyota.errorlistingservice.exceptions.DefectNotFoundException;
 import com.toyota.errorlistingservice.exceptions.ImageNotFoundException;
 import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
@@ -20,27 +19,6 @@ class GlobalExceptionHandlerTest {
     @BeforeEach
     void setUp() {
         globalExceptionHandler=new GlobalExceptionHandler();
-    }
-
-    @Test
-    void handleBearerTokenNotFoundException() {
-        //given
-        String message="Bearer not found";
-        BearerTokenNotFoundException bearerTokenNotFoundException=new BearerTokenNotFoundException(message);
-
-        //when
-        String path="/test";
-        HttpServletRequest request= mock(HttpServletRequest.class);
-        Mockito.when(request.getRequestURI()).thenReturn(path);
-        ResponseEntity<Object> response=globalExceptionHandler.handleBearerTokenNotFoundException
-                (bearerTokenNotFoundException,request);
-        //then
-        ErrorResponse errorResponse=(ErrorResponse) response.getBody();
-        Assertions.assertNotNull(errorResponse);
-        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.name(),errorResponse.getError());
-        Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(),errorResponse.getStatus());
-        Assertions.assertEquals(message,errorResponse.getMessage());
-        Assertions.assertEquals(path,errorResponse.getPath());
     }
 
     @Test

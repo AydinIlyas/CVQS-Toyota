@@ -1,6 +1,5 @@
 package com.toyota.errorlistingservice.advice;
 
-import com.toyota.errorlistingservice.exceptions.BearerTokenNotFoundException;
 import com.toyota.errorlistingservice.exceptions.DefectNotFoundException;
 import com.toyota.errorlistingservice.exceptions.ImageNotFoundException;
 import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
@@ -13,20 +12,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
-    /**
-     * Handles BearerTokenNotFoundException by returning a ResponseEntity with an appropriate error response.
-     * @param e BearerTokenNotFoundException thrown when bearer token is missing for some unexpected reason
-     * @return ResponseEntity with an ErrorResponse containing details of the error
-     */
-    @ExceptionHandler(BearerTokenNotFoundException.class)
-    public ResponseEntity<Object> handleBearerTokenNotFoundException(BearerTokenNotFoundException e,
-                                                                     HttpServletRequest request)
-    {
-        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.UNAUTHORIZED,e.getMessage());
-        errorResponse.setPath(request.getRequestURI());
-        return new ResponseEntity<>(errorResponse,HttpStatus.UNAUTHORIZED);
-    }
 
     /**
      * Handles DefectNotFoundException by returning a ResponseEntity with an appropriate error response.
