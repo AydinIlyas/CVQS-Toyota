@@ -3,12 +3,10 @@ package com.toyota.errorlistingservice.resource;
 import com.toyota.errorlistingservice.dto.CustomPageable;
 import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.service.impl.ErrorListingServiceImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +30,6 @@ class ErrorControllerTest {
     @Test
     void getAllVehiclesFiltered() {
         //given
-        HttpServletRequest request= Mockito.mock(HttpServletRequest.class);
         int page=0;
         int size=3;
         List<String> sortBy=List.of("model");
@@ -48,9 +45,9 @@ class ErrorControllerTest {
         PaginationResponse<Object> pageMock=new PaginationResponse<>(content,pageable);
         Mono<PaginationResponse<Object>> monoPage=Mono.just(pageMock);
         //when
-        when(errorListingService.getVehicles(request,page,size,sortBy,sortOrder,model
+        when(errorListingService.getVehicles(page,size,sortBy,sortOrder,model
                 ,vin,yearOfProduction,transmissionType,engineType,color)).thenReturn(monoPage);
-        Mono<PaginationResponse<Object>> responseMono=errorController.getAllVehiclesFiltered(request,page,size,sortBy,sortOrder,model
+        Mono<PaginationResponse<Object>> responseMono=errorController.getAllVehiclesFiltered(page,size,sortBy,sortOrder,model
                 ,vin,yearOfProduction,transmissionType,engineType,color);
 
         //then
@@ -68,7 +65,6 @@ class ErrorControllerTest {
     @Test
     void getAllDefectsFiltered() {
         //given
-        HttpServletRequest request= Mockito.mock(HttpServletRequest.class);
         int page=0;
         int size=3;
         String sortBy="type";
@@ -83,9 +79,9 @@ class ErrorControllerTest {
         PaginationResponse<Object> pageMock=new PaginationResponse<>(content,pageable);
         Mono<PaginationResponse<Object>> monoPage=Mono.just(pageMock);
         //when
-        when(errorListingService.getDefects(request,page,size,type
+        when(errorListingService.getDefects(page,size,type
                 ,state,reportTime,reportedBy,vin,sortOrder,sortBy)).thenReturn(monoPage);
-        Mono<PaginationResponse<Object>> responseMono=errorController.getAllDefectsFiltered(request,page,size,type
+        Mono<PaginationResponse<Object>> responseMono=errorController.getAllDefectsFiltered(page,size,type
                 ,state,reportTime,reportedBy,vin,sortOrder,sortBy);
 
         //then
@@ -101,7 +97,6 @@ class ErrorControllerTest {
     @Test
     void getImage_PNG() {
         //given
-        String authHeader="Bearer Token";
         Long defectId=1L;
         String format="png";
         int width=20;
@@ -110,9 +105,9 @@ class ErrorControllerTest {
         boolean processed=true;
         byte[] imageData=new byte[10];
         //when
-        when(errorListingService.getImage(anyString(),anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
+        when(errorListingService.getImage(anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
                 .thenReturn(imageData);
-        ResponseEntity<byte[]> response=errorController.getImage(authHeader,defectId,format,width,height,
+        ResponseEntity<byte[]> response=errorController.getImage(defectId,format,width,height,
                 colorHex,processed);
 
         //then
@@ -123,7 +118,6 @@ class ErrorControllerTest {
     @Test
     void getImage_JPEG() {
         //given
-        String authHeader="Bearer Token";
         Long defectId=1L;
         String format="jpeg";
         int width=20;
@@ -132,9 +126,9 @@ class ErrorControllerTest {
         boolean processed=true;
         byte[] imageData=new byte[10];
         //when
-        when(errorListingService.getImage(anyString(),anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
+        when(errorListingService.getImage(anyLong(),anyString(),anyInt(),anyInt(),anyString(),anyBoolean()))
                 .thenReturn(imageData);
-        ResponseEntity<byte[]> response=errorController.getImage(authHeader,defectId,format,width,height,
+        ResponseEntity<byte[]> response=errorController.getImage(defectId,format,width,height,
                 colorHex,processed);
 
         //then

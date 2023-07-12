@@ -42,7 +42,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     /**
      * Gets vehicles with paging,filtering and sorting
      *
-     * @param request          request for adding bearer tokens
      * @param model            desired vehicle model
      * @param vin              desired vehicle identity number
      * @param engineType       desired engine type
@@ -56,10 +55,9 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @return vehicle objects
      */
     @Override
-    public Mono<PaginationResponse<Object>> getVehicles(HttpServletRequest request, int page, int size, List<String> sortBy,
+    public Mono<PaginationResponse<Object>> getVehicles(int page, int size, List<String> sortBy,
                                                         String sortOrder, String model, String vin, String yearOfProduction,
                                                         String transmissionType, String engineType, String color) {
-        String authHeader = extractToken(request);
         logger.info("Sending request for fetching vehicles to errorLogin-service");
         return webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicle/getAll", uriBuilder ->
@@ -76,7 +74,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                                 .queryParam("color", color)
                                 .build()
                 )
-                .headers(h -> h.setBearerAuth(authHeader))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {
                 })
@@ -91,7 +88,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     /**
      * Gets defects with paging, filtering and sorting. Sends request to errorLogin.
      *
-     * @param request    request for sending token to errorLogin
      * @param page       page number starts from 0
      * @param size       entity amount on a page
      * @param type       desired type of defect
@@ -104,10 +100,9 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @return Custom paging response
      */
     @Override
-    public Mono<PaginationResponse<Object>> getDefects(HttpServletRequest request, int page, int size, String type, String state,
+    public Mono<PaginationResponse<Object>> getDefects(int page, int size, String type, String state,
                                                        String reportTime, String reportedBy, String vin,
                                                        String sortOrder, String sortBy) {
-        String authHeader = extractToken(request);
         logger.info("Sending request for fetching defects to errorLogin-service");
         return webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicleDefect/getAll", uriBuilder ->
@@ -123,7 +118,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                                 .queryParam("vin", vin)
                                 .build()
                 )
-                .headers(h -> h.setBearerAuth(authHeader))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<PaginationResponse<Object>>() {
                 })
@@ -144,17 +138,14 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @return
      */
     @Override
-    public byte[] getImage(String authHeader,
-                           Long defectId,
+    public byte[] getImage(Long defectId,
                            String format,
                            int width,
                            int height,
                            String colorHex,
                            boolean processed) {
-        String token = authHeader.substring(7);
         ImageDTO imageDTO = webClientBuilder.build().get()
                 .uri("http://error-login-service/ttvehicleDefect/get/image/{defectId}", defectId)
-                .headers(h -> h.setBearerAuth(token))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse -> {
                     logger.warn("Defect not found. ID: {}", defectId);
@@ -190,20 +181,6 @@ public class ErrorListingServiceImpl implements ErrorListingService {
             throw new ImageProcessingException("Failed to read Input-stream");
         }
     }
-
-    /**
-     * @param request For extracting the token.
-     * @return Bearer Token
-     */
-    private String extractToken(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-        logger.warn("No Bearer found to sent request to errorLogin");
-        throw new BearerTokenNotFoundException("No Bearer found to sent request to errorLogin");
-    }
-
     private String isValidColorHex(String color) {
         String regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
         Pattern pattern = Pattern.compile(regex);

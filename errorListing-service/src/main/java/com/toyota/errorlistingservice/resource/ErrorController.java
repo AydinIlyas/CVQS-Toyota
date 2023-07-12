@@ -3,7 +3,6 @@ package com.toyota.errorlistingservice.resource;
 
 import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.service.impl.ErrorListingServiceImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +22,6 @@ public class ErrorController {
 
     /**
      * Request for getting all vehicles with paging,filtering and sorting
-     * @param request request for adding bearer tokens
      * @param filterModel desired vehicle model
      * @param filterVin desired vehicle identity number
      * @param filterEngineType desired engine type
@@ -37,8 +35,7 @@ public class ErrorController {
      * @return vehicle objects
      */
     @GetMapping("/getVehicles")
-    public Mono<PaginationResponse<Object>> getAllVehiclesFiltered(HttpServletRequest request,
-                                                                   @RequestParam(defaultValue = "0") int page,
+    public Mono<PaginationResponse<Object>> getAllVehiclesFiltered(@RequestParam(defaultValue = "0") int page,
                                                                    @RequestParam(defaultValue = "5") int size,
                                                                    @RequestParam(defaultValue = "") List<String> sortBy,
                                                                    @RequestParam(defaultValue = "ASC") String sortOrder,
@@ -50,14 +47,13 @@ public class ErrorController {
                                                                    @RequestParam(defaultValue = "") String filterColor
     )
     {
-        return service.getVehicles(request, page, size, sortBy, sortOrder,
+        return service.getVehicles(page, size, sortBy, sortOrder,
                 filterModel, filterVin, filterYearOfProduction, filterTransmissionType,
                 filterEngineType, filterColor);
     }
 
     /**
      * Request for getting vehicles with paging, filtering and sorting
-     * @param request request for sending token to errorLogin
      * @param page page Number starts from 0
      * @param size entity amount on a page
      * @param type desired type of defect
@@ -71,7 +67,6 @@ public class ErrorController {
      */
     @GetMapping("getDefects")
     public Mono<PaginationResponse<Object>> getAllDefectsFiltered(
-            HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "") String type,
@@ -85,13 +80,12 @@ public class ErrorController {
 
     )
     {
-        return service.getDefects(request,page,size,type, state, reportTime, reportedBy,
+        return service.getDefects(page,size,type, state, reportTime, reportedBy,
                 vin, sortOrder, sortBy);
     }
 
     @GetMapping("/get/image/{defectId}")
-    public ResponseEntity<byte[]> getImage(@RequestHeader("Authorization")String authHeader,
-                                           @PathVariable("defectId") Long defectId,
+    public ResponseEntity<byte[]> getImage(@PathVariable("defectId") Long defectId,
                                            @RequestParam(defaultValue = "jpeg") String format,
                                            @RequestParam(defaultValue="10")int width,
                                            @RequestParam(defaultValue = "10") int height,
@@ -99,7 +93,7 @@ public class ErrorController {
                                            @RequestParam(defaultValue = "true") boolean processed)
     {
         HttpHeaders headers=new HttpHeaders();
-        byte[] imageData=service.getImage(authHeader,defectId,format,width,height,colorHex,processed);
+        byte[] imageData=service.getImage(defectId,format,width,height,colorHex,processed);
         headers.setCacheControl(CacheControl.noCache().getHeaderValue());
         if (format.equalsIgnoreCase("png")) {
             headers.setContentType(MediaType.IMAGE_PNG);

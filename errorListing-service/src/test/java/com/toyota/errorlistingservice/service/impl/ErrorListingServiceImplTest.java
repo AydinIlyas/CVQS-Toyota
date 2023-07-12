@@ -5,7 +5,6 @@ import com.toyota.errorlistingservice.dto.ImageDTO;
 import com.toyota.errorlistingservice.dto.PaginationResponse;
 import com.toyota.errorlistingservice.dto.TTVehicleDefectLocationDTO;
 import com.toyota.errorlistingservice.exceptions.ImageProcessingException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +13,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -26,7 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,8 +53,6 @@ class ErrorListingServiceImplTest {
     @Test
     void getVehicles() {
         //given
-        HttpServletRequest request= Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
         int page=0;
         int size=3;
         List<String> sortBy=List.of("model");
@@ -76,20 +71,13 @@ class ErrorListingServiceImplTest {
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         doReturn(requestHeadersSpec).when(requestHeadersUriSpec)
                 .uri(anyString(),Mockito.any(Function.class));
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        doAnswer(invocation -> {
-            Consumer<HttpHeaders> headersConsumer = invocation.getArgument(0);
-            headersConsumer.accept(headers);
-            return requestHeadersSpec;
-        }).when(requestHeadersSpec).headers(any(Consumer.class));
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         Mono<PaginationResponse<Object>> mono=Mono.just(pageMock);
         Mono<PaginationResponse<Object>> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
                 .thenReturn(monoSpy);
 
-        Mono<PaginationResponse<Object>> resultMono=errorListingService.getVehicles(request,page,size,sortBy,sortOrder,model
+        Mono<PaginationResponse<Object>> resultMono=errorListingService.getVehicles(page,size,sortBy,sortOrder,model
                 ,vin,yearOfProduction,transmissionType,engineType,color);
 
         //then
@@ -107,8 +95,6 @@ class ErrorListingServiceImplTest {
     @Test
     void getDefects() {
         //given
-        HttpServletRequest request= Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
         int page=0;
         int size=3;
         String sortBy="type";
@@ -126,20 +112,13 @@ class ErrorListingServiceImplTest {
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         doReturn(requestHeadersSpec).when(requestHeadersUriSpec)
                 .uri(anyString(),Mockito.any(Function.class));
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        doAnswer(invocation -> {
-            Consumer<HttpHeaders> headersConsumer = invocation.getArgument(0);
-            headersConsumer.accept(headers);
-            return requestHeadersSpec;
-        }).when(requestHeadersSpec).headers(any(Consumer.class));
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         Mono<PaginationResponse<Object>> mono=Mono.just(pageMock);
         Mono<PaginationResponse<Object>> monoSpy=Mockito.spy(mono);
         when(responseSpec.bodyToMono(any(ParameterizedTypeReference.class)))
                 .thenReturn(monoSpy);
 
-        Mono<PaginationResponse<Object>> resultMono=errorListingService.getDefects(request,page,size,type
+        Mono<PaginationResponse<Object>> resultMono=errorListingService.getDefects(page,size,type
                 ,state,reportTime,reportedBy,vin,sortOrder,sortBy);
 
         //then
@@ -165,13 +144,6 @@ class ErrorListingServiceImplTest {
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec
                 .uri(anyString(),any(Object.class))).thenReturn(requestHeadersSpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        doAnswer(invocation -> {
-            Consumer<HttpHeaders> headersConsumer = invocation.getArgument(0);
-            headersConsumer.accept(headers);
-            return requestHeadersSpec;
-        }).when(requestHeadersSpec).headers(any(Consumer.class));
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<ImageDTO> mono=Mono.just(imageDTO);
@@ -184,7 +156,7 @@ class ErrorListingServiceImplTest {
         when(ImageIO.read(any(ByteArrayInputStream.class))).thenReturn(buffImageMock);
         Graphics2D mockGraphics2D=mock(Graphics2D.class);
         when(buffImageMock.getGraphics()).thenReturn(mockGraphics2D);
-        errorListingService.getImage("Bearer Token",1L,"png",10,10,"#FF0000",
+        errorListingService.getImage(1L,"png",10,10,"#FF0000",
                 true);
         //then
         verify(mockGraphics2D,times(2)).fillRect(anyInt(),anyInt(),anyInt(),anyInt());
@@ -200,13 +172,6 @@ class ErrorListingServiceImplTest {
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec
                 .uri(anyString(),any(Object.class))).thenReturn(requestHeadersSpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        doAnswer(invocation -> {
-            Consumer<HttpHeaders> headersConsumer = invocation.getArgument(0);
-            headersConsumer.accept(headers);
-            return requestHeadersSpec;
-        }).when(requestHeadersSpec).headers(any(Consumer.class));
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<ImageDTO> mono=Mono.just(imageDTO);
@@ -217,7 +182,7 @@ class ErrorListingServiceImplTest {
         MockedStatic<ImageIO> mockedStatic=mockStatic(ImageIO.class);
         when(ImageIO.read(any(ByteArrayInputStream.class))).thenThrow(new IOException());
         //then
-        assertThrows(ImageProcessingException.class,()->errorListingService.getImage("Bearer Token",
+        assertThrows(ImageProcessingException.class,()->errorListingService.getImage(
                 1L,"png",10,10,"#FF0000", true));
         mockedStatic.close();
     }
