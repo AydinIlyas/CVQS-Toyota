@@ -8,7 +8,6 @@ import com.toyota.usermanagementservice.dto.UserDTO;
 import com.toyota.usermanagementservice.dto.UserResponse;
 import com.toyota.usermanagementservice.exception.*;
 import com.toyota.usermanagementservice.service.abstracts.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,7 +41,7 @@ public class UserServiceImpl implements UserService {
      * @return UserResponse of saved new user.
      */
     @Override
-    public UserResponse create(HttpServletRequest request,UserDTO userDTO) {
+    public UserResponse create(UserDTO userDTO) {
         logger.info("Creating new User. Username: {}, Email: {}",userDTO.getUsername(),userDTO.getEmail());
         if (userRepository.existsByUsernameAndDeletedIsFalse(userDTO.getUsername())) {
             logger.warn("Username is already taken! Username: {}", userDTO.getUsername());
@@ -55,11 +54,9 @@ public class UserServiceImpl implements UserService {
         }
         User user = convertDtoToEntity(userDTO);
         Set<String> roles = userDTO.getRole().stream().map(Enum::toString).collect(Collectors.toSet());
-        String bearer = extractToken(request);
         logger.debug("Sending request for creating user in verification-authorization-service!");
         Boolean response = webClientBuilder.build().post()
                 .uri("http://verification-authorization-service/auth/register")
-                .headers(auth -> auth.setBearerAuth(bearer))
                 .bodyValue(new RegisterRequest(userDTO.getUsername(), userDTO.getPassword(), roles))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse->{
@@ -93,14 +90,13 @@ public class UserServiceImpl implements UserService {
     /**
      * Updates user credentials.
      *
-     * @param request HttpServletRequest for sending bearer to verification if required.
      * @param userId  ID of user to be updated.
      * @param userDTO Updated user information.
      * @return UserResponse of updated user.
      */
     @Override
     @Transactional
-    public UserResponse update(HttpServletRequest request, Long userId, UserDTO userDTO) {
+    public UserResponse update(Long userId, UserDTO userDTO) {
         logger.info("Updating user. User ID: {}",userId);
         Optional<User> optionalUser = userRepository.findById(userId);
 
@@ -121,12 +117,10 @@ public class UserServiceImpl implements UserService {
                     logger.warn("Username is already taken!");
                     throw new UserAlreadyExistsException("Username is taken!");
                 }
-                String bearer = extractToken(request);
                 logger.debug("Sending request for updating username in verification-authorization-service!");
                 Boolean updated = webClientBuilder.build().put()
                         .uri("http://verification-authorization-service/auth/update/{oldUsername}",
                                 user.getUsername())
-                        .headers(auth -> auth.setBearerAuth(bearer))
                         .bodyValue(userDTO.getUsername())
                         .retrieve()
                         .onStatus(HttpStatusCode::isError, response->{
@@ -187,21 +181,18 @@ public class UserServiceImpl implements UserService {
     /**
      * Soft deletes user.
      *
-     * @param request HttpServletRequest for sending request to verification service if required.
      * @param userId  ID of user to be updated.
      * @return UserResponse of soft deleted user.
      */
     @Override
-    public UserResponse deleteUser(HttpServletRequest request, Long userId) {
+    public UserResponse deleteUser(Long userId) {
         logger.info("Deleting user. User ID: {}",userId);
-        String bearer = extractToken(request);
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             logger.debug("Sending request for updating username in verification-authorization-service!");
             Boolean deleteFromAuth = webClientBuilder.build().put()
                     .uri("http://verification-authorization-service/auth/delete")
-                    .headers(h -> h.setBearerAuth(bearer))
                     .bodyValue(user.getUsername())
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, response->{
@@ -269,11 +260,10 @@ public class UserServiceImpl implements UserService {
      * @return UserResponse
      */
     @Override
-    public UserResponse addRole(HttpServletRequest request, Long userId, Role role) {
+    public UserResponse addRole(Long userId, Role role) {
         logger.info("Adding role to user. User ID: {}, New Role: {}",userId,role);
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
-            String authToken = extractToken(request);
             User user = optionalUser.get();
 
             if (user.getRole().contains(role)) {
@@ -285,7 +275,6 @@ public class UserServiceImpl implements UserService {
                     .put()
                     .uri("http://verification-authorization-service/auth/addRole/{username}",
                             user.getUsername())
-                    .headers(h -> h.setBearerAuth(authToken))
                     .bodyValue(role.toString())
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, response ->{
@@ -335,11 +324,10 @@ public class UserServiceImpl implements UserService {
      * @return UserResponse
      */
     @Override
-    public UserResponse removeRole(HttpServletRequest request, Long userId, Role role) {
+    public UserResponse removeRole(Long userId, Role role) {
         logger.info("Adding role to user. User ID: {}, New Role: {}",userId,role);
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isPresent()) {
-            String authToken = extractToken(request);
             User user = optionalUser.get();
             if (user.getRole().size() <= 1) {
                 logger.warn("User only have single role! Username: {}",user.getUsername());
@@ -354,7 +342,6 @@ public class UserServiceImpl implements UserService {
                     .put()
                     .uri("http://verification-authorization-service/auth/removeRole/{username}",
                             user.getUsername())
-                    .headers(h -> h.setBearerAuth(authToken))
                     .bodyValue(role.toString())
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, response ->{
@@ -413,19 +400,6 @@ public class UserServiceImpl implements UserService {
             sorts.add(new Sort.Order(direction, sort));
         }
         return sorts;
-    }
-
-
-    /**
-     * @param request HttpServletRequest for extract token from it.
-     * @return Bearer Token
-     */
-    private String extractToken(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-        throw new BearerTokenNotFoundException("Bearer token not found");
     }
 
     /**

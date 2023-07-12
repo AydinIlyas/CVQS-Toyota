@@ -7,7 +7,6 @@ import com.toyota.usermanagementservice.domain.User;
 import com.toyota.usermanagementservice.dto.UserDTO;
 import com.toyota.usermanagementservice.dto.UserResponse;
 import com.toyota.usermanagementservice.exception.*;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +15,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -64,12 +62,6 @@ class UserServiceImplTest {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(Mockito.anyString()))
                 .thenReturn(requestBodyUriSpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodyUriSpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(any());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
@@ -81,10 +73,8 @@ class UserServiceImplTest {
         when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(false);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
 
-        UserResponse response=userService.create(request,userDTO);
+        UserResponse response=userService.create(userDTO);
 
         //then
         Mockito.verify(userRepository).save(any(User.class));
@@ -106,12 +96,6 @@ class UserServiceImplTest {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(Mockito.anyString()))
                 .thenReturn(requestBodyUriSpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodyUriSpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(any());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
@@ -121,11 +105,9 @@ class UserServiceImplTest {
                 .thenReturn(monoSpy);
         when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(false);
         when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(false);
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
         //then
         assertThrows(UnexpectedException.class,
-                ()->userService.create(request,userDTO));
+                ()->userService.create(userDTO));
     }
     @Test
     void create_UsernameAlreadyExists() {
@@ -135,10 +117,9 @@ class UserServiceImplTest {
 
         //when
         when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(true);
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
         //then
         assertThrows(UserAlreadyExistsException.class,
-                ()->userService.create(request,userDTO));
+                ()->userService.create(userDTO));
     }
     @Test
     void create_EmailAlreadyExists() {
@@ -148,10 +129,9 @@ class UserServiceImplTest {
 
         //when
         when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(true);
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
         //then
         assertThrows(UserAlreadyExistsException.class,
-                ()->userService.create(request,userDTO));
+                ()->userService.create(userDTO));
     }
 
     @Test
@@ -166,13 +146,7 @@ class UserServiceImplTest {
         //WebClient mock
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodySpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
@@ -184,10 +158,8 @@ class UserServiceImplTest {
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
 
-        UserResponse response=userService.update(request,1L,userDTO);
+        UserResponse response=userService.update(1L,userDTO);
 
         //then
         Mockito.verify(userRepository).save(any(User.class));
@@ -207,16 +179,10 @@ class UserServiceImplTest {
                 "test@gmail.com",Set.of(Role.OPERATOR), Gender.MALE,false);
         //when
         //HttpHeaders
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
         //WebClient mock
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
-        when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodySpec);
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodyUriSpec);
         doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
@@ -226,12 +192,9 @@ class UserServiceImplTest {
                 .thenReturn(monoSpy);
         //repository mock
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
-        //request mock
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
 
         //then
-        assertThrows(UnexpectedException.class,()->userService.update(request,1L,userDTO));
+        assertThrows(UnexpectedException.class,()->userService.update(1L,userDTO));
     }
     @Test
     void update_UserNotFound() {
@@ -239,10 +202,9 @@ class UserServiceImplTest {
         UserDTO userDTO=new UserDTO();
         //when
         when(userRepository.findById(any())).thenReturn(Optional.empty());
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
 
         //then
-        assertThrows(UserNotFoundException.class,()->userService.update(request,1L,userDTO));
+        assertThrows(UserNotFoundException.class,()->userService.update(1L,userDTO));
     }
     @Test
     void update_UsernameTaken() {
@@ -253,11 +215,10 @@ class UserServiceImplTest {
         user.setUsername("oldUsername");
         //when
         when(userRepository.findById(any())).thenReturn(Optional.of(user));
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
         when(userRepository.existsByUsernameAndDeletedIsFalse(anyString())).thenReturn(true);
 
         //then
-        assertThrows(UserAlreadyExistsException.class,()->userService.update(request,1L,userDTO));
+        assertThrows(UserAlreadyExistsException.class,()->userService.update(1L,userDTO));
     }
     @Test
     void update_EmailTaken() {
@@ -268,11 +229,10 @@ class UserServiceImplTest {
         user.setEmail("oldEmail");
         //when
         when(userRepository.findById(any())).thenReturn(Optional.of(user));
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
         when(userRepository.existsByEmailAndDeletedIsFalse(anyString())).thenReturn(true);
 
         //then
-        assertThrows(UserAlreadyExistsException.class,()->userService.update(request,1L,userDTO));
+        assertThrows(UserAlreadyExistsException.class,()->userService.update(1L,userDTO));
     }
 
     @Test
@@ -286,13 +246,7 @@ class UserServiceImplTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
-        doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
+        doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
@@ -303,10 +257,8 @@ class UserServiceImplTest {
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
 
-        UserResponse response=userService.deleteUser(request,1L);
+        UserResponse response=userService.deleteUser(1L);
 
         //then
         Mockito.verify(userRepository).save(any(User.class));
@@ -321,12 +273,10 @@ class UserServiceImplTest {
         //when
         //repository mock
         when(userRepository.findById(any())).thenReturn(Optional.empty());
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
 
         //then
         assertThrows(UserNotFoundException.class,
-                ()->userService.deleteUser(request,userId));
+                ()->userService.deleteUser(userId));
     }
 
     @Test
@@ -340,13 +290,7 @@ class UserServiceImplTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
-        doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
+        doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
@@ -355,12 +299,10 @@ class UserServiceImplTest {
                 .thenReturn(monoSpy);
         //repository mock
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
 
 
         //then
-        assertThrows(UnexpectedException.class,()->userService.deleteUser(request,userId));
+        assertThrows(UnexpectedException.class,()->userService.deleteUser(userId));
     }
 
 
@@ -435,13 +377,7 @@ class UserServiceImplTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodySpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
-        doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
+        doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
@@ -453,10 +389,7 @@ class UserServiceImplTest {
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-
-        UserResponse response=userService.addRole(request,userId,Role.ADMIN);
+        UserResponse response=userService.addRole(userId,Role.ADMIN);
 
         //then
         Mockito.verify(userRepository).save(any(User.class));
@@ -477,13 +410,7 @@ class UserServiceImplTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodySpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
-        doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
+        doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
@@ -494,13 +421,9 @@ class UserServiceImplTest {
         //repository mock
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-
-
         //then
         assertThrows(UnexpectedException.class,
-                ()->userService.addRole(request,userId,Role.ADMIN));
+                ()->userService.addRole(userId,Role.ADMIN));
     }
     @Test
     void addRole_AlreadyExists() {
@@ -514,12 +437,9 @@ class UserServiceImplTest {
         //when
         //repository mock
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
-
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
         //then
         assertThrows(RoleAlreadyExistsException.class,
-                ()->userService.addRole(request,userId,Role.OPERATOR));
+                ()->userService.addRole(userId,Role.OPERATOR));
     }
     @Test
     void addRole_UserNotFound() {
@@ -530,10 +450,9 @@ class UserServiceImplTest {
         //repository mock
         when(userRepository.findById(any())).thenReturn(Optional.empty());
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
         //then
         assertThrows(UserNotFoundException.class,
-                ()->userService.addRole(request,userId,Role.OPERATOR));
+                ()->userService.addRole(userId,Role.OPERATOR));
     }
 
     @Test
@@ -551,13 +470,7 @@ class UserServiceImplTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodySpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
-        doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
+        doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(true);
@@ -569,10 +482,7 @@ class UserServiceImplTest {
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-
-        UserResponse response=userService.removeRole(request,userId,Role.OPERATOR);
+        UserResponse response=userService.removeRole(userId,Role.OPERATOR);
 
         //then
         Mockito.verify(userRepository).save(any(User.class));
@@ -594,13 +504,7 @@ class UserServiceImplTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.put()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString(),(Object) any())).thenReturn(requestBodySpec);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth("Token");
-        when(requestBodySpec.headers(argThat(consumer -> {
-            consumer.accept(headers);
-            return true;
-        }))).thenReturn(requestBodyUriSpec);
-        doReturn(requestHeadersSpec).when(requestBodyUriSpec).bodyValue(anyString());
+        doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(anyString());
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.onStatus(any(),any())).thenReturn(responseSpec);
         Mono<Boolean> mono = Mono.just(false);
@@ -611,12 +515,9 @@ class UserServiceImplTest {
 
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-
         //then
         assertThrows(UnexpectedException.class,
-                ()->userService.removeRole(request,userId,Role.OPERATOR));
+                ()->userService.removeRole(userId,Role.OPERATOR));
     }
     @Test
     void removeRole_SingleRemovalFail() {
@@ -630,12 +531,9 @@ class UserServiceImplTest {
         //when
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-
         //then
         assertThrows(SingleRoleRemovalException.class,
-                ()->userService.removeRole(request,userId,Role.OPERATOR));
+                ()->userService.removeRole(userId,Role.OPERATOR));
     }
     @Test
     void removeRole_RoleNotFound() {
@@ -650,12 +548,9 @@ class UserServiceImplTest {
         //when
         when(userRepository.findById(any())).thenReturn(Optional.of(existingUser));
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Authorization")).thenReturn("Bearer Token");
-
         //then
         assertThrows(RoleNotFoundException.class,
-                ()->userService.removeRole(request,userId,Role.ADMIN));
+                ()->userService.removeRole(userId,Role.ADMIN));
     }
     @Test
     void removeRole_UserNotFound() {
@@ -665,10 +560,8 @@ class UserServiceImplTest {
         //when
         when(userRepository.findById(any())).thenReturn(Optional.empty());
 
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-
         //then
         assertThrows(UserNotFoundException.class,
-                ()->userService.removeRole(request,userId,Role.ADMIN));
+                ()->userService.removeRole(userId,Role.ADMIN));
     }
 }

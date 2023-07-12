@@ -5,7 +5,6 @@ import com.toyota.usermanagementservice.domain.Role;
 import com.toyota.usermanagementservice.dto.UserDTO;
 import com.toyota.usermanagementservice.dto.UserResponse;
 import com.toyota.usermanagementservice.service.abstracts.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -66,12 +65,11 @@ class UserControllerTest {
         UserResponse userResponse=new UserResponse(1L,"firstname","lastname","username",
                 "email@gmail.com", Set.of(Role.OPERATOR), Gender.FEMALE);
         //when
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        Mockito.when(userService.create(any(), any(UserDTO.class))).thenReturn(userResponse);
-        ResponseEntity<UserResponse> result=userController.create(request,userDTO);
+        Mockito.when(userService.create(any(UserDTO.class))).thenReturn(userResponse);
+        ResponseEntity<UserResponse> result=userController.create(userDTO);
 
         //then
-        Mockito.verify(userService).create(any(), any(UserDTO.class));
+        Mockito.verify(userService).create(any(UserDTO.class));
         assertEquals(HttpStatus.CREATED,result.getStatusCode());
         assertNotNull(result.getBody());
         assertEquals(userDTO.getUsername(),result.getBody().getUsername());
@@ -84,13 +82,12 @@ class UserControllerTest {
         UserResponse userResponse=new UserResponse(1L,"updated","updated","updated",
                 "updated@gmail.com", Set.of(Role.OPERATOR), Gender.FEMALE);
         //when
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        Mockito.when(userService.update(any(),Mockito.anyLong(), any(UserDTO.class)))
+        Mockito.when(userService.update(Mockito.anyLong(), any(UserDTO.class)))
                 .thenReturn(userResponse);
-        ResponseEntity<UserResponse> result=userController.update(request,1L,userDTO);
+        ResponseEntity<UserResponse> result=userController.update(1L,userDTO);
 
         //then
-        Mockito.verify(userService).update(any(),Mockito.anyLong(), any(UserDTO.class));
+        Mockito.verify(userService).update(Mockito.anyLong(), any(UserDTO.class));
         assertEquals(HttpStatus.OK,result.getStatusCode());
         assertNotNull(result.getBody());
         assertEquals(userResponse.getUsername(),result.getBody().getUsername());
@@ -101,13 +98,12 @@ class UserControllerTest {
         //given
         UserResponse userResponse=new UserResponse();
         //when
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        Mockito.when(userService.addRole(any(),Mockito.anyLong(), any()))
+        Mockito.when(userService.addRole(Mockito.anyLong(), any()))
                 .thenReturn(userResponse);
-        ResponseEntity<UserResponse> result=userController.addRole(request,1L,Role.ADMIN);
+        ResponseEntity<UserResponse> result=userController.addRole(1L,Role.ADMIN);
 
         //then
-        Mockito.verify(userService).addRole(any(),Mockito.anyLong(), any());
+        Mockito.verify(userService).addRole(Mockito.anyLong(), any());
         assertEquals(HttpStatus.OK,result.getStatusCode());
     }
 
@@ -116,13 +112,12 @@ class UserControllerTest {
         //given
         UserResponse userResponse=new UserResponse();
         //when
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        Mockito.when(userService.removeRole(any(),Mockito.anyLong(), any()))
+        Mockito.when(userService.removeRole(Mockito.anyLong(), any()))
                 .thenReturn(userResponse);
-        ResponseEntity<UserResponse> result=userController.removeRole(request,1L,Role.ADMIN);
+        ResponseEntity<UserResponse> result=userController.removeRole(1L,Role.ADMIN);
 
         //then
-        Mockito.verify(userService).removeRole(any(),Mockito.anyLong(), any());
+        Mockito.verify(userService).removeRole(Mockito.anyLong(), any());
         assertEquals(HttpStatus.OK,result.getStatusCode());
     }
 
@@ -131,13 +126,12 @@ class UserControllerTest {
         //given
         UserResponse userResponse=new UserResponse();
         //when
-        HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-        Mockito.when(userService.deleteUser(any(),Mockito.anyLong()))
+        Mockito.when(userService.deleteUser(Mockito.anyLong()))
                 .thenReturn(userResponse);
-        ResponseEntity<UserResponse> result=userController.deleteUser(request,1L);
+        ResponseEntity<UserResponse> result=userController.deleteUser(1L);
 
         //then
-        Mockito.verify(userService).deleteUser(any(),Mockito.anyLong());
+        Mockito.verify(userService).deleteUser(Mockito.anyLong());
         assertNotNull(result);
         assertEquals(HttpStatus.OK,result.getStatusCode());
     }

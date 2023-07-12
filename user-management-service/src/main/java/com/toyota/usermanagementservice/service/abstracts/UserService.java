@@ -9,14 +9,14 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface UserService {
-    UserResponse create(HttpServletRequest request,UserDTO userDTO);
-    UserResponse update(HttpServletRequest request,Long userId,UserDTO userDTO);
-    UserResponse deleteUser(HttpServletRequest request,Long userId);
+    UserResponse create(UserDTO userDTO);
+    UserResponse update(Long userId,UserDTO userDTO);
+    UserResponse deleteUser(Long userId);
 
     Page<UserResponse> getAll(String firstname, String lastname, String username, String email,
                               int page, int size, List<String> sortList, String sortOrder);
 
-    UserResponse addRole(HttpServletRequest request,Long userId,Role roles);
+    UserResponse addRole(Long userId,Role roles);
 
-    UserResponse removeRole(HttpServletRequest request, Long userId, Role role);
+    UserResponse removeRole(Long userId, Role role);
 }

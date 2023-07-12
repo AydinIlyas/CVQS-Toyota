@@ -4,7 +4,6 @@ import com.toyota.usermanagementservice.domain.Role;
 import com.toyota.usermanagementservice.dto.UserDTO;
 import com.toyota.usermanagementservice.dto.UserResponse;
 import com.toyota.usermanagementservice.service.abstracts.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -58,39 +57,36 @@ public class UserController {
      * @return UserResponse of created user
      */
     @PostMapping("/create")
-    public ResponseEntity<UserResponse> create(HttpServletRequest request,@RequestBody @Valid UserDTO userDTO)
+    public ResponseEntity<UserResponse> create(@RequestBody @Valid UserDTO userDTO)
     {
-        UserResponse response=userService.create(request,userDTO);
+        UserResponse response=userService.create(userDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("update/{user_id}")
-    public ResponseEntity<UserResponse> update (HttpServletRequest request,
-                                @PathVariable("user_id") Long user_id,
-                                @RequestBody UserDTO userDTO)
+    public ResponseEntity<UserResponse> update (@PathVariable("user_id") Long user_id,
+                                                @RequestBody UserDTO userDTO)
     {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.update(request,user_id,userDTO));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.update(user_id,userDTO));
     }
     @PutMapping("/role/add/{user_id}")
-    public ResponseEntity<UserResponse> addRole(HttpServletRequest request,
-                                                @PathVariable("user_id") Long user_id,
+    public ResponseEntity<UserResponse> addRole(@PathVariable("user_id") Long user_id,
                                                 @RequestBody Role role)
     {
-        UserResponse response=userService.addRole(request,user_id,role);
+        UserResponse response=userService.addRole(user_id,role);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @PutMapping("/role/remove/{user_id}")
-    public ResponseEntity<UserResponse> removeRole(HttpServletRequest request,
-                                                @PathVariable("user_id") Long user_id,
-                                                @RequestBody Role role)
+    public ResponseEntity<UserResponse> removeRole(@PathVariable("user_id") Long user_id,
+                                                   @RequestBody Role role)
     {
-        UserResponse response=userService.removeRole(request,user_id,role);
+        UserResponse response=userService.removeRole(user_id,role);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @PutMapping("/delete")
-    public ResponseEntity<UserResponse> deleteUser(HttpServletRequest request,@RequestBody Long userId)
+    public ResponseEntity<UserResponse> deleteUser(@RequestBody Long userId)
     {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUser(request,userId));
+        return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUser(userId));
     }
 
 }

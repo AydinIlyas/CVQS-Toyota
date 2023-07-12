@@ -171,6 +171,7 @@ public class UserServiceImpl implements UserService {
             User user = optionalUser.get();
             user.setDeleted(true);
             userRepository.save(user);
+            revokeUserTokens(user);
             logger.info("User deleted successfully. {}", user.getUsername());
             return true;
         }
