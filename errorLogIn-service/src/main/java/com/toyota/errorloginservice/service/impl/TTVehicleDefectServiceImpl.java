@@ -46,6 +46,9 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
 
 
     /**
+     * Gets defects with paging, filtering and sorting
+     * @param page desired page
+     * @param size size of page
      * @param type       desired type of defect
      * @param state      desired state of defect
      * @param reportTime desired reportTime of defect
@@ -53,7 +56,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
      * @param vin        desired vin of defect
      * @param sortOrder  desired sort direction
      * @param sortBy     desired fields for sorting
-     * @return Page of defects
+     * @return PaginationResponse with a list of TTVehicleDefectDTO
      */
     @Override
     public PaginationResponse<TTVehicleDefectDTO> getAllFiltered(int page, int size, String type, String state, String reportTime,
@@ -72,6 +75,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     }
 
     /**
+     * Adds image to defect
      * @param defectId ID of the defect.
      * @param image    Image to add.
      */
@@ -101,8 +105,9 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     }
 
     /**
+     * Gets image with associated locations
      * @param defectId ID of the defect.
-     * @return ImageDTO
+     * @return ImageDTO which contains image and locations
      */
     @Override
     public ImageDTO getImage(Long defectId) {
@@ -124,7 +129,8 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     }
 
     /**
-     * @param defectId
+     * Removes image from defect
+     * @param defectId ID of defect
      */
     @Override
     public void removeImage(Long defectId) {
@@ -142,10 +148,9 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     }
 
     /**
-     * Adds a defect to the vehicle if present.
-     *
-     * @param vehicleId Vehicle id of the vehicle which has the defect.
-     * @param defectDTO Defect object which will added to the vehicle.
+     * Adds a defect to vehicle.
+     * @param vehicleId ID of the vehicle.
+     * @param defectDTO TTVehicleDefectDTO which will be added to the vehicle.
      */
     @Override
     public TTVehicleDefectDTO addDefect(String username, Long vehicleId,
@@ -172,9 +177,9 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
     /**
      * Updates defect
      *
-     * @param id        ID of defect
+     * @param id ID of defect
      * @param defectDTO Updated defect
-     * @return TTVehicleDefectDTO updated
+     * @return TTVehicleDefectDTO with the updated defect
      */
     @Override
     public TTVehicleDefectDTO update(Long id, TTVehicleDefectDTO defectDTO) {
@@ -208,7 +213,7 @@ public class TTVehicleDefectServiceImpl implements TTVehicleDefectService {
      * Soft deletes defect and associated locations, if present.
      *
      * @param defectId Defect id of the defect which will be deleted.
-     * @return TTVehicleDefectDTO
+     * @return TTVehicleDefectDTO which was deleted
      */
     @Override
     @Transactional

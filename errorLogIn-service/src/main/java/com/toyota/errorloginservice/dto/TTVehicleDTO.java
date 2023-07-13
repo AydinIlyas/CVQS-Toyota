@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * DTO for tt_vehicle used as input.
+ * DTO for tt_vehicle used as input and response.
  */
 public class TTVehicleDTO {
     private Long id;

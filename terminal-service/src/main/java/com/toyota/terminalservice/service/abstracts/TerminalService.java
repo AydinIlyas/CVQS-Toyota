@@ -11,7 +11,9 @@ public interface TerminalService {
      * Lists Terminals with paging, sorting and filtering.
      * @param page Page to be displayed
      * @param size Size of the page
-     * @param name Filter for the field name.
+     * @param depCode Filter for the field depCode.
+     * @param depName Filter for the field depName.
+     * @param shopCode Filter for the field shopCode.
      * @param isActive Filter for the field isActive
      * @param sortBy Which field to sort by
      * @param sortDirection Sort Direction (ASC/DESC)

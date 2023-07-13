@@ -1,7 +1,7 @@
 package com.toyota.errorloginservice.exception;
 
 /**
- * Custom EntityNotFoundException
+ * EntityNotFoundException thrown when entity not found
  */
 public class EntityNotFoundException extends RuntimeException{
     public EntityNotFoundException(String message) {

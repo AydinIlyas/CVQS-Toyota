@@ -36,6 +36,9 @@ public class TTVehicleServiceImpl implements TTVehicleService {
 
 
     /**
+     * Gets vehicle with filtering, paging and sorting
+     * @param page desired page
+     * @param size size of the page
      * @param sortBy Sorted By field
      * @param sortOrder Sort Order (ASC/DESC)
      * @param model desired model
@@ -44,7 +47,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * @param transmissionType desired transmission type
      * @param engineType desired engineType
      * @param color desired color
-     * @return List<TTVehicleDTO>
+     * @return PaginationResponse with list of TTVehicleDTO
      */
     @Override
     public PaginationResponse<TTVehicleDTO> getVehiclesFiltered(int page,int size,List<String> sortBy, String sortOrder,
@@ -68,7 +71,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * Adds TTVehicle to database.
      *
      * @param ttVehicleDTO Vehicle object which will be added to database.
-     * @return TTVehicle Response which represents the added vehicle.
+     * @return TTVehicleDTO which represents the added vehicle.
      */
     @Override
     public TTVehicleDTO addVehicle(TTVehicleDTO ttVehicleDTO) {
@@ -89,7 +92,7 @@ public class TTVehicleServiceImpl implements TTVehicleService {
      * Updates Vehicle
      * @param id ID of vehicle
      * @param ttVehicleDTO Updated vehicle
-     * @return TTVehicleResponse
+     * @return TTVehicleDTO which represents updated vehicle
      */
     @Override
     public TTVehicleDTO updateVehicle(Long id,TTVehicleDTO ttVehicleDTO)
@@ -147,9 +150,10 @@ public class TTVehicleServiceImpl implements TTVehicleService {
     }
 
     /**
-     * Soft deletes TTVehicle and associated defects and locations, if present.
+     * Soft deletes TTVehicle with associated defects and locations, if present.
      *
      * @param vehicleId Vehicle id of the vehicle which will be deleted.
+     * @return TTVehicleDTO which represents deleted vehicle
      */
     @Override
     @Transactional

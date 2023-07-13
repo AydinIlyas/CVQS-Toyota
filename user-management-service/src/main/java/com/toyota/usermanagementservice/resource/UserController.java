@@ -34,7 +34,7 @@ public class UserController {
      * @param sortOrder Sorting direction (ASC/DESC)
      * @return Page of UserResponses
      */
-    @GetMapping("/list")
+    @GetMapping("/users")
     public Page<UserResponse> getAll(
             @RequestParam(defaultValue = "")String firstname,
             @RequestParam(defaultValue = "")String lastname,

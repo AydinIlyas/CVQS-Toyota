@@ -2,6 +2,9 @@ package com.toyota.errorlistingservice.dto;
 
 import java.util.List;
 
+/**
+ * Class for receiving image data with locations
+ */
 public class ImageDTO {
     private byte[] image;
     private List<TTVehicleDefectLocationDTO> locationDTO;

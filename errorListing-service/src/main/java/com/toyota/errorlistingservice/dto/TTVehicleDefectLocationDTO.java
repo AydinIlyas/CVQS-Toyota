@@ -2,7 +2,7 @@ package com.toyota.errorlistingservice.dto;
 
 
 /**
- * DTO for tt_vehicle_defect_location used as input.
+ * DTO for tt_vehicle_defect_location for receiving locations.
  */
 public class TTVehicleDefectLocationDTO {
     private Long id;

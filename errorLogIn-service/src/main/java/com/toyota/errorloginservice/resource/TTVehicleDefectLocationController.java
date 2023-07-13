@@ -18,19 +18,19 @@ import javax.swing.text.html.parser.Entity;
  * Controller for tt_vehicle_defect_location related requests.
  */
 @RestController
-@RequestMapping("/defectLocation")
+@RequestMapping("/location")
 @RequiredArgsConstructor
 public class TTVehicleDefectLocationController {
     private final TTVehicleDefectLocationService defectLocationService;
 
     /**
      * Adds Location to defect.
-     * @param defectId Defect id where the location should be added.
-     * @param location Location object which should be added.
-     * @return ResponseEntity with String message.
+     * @param defectId ID of defect
+     * @param location TTVehicleDefectLocationDTO which should be added to the defect.
+     * @return ResponseEntity with matching status
      */
-    @PostMapping("/add")
-    public ResponseEntity<Entity> addLocation(@RequestParam Long defectId,
+    @PostMapping("/add/{defectId}")
+    public ResponseEntity<Entity> addLocation(@PathVariable("defectId") Long defectId,
                                                         @RequestBody @Valid TTVehicleDefectLocationDTO location)
     {
         defectLocationService.add(defectId,location);
@@ -41,10 +41,10 @@ public class TTVehicleDefectLocationController {
      * Updates location
      * @param id ID of location which will be updated
      * @param locationDTO updated location.
-     * @return ResponseEntity<TTVehicleDefectDTO> updated defect
+     * @return ResponseEntity with matching status
      */
     @PutMapping("/update/{id}")
-    public ResponseEntity<TTVehicleDefectDTO> update(@PathVariable("id") Long id,
+    public ResponseEntity<Entity> update(@PathVariable("id") Long id,
                                                      @Validated(UpdateValidation.class)
                                                      @RequestBody TTVehicleDefectLocationDTO locationDTO)
     {
@@ -53,8 +53,8 @@ public class TTVehicleDefectLocationController {
     }
     /**
      * Soft deletes location from database.
-     * @param locationId Location id of the location that should be deleted.
-     * @return ResponseEntity with String message
+     * @param locationId ID of  location that should be deleted.
+     * @return ResponseEntity with matching status
      */
     @PutMapping("/delete")
     public ResponseEntity<Entity> deleteLocation(@RequestBody Long locationId)

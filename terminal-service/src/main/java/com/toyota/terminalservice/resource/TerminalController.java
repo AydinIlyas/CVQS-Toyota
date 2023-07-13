@@ -29,7 +29,7 @@ public class TerminalController {
      * @param isActive Filter for the field isActive
      * @param sortBy Which field to sort by
      * @param sortDirection Sort Direction (ASC/DESC)
-     * @return Page of terminals
+     * @return Page with terminals
      */
     @GetMapping("/getAll")
     public Page<TerminalDTO> getActiveTerminals(@RequestParam(defaultValue = "0") int page,
@@ -46,10 +46,10 @@ public class TerminalController {
 
     /**
      * Creates Terminal in database
-     * @param terminalDTO Input for terminal.
-     * @return ResponseEntity<Entity> with status.
+     * @param terminalDTO TerminalDTO used as input.
+     * @return ResponseEntity with status.
      */
-    @PostMapping("/addTerminal")
+    @PostMapping("/add")
     public ResponseEntity<Entity> createTerminal(@RequestBody @Valid TerminalDTO terminalDTO)
     {
 
@@ -59,7 +59,7 @@ public class TerminalController {
 
     /**
      * @param depCode department code of terminal to be activated.
-     * @return ResponseEntity<Entity> with status
+     * @return ResponseEntity with status
      */
     @PutMapping("/activate")
     public ResponseEntity<Entity> activateTerminal(@RequestBody String depCode)
@@ -71,7 +71,7 @@ public class TerminalController {
 
     /**
      * @param depCode department code of terminal to be disabled
-     * @return ResponseEntity<Entity> with status
+     * @return ResponseEntity with status
      */
     @PutMapping("/disable")
     public ResponseEntity<Entity> disableTerminal(@RequestBody String depCode)
@@ -82,7 +82,7 @@ public class TerminalController {
 
     /**
      * @param depCode department code of terminal to be soft deleted
-     * @return ResponseEntity<Entity> with status
+     * @return ResponseEntity with status
      */
     @PutMapping("/delete")
     public ResponseEntity<Entity> deleteTerminal(@RequestBody String depCode){

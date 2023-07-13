@@ -37,8 +37,7 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
 
 
     /**
-     * Adding location to defect. First it checks if defect exists. If not it throws an EntityNotFoundException.
-     * Else it adds it to the defect and saves it to the database.
+     * Adds location to defect.
      * @param defectId Defect id where the location should be added.
      * @param defectLocationDTO Location object which will be added.
      */
@@ -79,9 +78,8 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
     }
 
     /**
-     * Soft deletes the location. First, it is checked whether a location exists.
-     * Then it will be soft deleted if it exists.
-     * @param locationId Location id of the entity which will be deleted.
+     * Soft deletes the location
+     * @param locationId ID of TTVehicleDefectLocation which will be deleted.
      */
     @Override
     @Transactional
@@ -102,8 +100,8 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
     }
 
     /**
-     * @param id ID of Location
-     * @param locationDTO Updated LocationDTO
+     * @param id ID of TTVehicleDefectLocation
+     * @param locationDTO Updated Location
      */
     @Override
     public void update(Long id, TTVehicleDefectLocationDTO locationDTO) {
@@ -147,6 +145,12 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
         }
 
     }
+
+    /**
+     * Checks if the color is valid
+     * @param color Color in hexadecimal
+     * @return boolean
+     */
     private boolean isValidColorHex(String color) {
         if(color==null)return false;
         String regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
@@ -155,6 +159,12 @@ public class TTVehicleDefectLocationServiceImpl implements TTVehicleDefectLocati
         return matcher.matches();
 
     }
+
+    /**
+     * Checks if the location is in the bounds of image or not
+     * @param defect ID of defect which contains the image
+     * @param defectLocationDTO Locations which will be checked
+     */
     private void isLocationValid(TTVehicleDefect defect, TTVehicleDefectLocationDTO defectLocationDTO)
     {
         try

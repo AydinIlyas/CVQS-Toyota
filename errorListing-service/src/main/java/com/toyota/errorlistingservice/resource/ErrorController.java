@@ -15,7 +15,7 @@ import java.util.List;
  * Controller class for handling requests related to list vehicles.
  */
 @RestController
-@RequestMapping("/errors")
+@RequestMapping("/list")
 @RequiredArgsConstructor
 public class ErrorController {
     private final ErrorListingServiceImpl service;
@@ -32,9 +32,9 @@ public class ErrorController {
      * @param size objects on a page
      * @param sortBy sorted by Field
      * @param sortOrder sort Direction
-     * @return vehicle objects
+     * @return Mono pagination response with vehicles
      */
-    @GetMapping("/getVehicles")
+    @GetMapping("/vehicles")
     public Mono<PaginationResponse<Object>> getAllVehiclesFiltered(@RequestParam(defaultValue = "0") int page,
                                                                    @RequestParam(defaultValue = "5") int size,
                                                                    @RequestParam(defaultValue = "") List<String> sortBy,
@@ -63,9 +63,9 @@ public class ErrorController {
      * @param vin desired vehicle id number
      * @param sortOrder desired sorting direction ASC,DESC
      * @param sortBy ordered by fields
-     * @return Custom paging response
+     * @return Mono pagination response with defects
      */
-    @GetMapping("getDefects")
+    @GetMapping("defects")
     public Mono<PaginationResponse<Object>> getAllDefectsFiltered(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
@@ -83,8 +83,14 @@ public class ErrorController {
         return service.getDefects(page,size,type, state, reportTime, reportedBy,
                 vin, sortOrder, sortBy);
     }
-
-    @GetMapping("/get/image/{defectId}")
+    /**
+     * Gets processed image
+     * @param defectId ID of defect with the image
+     * @param format Format of the image (png/jpeg)
+     * @param processed Specifies whether the image has been processed.
+     * @return byte[] image
+     */
+    @GetMapping("/defect-image/{defectId}")
     public ResponseEntity<byte[]> getImage(@PathVariable("defectId") Long defectId,
                                            @RequestParam(defaultValue = "jpeg") String format,
                                            @RequestParam(defaultValue = "true") boolean processed)

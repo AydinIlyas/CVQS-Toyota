@@ -48,7 +48,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @param size             objects on a page
      * @param sortBy           sorted by Field
      * @param sortOrder        sort Direction
-     * @return vehicle objects
+     * @return Mono custom paging response
      */
     @Override
     public Mono<PaginationResponse<Object>> getVehicles(int page, int size, List<String> sortBy,
@@ -56,7 +56,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                                                         String transmissionType, String engineType, String color) {
         logger.info("Sending request for fetching vehicles to errorLogin-service");
         return webClientBuilder.build().get()
-                .uri("http://error-login-service/ttvehicle/getAll", uriBuilder ->
+                .uri("http://error-login-service/vehicle/getAll", uriBuilder ->
                         uriBuilder
                                 .queryParam("page", page)
                                 .queryParam("size", size)
@@ -82,7 +82,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     }
 
     /**
-     * Gets defects with paging, filtering and sorting. Sends request to errorLogin.
+     * Gets defects with paging, filtering and sorting.
      *
      * @param page       page number starts from 0
      * @param size       entity amount on a page
@@ -93,7 +93,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
      * @param vin        desired vehicle id number
      * @param sortOrder  desired sorting direction ASC,DESC
      * @param sortBy     ordered by fields
-     * @return Custom paging response
+     * @return Mono Custom paging response
      */
     @Override
     public Mono<PaginationResponse<Object>> getDefects(int page, int size, String type, String state,
@@ -101,7 +101,7 @@ public class ErrorListingServiceImpl implements ErrorListingService {
                                                        String sortOrder, String sortBy) {
         logger.info("Sending request for fetching defects to errorLogin-service");
         return webClientBuilder.build().get()
-                .uri("http://error-login-service/ttvehicleDefect/getAll", uriBuilder ->
+                .uri("http://error-login-service/defect/getAll", uriBuilder ->
                         uriBuilder
                                 .queryParam("page", page)
                                 .queryParam("size", size)
@@ -125,17 +125,18 @@ public class ErrorListingServiceImpl implements ErrorListingService {
     }
 
     /**
-     * @param defectId
-     * @param format
-     * @param processed
-     * @return
+     * Gets processed image
+     * @param defectId ID of defect with the image
+     * @param format Format of the image (png/jpeg)
+     * @param processed Specifies whether the image has been processed.
+     * @return byte[] image
      */
     @Override
     public byte[] getImage(Long defectId,
                            String format,
                            boolean processed) {
         ImageDTO imageDTO = webClientBuilder.build().get()
-                .uri("http://error-login-service/ttvehicleDefect/get/image/{defectId}", defectId)
+                .uri("http://error-login-service/defect/{defectId}/get/image", defectId)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse -> {
                     logger.warn("Defect not found. ID: {}", defectId);

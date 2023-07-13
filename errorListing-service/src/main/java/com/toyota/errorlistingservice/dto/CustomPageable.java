@@ -3,6 +3,9 @@ package com.toyota.errorlistingservice.dto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Custom Pageable for storing details of page
+ */
 @Data
 @NoArgsConstructor
 public class CustomPageable {

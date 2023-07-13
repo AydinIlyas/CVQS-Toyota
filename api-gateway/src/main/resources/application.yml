@@ -12,7 +12,7 @@ spring:
         - id: error-ttVehicle-getVehicle
           uri: lb://error-login-service
           predicates:
-            - Path=/ttvehicle/getAll
+            - Path=/vehicle/getAll
           filters:
             - AuthenticationFilter
           metadata:
@@ -20,7 +20,7 @@ spring:
         - id: error-ttVehicle
           uri: lb://error-login-service
           predicates:
-            - Path=/ttvehicle/**
+            - Path=/vehicle/**
           filters:
             - AuthenticationFilter
           metadata:
@@ -28,7 +28,7 @@ spring:
         - id: error-ttDefect-getDefects
           uri: lb://error-login-service
           predicates:
-            - Path=/ttvehicleDefect/getAll
+            - Path=/defect/getAll
           filters:
             - AuthenticationFilter
           metadata:
@@ -36,7 +36,7 @@ spring:
         - id: error-ttDefect-getImage
           uri: lb://error-login-service
           predicates:
-            - Path=/ttvehicleDefect/get/image/**
+            - Path=/defect/{defectImage}/get/image
           filters:
             - AuthenticationFilter
           metadata:
@@ -44,7 +44,7 @@ spring:
         - id: error-ttDefect
           uri: lb://error-login-service
           predicates:
-            - Path=/ttvehicleDefect/**
+            - Path=/defect/**
           filters:
             - AuthenticationFilter
           metadata:
@@ -52,7 +52,7 @@ spring:
         - id: error-location
           uri: lb://error-login-service
           predicates:
-            - Path=/defectLocation/**
+            - Path=/location/**
           filters:
             - AuthenticationFilter
           metadata:
@@ -60,7 +60,7 @@ spring:
         - id: error-list
           uri: lb://error-listing-service
           predicates:
-            - Path=/errors/**
+            - Path=/list/**
           filters:
             - AuthenticationFilter
           metadata:

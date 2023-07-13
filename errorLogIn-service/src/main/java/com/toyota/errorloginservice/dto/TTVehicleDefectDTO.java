@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * DTO for tt_vehicle_defect used as input.
+ * DTO for tt_vehicle_defect used as input and response.
  */
 
 public class TTVehicleDefectDTO {

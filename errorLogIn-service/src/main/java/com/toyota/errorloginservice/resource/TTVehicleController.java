@@ -17,12 +17,15 @@ import java.util.List;
  * Controller class for handling requests related to tt_vehicle.
  */
 @RestController
-@RequestMapping("/ttvehicle")
+@RequestMapping("/vehicle")
 @RequiredArgsConstructor
 public class TTVehicleController {
     private final TTVehicleService ttVehicleService;
 
     /**
+     * Gets vehicles with paging, sorting and filtering
+     * @param page desired page
+     * @param size desired size of the page
      * @param model desired model
      * @param vin desired vin
      * @param engineType desired engineType
@@ -50,11 +53,11 @@ public class TTVehicleController {
     }
 
     /**
-     * Adding a new vehicle to the database.
+     * Adds a new vehicle to the database.
      * @param ttVehicleDTO Vehicle that should be added
      * @return A ResponseEntity with the added TTVehicleResponse and HTTP status
      */
-    @PostMapping("/addVehicle")
+    @PostMapping("/add")
     public ResponseEntity<TTVehicleDTO> addVehicle(@RequestBody @Valid TTVehicleDTO ttVehicleDTO)
     {
         TTVehicleDTO response=ttVehicleService.addVehicle(ttVehicleDTO);
@@ -88,7 +91,7 @@ public class TTVehicleController {
      * @param vehicleId Vehicle id that should be deleted
      * @return ResponseEntity with the deleted TTVehicleResponse
      */
-    @PutMapping("/deleteVehicle")
+    @PutMapping("/delete")
     public ResponseEntity<TTVehicleDTO> deleteVehicle(@RequestBody Long vehicleId)
     {
         TTVehicleDTO vehicleResponse=ttVehicleService.deleteVehicle(vehicleId);
