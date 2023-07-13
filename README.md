@@ -94,13 +94,15 @@ To get started with this project with docker, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/AydinIlyas/SpringBoot-Microservices`
 2. Build the project using Maven: `mvn clean install`
-3. Start each microservice individually by navigating to its directory and
-   running `docker-compose -f docker-compose.dev.yml up --build`
+3. Start the microservices using Docker Compose: Navigate to the root directory of the project (the parent module) and
+   run `docker-compose -f docker-compose.dev.yml up --build`.
 4. Access the microservices through their respective endpoints
+
+## Usage
+- There is by default a user with the username: 'admin' and password: 'admin'
+- You can use this account to create new users with roles etc. and go on.
 
 ## Contributing
 
 Contributions are welcome! If you find any issues or want to add new features, please submit a pull request. Make sure
 to follow the existing coding style and provide clear commit messages.
-
-## License

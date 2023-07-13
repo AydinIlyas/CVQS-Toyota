@@ -155,27 +155,6 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleBearerTokenNotFoundException() {
-        //given
-        String message="Bearer not found";
-        BearerTokenNotFoundException bearerTokenNotFoundException=new BearerTokenNotFoundException(message);
-
-        //when
-        String path="/test";
-        HttpServletRequest request= mock(HttpServletRequest.class);
-        Mockito.when(request.getRequestURI()).thenReturn(path);
-        ResponseEntity<Object> response=globalExceptionHandler.handleBearerTokenNotFoundException
-                (bearerTokenNotFoundException,request);
-        //then
-        ErrorResponse errorResponse=(ErrorResponse) response.getBody();
-        Assertions.assertNotNull(errorResponse);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.name(),errorResponse.getError());
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(),errorResponse.getStatus());
-        Assertions.assertEquals(message,errorResponse.getMessage());
-        Assertions.assertEquals(path,errorResponse.getPath());
-    }
-
-    @Test
     void handleMethodArgumentNotValid() {
         //given
         MethodArgumentNotValidException methodArgumentNotValidException = mock(MethodArgumentNotValidException.class);

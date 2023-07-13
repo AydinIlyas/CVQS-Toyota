@@ -21,6 +21,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Date;
 
+/**
+ * Filter
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -30,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final Logger logger= LogManager.getLogger(JwtAuthenticationFilter.class);
     /**
+     * Checks if token is valid and handles it
      * @param request HttpServletRequest
      * @param response HttpServletResponse
      * @param filterChain FilterChain

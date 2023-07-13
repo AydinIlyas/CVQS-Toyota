@@ -29,6 +29,7 @@ public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler{
     }
 
     /**
+     * Handles exceptions
      * @param errorAttributes ErrorAttributes
      * @return RouterFunction<ServerResponse>
      */

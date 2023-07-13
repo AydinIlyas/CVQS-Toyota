@@ -34,8 +34,9 @@ public class JwtServiceImpl implements JwtService {
     }
 
     /**
-     * @param jwt
-     * @return
+     * Extracts token ID
+     * @param jwt Token
+     * @return Token ID
      */
     @Override
     public String extractTokenId(String jwt) {
@@ -52,6 +53,7 @@ public class JwtServiceImpl implements JwtService {
 
 
     /**
+     * Extracts all claims
      * @param token Token
      * @return Claims
      */
@@ -64,10 +66,20 @@ public class JwtServiceImpl implements JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    /**
+     * @return Signing key
+     */
     private Key getSignInKey() {
         byte[] keyBytes= Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    /**
+     * Generates token
+     * @param userDetails User details
+     * @return Token
+     */
     @Override
     public String generateToken(UserDetails userDetails) {
         Map<String,Object> claims=Map.of("jti",UUID.randomUUID().toString());

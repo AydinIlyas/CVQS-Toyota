@@ -111,6 +111,10 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    /**
+     * @param user token owner
+     * @param jwt token
+     */
     private void saveUserToken(User user, String jwt) {
         String tokenId = jwtService.extractTokenId(jwt);
         Date currentDate = new Date();
@@ -124,6 +128,10 @@ public class UserServiceImpl implements UserService {
         logger.debug("Token saved successfully!");
     }
 
+    /**
+     * Revokes all valid tokens of user
+     * @param user Token owner
+     */
     private void revokeUserTokens(User user) {
         List<Token> tokens = tokenRepository.findAllValidTokensByUser(user.getId());
 
@@ -132,8 +140,10 @@ public class UserServiceImpl implements UserService {
         logger.debug("Token revoked successfully");
     }
 
+
     /**
-     *
+     * Logout
+     * @param jwtToken Token
      */
     @Override
     public void logout(String jwtToken) {
@@ -239,7 +249,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Returns permissions and username
+     * Returns roles and username
      *
      * @return Map with Permissions
      */

@@ -63,12 +63,25 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * Updates user
+     * @param user_id ID of user to be updated
+     * @param userDTO Updated userDTO
+     * @return ResponseEntity with updated User.
+     */
     @PutMapping("update/{user_id}")
     public ResponseEntity<UserResponse> update (@PathVariable("user_id") Long user_id,
                                                 @RequestBody UserDTO userDTO)
     {
         return ResponseEntity.status(HttpStatus.OK).body(userService.update(user_id,userDTO));
     }
+
+    /**
+     * Adds role to user
+     * @param user_id ID of user
+     * @param role Role to be added
+     * @return ResponseEntity with UserResponse
+     */
     @PutMapping("/role/add/{user_id}")
     public ResponseEntity<UserResponse> addRole(@PathVariable("user_id") Long user_id,
                                                 @RequestBody Role role)
@@ -76,6 +89,13 @@ public class UserController {
         UserResponse response=userService.addRole(user_id,role);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    /**
+     * Removes role from user
+     * @param user_id ID of user
+     * @param role Role to be removed
+     * @return ResponseEntity with UserResponse
+     */
     @PutMapping("/role/remove/{user_id}")
     public ResponseEntity<UserResponse> removeRole(@PathVariable("user_id") Long user_id,
                                                    @RequestBody Role role)
@@ -83,6 +103,12 @@ public class UserController {
         UserResponse response=userService.removeRole(user_id,role);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    /**
+     * Deletes User
+     * @param userId ID of user
+     * @return UserResponse of deleted user
+     */
     @PutMapping("/delete")
     public ResponseEntity<UserResponse> deleteUser(@RequestBody Long userId)
     {

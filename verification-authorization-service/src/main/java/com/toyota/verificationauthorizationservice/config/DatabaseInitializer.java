@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Class for adding data to database
+ */
 @Component
 public class DatabaseInitializer {
     private final RoleRepository roleRepository;

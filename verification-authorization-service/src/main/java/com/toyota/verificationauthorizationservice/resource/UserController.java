@@ -59,18 +59,36 @@ public class UserController {
                           @PathVariable("oldUsername") String oldUsername) {
         return userService.updateUsername(newUsername, oldUsername);
     }
+
+    /**
+     * Logs out
+     * @param token Token
+     * @return ResponseEntity with status
+     */
     @PostMapping("/logout")
     public ResponseEntity<Entity> logout(@RequestHeader("Authorization") String token)
     {
         userService.logout(token);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+    /**
+     * Adds role to user
+     * @param username Username of user
+     * @param role Role to be added
+     * @return ResponseEntity with user.
+     */
     @PutMapping("/addRole/{username}")
     public boolean addRole(@PathVariable("username")String username,@RequestBody String role)
     {
         return userService.addRole(username,role);
     }
-
+    /**
+     * Removes role from user
+     * @param username Username of user
+     * @param role Role to be removed
+     * @return ResponseEntity with user.
+     */
     @PutMapping("/removeRole/{username}")
     public boolean removeRole(@PathVariable("username")String username,@RequestBody String role)
     {
@@ -78,6 +96,12 @@ public class UserController {
     }
 
 
+    /**
+     * Changes Password
+     * @param request HttpServletRequest for extracting token
+     * @param passwordsDTO Old and new password
+     * @return ResponseEntity with status
+     */
     @PutMapping("/changePassword")
     public ResponseEntity<Entity> changePassword(HttpServletRequest request,@Valid @RequestBody PasswordsDTO passwordsDTO) {
         boolean success = userService.changePassword(request, passwordsDTO);

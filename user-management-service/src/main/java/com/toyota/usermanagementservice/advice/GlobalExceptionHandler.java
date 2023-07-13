@@ -102,14 +102,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorResponse.setPath(request.getRequestURI());
         return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
     }
-    @ExceptionHandler(BearerTokenNotFoundException.class)
-    public ResponseEntity<Object> handleBearerTokenNotFoundException(BearerTokenNotFoundException ex,
-                                                                     HttpServletRequest request)
-    {
-        ErrorResponse errorResponse=new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage());
-        errorResponse.setPath(request.getRequestURI());
-        return new ResponseEntity<>(errorResponse,HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+
     /**
      * Handles MethodArgumentNotValidException by returning a ResponseEntity with an appropriate error response.
      *

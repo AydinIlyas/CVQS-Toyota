@@ -16,6 +16,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+/**
+ * GatewayFilter for authentication
+ */
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
     private final WebClient.Builder webClientBuilder;
@@ -28,6 +31,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         this.routeValidator = routeValidator;
     }
 
+    /**
+     * Checks if user is authorized or not
+     * @param config Config
+     * @return GatewayFilter
+     */
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {

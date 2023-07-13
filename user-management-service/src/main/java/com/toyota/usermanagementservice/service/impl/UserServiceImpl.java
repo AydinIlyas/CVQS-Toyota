@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Updates user credentials.
+     * Updates user
      *
      * @param userId  ID of user to be updated.
      * @param userDTO Updated user information.
@@ -317,7 +317,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Adds new role to user
+     * Removes role from user
      *
      * @param userId User ID of the user who is to lose the existing role
      * @param role   Role to remove

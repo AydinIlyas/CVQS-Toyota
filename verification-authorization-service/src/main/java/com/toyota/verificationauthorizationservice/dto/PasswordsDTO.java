@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+/**
+ * DTO which stores old and new password for updating
+ */
 public class PasswordsDTO {
     @NotBlank(message="Old password must not be blank")
     String oldPassword;
