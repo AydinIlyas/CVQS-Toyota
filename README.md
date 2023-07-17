@@ -90,16 +90,23 @@ To get started with this project without docker, follow these steps:
 1. Clone the repository: `git clone https://github.com/AydinIlyas/SpringBoot-Microservices`
 2. Build the project using Maven: `mvn clean install`
 3. Start each microservice individually by navigating to its directory and running `mvn spring-boot:run`
-4. Access the microservices through their respective endpoints
+4. Access the microservices through their respective endpoints   
 
+To stop it:
+1. Press `CTRL + C`  
+  
 To get started with this project with docker, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/AydinIlyas/SpringBoot-Microservices`
 2. Build the project using Maven: `mvn clean install`
 3. Start the microservices using Docker Compose: Navigate to the root directory of the project (the parent module) and
-   run `docker-compose -f docker-compose.dev.yml up --build`.
+   run `docker-compose up --build` for running in the background `docker-compose up --build -d`.
 4. Access the microservices through their respective endpoints
 
+To stop containers:
+1. Stop the microservices using Docker Compose: Navigate to the root directory of the project (the parent module) and
+   run `docker-compose down`.
+## Usage
 - There is by default a user with the username: 'admin' and password: 'admin'
 - You should use this account to create new accounts for other users.
 - You should use the generated bearer token obtained during login for all requests to the services.
