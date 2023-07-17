@@ -38,7 +38,6 @@ services:
       - discovery-server
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ToyotaProject
     networks:
       - toyota
 
@@ -101,13 +100,13 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password1
       - POSTGRES_DB=ToyotaProject
-      - PG_DATA= /data/postgres
     ports:
       - '5432:5432'
     volumes:
-      - ./postgres:/data/postgres
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - toyota
-
+volumes:
+  postgres_data:
 networks:
   toyota:

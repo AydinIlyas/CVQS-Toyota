@@ -104,6 +104,15 @@ To get started with this project with docker, follow these steps:
 - You should use this account to create new accounts for other users.
 - You should use the generated bearer token obtained during login for all requests to the services.
 
+## Docker
+
+- Each microservice in the project is containerized, with its own dedicated container.
+- The base image used for the containers is Eclipse Temurin 17 JDK Alpine
+- The project includes a containerized PostgreSQL database, which is shared among all microservices.
+- Data persistence is achieved using a volume named `postgres_data`
+- The microservices and the database are connected within a custom network called `toyota`, providing improved isolation
+  and communication between the services.
+
 ## API Documentation
 
 ### 1. Error Login Service
