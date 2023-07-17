@@ -93,7 +93,7 @@ To get started with this project without docker, follow these steps:
 4. Access the microservices through their respective endpoints   
 
 To stop it:
-1. Press `CTRL + C`  
+1. Press `CTRL + C` for each started microservice.  
   
 To get started with this project with docker, follow these steps:
 
